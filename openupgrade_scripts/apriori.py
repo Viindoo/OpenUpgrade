@@ -53,6 +53,7 @@ renamed_modules = {
     "to_transit_loc_accounts": "viin_stock_internal_transit_valuation",
     "viin_transit_loc_accounts_specific_identification": "viin_stock_internal_transit_valuation_specific_identification",  # noqa: B950
     "to_partner_share_holder": "viin_partner_shareholder",
+    "to_hr_resoucre_calendar_rate": "viin_resource_calendar_rate",
     # Viindoo/erponline-enterprise
     "to_enterprice_marks_account": "to_enterprise_marks_account",
     "to_enterprice_marks_mrp": "to_enterprise_marks_mrp",
@@ -100,6 +101,7 @@ merged_modules = {
     "to_einvoice_common": "l10n_vn_edi",
     "viin_l10n_vn_einvoice_common": "l10n_vn_edi",
     "to_warehouse_imp": "viin_stock",
+    "to_l10n_vn_state_group": "to_res_state_group",
     # Viindoo/odoo-tvtma
     "viin_hr_department_multilang": "viin_hr",
 }
