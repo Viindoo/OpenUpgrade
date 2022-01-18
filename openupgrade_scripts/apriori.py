@@ -11,7 +11,7 @@ renamed_modules = {
     # OCA/account-invoice-reporting
     "account_invoice_comment_template": "account_comment_template",
     # OCA/bank-statement-import
-    "account_bank_statement_import": "account_statement_import",  # from odoo
+    # "account_bank_statement_import": "account_statement_import",  # from odoo
     "account_bank_statement_import_bypass_check": "account_statement_import_bypass_check",  # noqa: B950
     "account_bank_statement_clear_partner": "account_statement_clear_partner",
     "account_bank_statement_import_camt_details": "account_statement_import_camt_details",  # noqa: B950
@@ -54,6 +54,8 @@ renamed_modules = {
     "viin_transit_loc_accounts_specific_identification": "viin_stock_internal_transit_valuation_specific_identification",  # noqa: B950
     "to_partner_share_holder": "viin_partner_shareholder",
     "to_hr_resoucre_calendar_rate": "viin_resource_calendar_rate",
+    "to_account_bank_statement_import_rje": "viin_account_bank_statement_import_rje",
+    "account_bank_statement_import": "viin_account_bank_statement_import",
     # Viindoo/erponline-enterprise
     "to_enterprice_marks_account": "to_enterprise_marks_account",
     "to_enterprice_marks_mrp": "to_enterprise_marks_mrp",
