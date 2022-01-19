@@ -45,7 +45,7 @@ renamed_modules = {
     "openupgrade_records": "upgrade_analysis",
     # OCA/...
     # Viindoo/tvtmaaddons
-    "to_print_payment_vi": "viin_l10n_vn_account_move_print",
+    "to_print_payment_vi": "viin_l10n_vn_payment_print",
     "to_hr_recruitment_request": "viin_hr_recruitment_approval",
     "to_tvtma_hr": "viin_hr",
     "to_foreign_trade_currency_rate": "viin_foreign_trade_currency_rate",
