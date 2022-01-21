@@ -56,6 +56,7 @@ renamed_modules = {
     "to_hr_resoucre_calendar_rate": "viin_resource_calendar_rate",
     "to_account_bank_statement_import_rje": "viin_account_bank_statement_import_rje",
     "account_bank_statement_import": "viin_account_bank_statement_import",
+    "to_foreign_trade": "viin_foreign_trade",
     # Viindoo/erponline-enterprise
     "to_enterprice_marks_account": "to_enterprise_marks_account",
     "to_enterprice_marks_mrp": "to_enterprise_marks_mrp",
@@ -98,7 +99,6 @@ merged_modules = {
     "to_l10n_vn_general_ledger": "to_account_reports_l10n_vn",
     "viin_l10n_vn_account_cash_book": "to_account_reports_l10n_vn",
     "viin_l10n_vn_invoice_declaration": "to_account_reports_l10n_vn",
-    "to_foreign_trade": "viin_foreign_trade",
     "to_foreign_trade_landed_cost": "viin_foreign_trade",
     "to_einvoice_common": "l10n_vn_edi",
     "viin_l10n_vn_einvoice_common": "l10n_vn_edi",
