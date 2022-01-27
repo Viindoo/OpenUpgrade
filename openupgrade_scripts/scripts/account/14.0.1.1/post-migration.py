@@ -403,7 +403,7 @@ def _create_fixed_vietnam_bank_accounts(env):
                 env.cr,
                 """
                 UPDATE account_account
-                SET code = '1125', name = {}
+                SET code = '1125', name = '{}'
                 WHERE code = '1121';
                 """.format(
                     _("Bank")
@@ -418,16 +418,16 @@ def _create_fixed_vietnam_bank_accounts(env):
             ( name, code, user_type_id,
             company_id, internal_type, internal_group, reconcile)
             VALUES
-            ({4}, '1121', {0}, {1}, '{2}', '{3}', false)
+            ('{4}', '1121', {0}, {1}, '{2}', '{3}', false)
             """
             if not env["account.account"].search(
                 [("code", "=", "1122"), ("company_id", "=", company.id)]
             ):
-                query += ",({5}, '1122', {0}, {1}, '{2}', '{3}', false)"
+                query += ",('{5}', '1122', {0}, {1}, '{2}', '{3}', false)"
             if not env["account.account"].search(
                 [("code", "=", "1123"), ("company_id", "=", company.id)]
             ):
-                query += ",({6}, '1123', {0}, {1}, '{2}', '{3}', false)"
+                query += ",('{6}', '1123', {0}, {1}, '{2}', '{3}', false)"
             openupgrade.logged_query(
                 env.cr,
                 query.format(
