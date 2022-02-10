@@ -399,15 +399,27 @@ def _create_fixed_vietnam_bank_accounts(env):
             [("chart_template_id", "=", vn_chart_template.id)]
         )
         for company in companies:
+            default_account_code = env["account.account"]._search_new_account_code(
+                company,
+                vn_chart_template.code_digits,
+                company.bank_account_code_prefix or "",
+            )
+
             openupgrade.logged_query(
                 env.cr,
                 """
                 UPDATE account_account
-                SET code = '1125', name = '{}'
+                SET code = '{1}', name = '{0}'
                 WHERE code = '1121';
                 """.format(
-                    _("Bank")
+                    _("Bank"),
+                    default_account_code,
                 ),
+            )
+            _logger.warning(
+                "Account with code '1121' has been changed to"
+                " account with code %s on company %s!"
+                % (default_account_code, company.name)
             )
 
             liquidity_account_type = env.ref(
