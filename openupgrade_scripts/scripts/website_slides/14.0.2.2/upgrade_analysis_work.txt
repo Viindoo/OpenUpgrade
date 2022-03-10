@@ -13,7 +13,11 @@ website_slides / slide.channel            / description_short (text)      : NEW
 website_slides / slide.channel            / promote_strategy (selection)  : selection_keys is now '['latest', 'most_viewed', 'most_voted', 'none', 'specific']' ('['latest', 'most_viewed', 'most_voted']')
 website_slides / slide.channel            / promoted_slide_id (many2one)  : NEW relation: slide.slide
 website_slides / slide.channel            / seo_name (char)               : NEW
+# NOTHING TO DO: new feature
+
 website_slides / slide.channel.partner    / completed_slides_count (integer): NEW
+# DONE: post-migration recompute completion field and completed_slides_count field
+
 website_slides / slide.channel.tag        / color (integer)               : NEW
 website_slides / slide.question           / _order                        : _order is now 'sequence' ('id')
 website_slides / slide.slide              / seo_name (char)               : NEW

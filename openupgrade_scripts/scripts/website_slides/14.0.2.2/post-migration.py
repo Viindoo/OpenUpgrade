@@ -14,3 +14,4 @@ def migrate(env, version):
             "slide_template_shared",
         ],
     )
+    env["slide.channel.partner"].search([])._recompute_completion()
