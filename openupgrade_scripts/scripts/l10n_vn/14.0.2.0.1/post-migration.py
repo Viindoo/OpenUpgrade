@@ -25,7 +25,27 @@ def _create_new_vietnam_accounts(env):
         )
 
 
+def _make_correct_account_type(env):
+    for company in env["res.company"].search(
+        [("chart_template_id", "=", env.ref("l10n_vn.vn_template").id)]
+    ):
+        vn_template = env.ref("l10n_vn.vn_template", raise_if_not_found=False)
+        query = """ UPDATE account_account as ac
+            SET user_type_id=act.user_type_id
+            FROM account_account_template as act
+            WHERE ac.code = act.code
+                AND ac.user_type_id != act.user_type_id
+                AND ac.company_id = %s
+                AND act.chart_template_id = %s """
+        openupgrade.logged_query(
+            env.cr,
+            query,
+            (company.id, vn_template.id),
+        )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.load_data(env.cr, "l10n_vn", "14.0.2.0.1/noupdate_changes.xml")
     _create_new_vietnam_accounts(env)
+    _make_correct_account_type(env)
