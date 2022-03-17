@@ -375,7 +375,11 @@ def fill_empty_partner_type_account_payment(env):
         env.cr,
         """
         UPDATE account_payment
-        SET partner_type = 'customer'
+        SET partner_type =
+            CASE
+                WHEN payment_type = 'outbound' THEN 'supplier'
+                ELSE 'customer'
+            END
         WHERE partner_type IS NULL
         """,
     )
