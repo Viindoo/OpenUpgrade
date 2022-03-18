@@ -89,6 +89,8 @@ def create_recurrent_events(env):
         for range in list(ranges):
             if range[0] <= recurrence.base_event_id.start:
                 ranges.remove(range)
+            else:
+                break
         # Remove range that contains detach events
         for event_id, recurrent_id, recurrent_id_date in result:
             if recurrence.base_event_id.id == recurrent_id:
