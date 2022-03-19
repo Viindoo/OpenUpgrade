@@ -110,10 +110,14 @@ def fill_partial_reconcile_debit_and_credit_amounts(env):
     openupgrade.logged_query(
         env.cr,
         """
-        UPDATE account_partial_reconcile
-        SET debit_amount_currency = amount, credit_amount_currency = amount
-        WHERE debit_amount_currency IS NULL AND credit_amount_currency is NULL
-            AND credit_currency_id = debit_currency_id
+        UPDATE account_partial_reconcile r
+        SET debit_amount_currency = r.amount, credit_amount_currency = r.amount
+        FROM res_company c
+        WHERE r.company_id = c.id
+            AND r.debit_amount_currency IS NULL
+            AND r.credit_amount_currency is NULL
+            AND r.credit_currency_id = r.debit_currency_id
+            AND r.credit_currency_id = c.currency_id
        """,
     )
     # compute debit and credit amount when currencies are different
@@ -125,7 +129,10 @@ def fill_partial_reconcile_debit_and_credit_amounts(env):
                 ("credit_amount_currency", "=", False),
             ]
         )
-        .filtered(lambda line: line.credit_currency_id != line.debit_currency_id)
+        .filtered(
+            lambda line: line.credit_currency_id != line.company_currency_id
+            or line.debit_currency_id != line.company_currency_id
+        )
     )
     for line in partial_reconcile_lines:
         line.debit_amount_currency = line.company_currency_id._convert(
