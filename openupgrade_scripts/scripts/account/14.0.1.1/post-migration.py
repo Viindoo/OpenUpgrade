@@ -120,6 +120,29 @@ def fill_partial_reconcile_debit_and_credit_amounts(env):
             AND r.credit_currency_id = c.currency_id
        """,
     )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE account_partial_reconcile r
+        SET debit_amount_currency =
+                CASE
+                    WHEN r.debit_currency_id = c.currency_id
+                    THEN r.amount
+                    ELSE r.amount_currency END,
+            credit_amount_currency =
+                CASE
+                    WHEN r.credit_currency_id = c.currency_id
+                    THEN r.amount
+                    ELSE r.amount_currency END
+        FROM res_company c
+        WHERE r.company_id = c.id
+            AND r.debit_amount_currency IS NULL
+            AND r.credit_amount_currency is NULL
+            AND (
+                r.credit_currency_id = c.currency_id
+                OR r.debit_currency_id = c.currency_id)
+       """,
+    )
     # compute debit and credit amount when currencies are different
     partial_reconcile_lines = (
         env["account.partial.reconcile"]
