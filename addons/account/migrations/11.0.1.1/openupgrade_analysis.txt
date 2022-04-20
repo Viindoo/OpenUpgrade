@@ -37,6 +37,7 @@ account      / account.journal          / bank_statements_source (selection): se
 account      / account.journal          / color (integer)               : NEW 
 account      / account.journal          / display_on_footer (boolean)   : DEL 
 account      / account.move             / statement_line_id (many2one)  : DEL relation: account.bank.statement.line
+account      / account.move             / tax_cash_basis_rec_id (many2one): NEW relation: account.partial.reconcile
 account      / account.move.line        / statement_line_id (many2one)  : NEW relation: account.bank.statement.line
 account      / account.payment          / message_follower_ids (one2many): NEW relation: mail.followers
 account      / account.payment          / message_ids (one2many)        : NEW relation: mail.message
@@ -46,6 +47,8 @@ account      / account.payment          / website_message_ids (one2many): NEW re
 account      / account.payment          / writeoff_label (char)         : NEW 
 account      / account.payment.term     / sequence (integer)            : NEW required: required, req_default: function
 account      / account.reconcile.model.template / chart_template_id (many2one)  : NEW relation: account.chart.template, required: required
+account      / account.tax              / cash_basis_account (many2one) : NEW relation: account.account
+account      / account.tax              / tax_exigibility (selection)   : NEW selection_keys: ['on_invoice', 'on_payment']
 account      / account.tax.template     / cash_basis_account (many2one) : NEW relation: account.account.template
 account      / account.tax.template     / tax_exigibility (selection)   : NEW selection_keys: ['on_invoice', 'on_payment']
 account      / res.company              / account_opening_move_id (many2one): NEW relation: account.move
@@ -54,10 +57,8 @@ account      / res.company              / account_setup_bar_closed (boolean): NE
 account      / res.company              / account_setup_coa_done (boolean): NEW 
 account      / res.company              / account_setup_company_data_done (boolean): NEW 
 account      / res.company              / account_setup_fy_data_done (boolean): NEW 
+account      / res.company              / tax_cash_basis_journal_id (many2one): NEW relation: account.journal
 account      / res.company              / tax_exigibility (boolean)     : NEW 
-account_tax_cash_basis / account.tax              / use_cash_basis (boolean)      : selection_keys is now '['on_invoice', 'on_payment']' ('False')
-account_tax_cash_basis / account.tax              / use_cash_basis (boolean)      : type is now 'selection' ('boolean')
-account_tax_cash_basis / account.tax              / use_cash_basis (boolean)      : was renamed to tax_exigibility [nothing to do]
 ---XML records in module 'account'---
 NEW ir.actions.act_window: account.account_send_payment_receipt_by_email_action (noupdate)
 NEW ir.actions.act_window: account.action_account_group_tree
@@ -113,9 +114,19 @@ NEW ir.ui.menu: account.menu_finance_receivables_master_data
 NEW ir.ui.menu: account.product_product_menu_purchasable
 NEW ir.ui.menu: account.product_product_menu_sellable
 DEL ir.ui.menu: account.account_tag_menu
+DEL ir.ui.menu: account.menu_account_financial_reports_tree
+DEL ir.ui.menu: account.menu_account_report_bs
+DEL ir.ui.menu: account.menu_account_report_pl
 DEL ir.ui.menu: account.menu_account_report_tree_hierarchy
+DEL ir.ui.menu: account.menu_account_reports
 DEL ir.ui.menu: account.menu_action_analytic_account_tree2
+DEL ir.ui.menu: account.menu_aged_trial_balance
 DEL ir.ui.menu: account.menu_config_multi_currency
+DEL ir.ui.menu: account.menu_finance_legal_statement
+DEL ir.ui.menu: account.menu_general_Balance_report
+DEL ir.ui.menu: account.menu_general_ledger
+DEL ir.ui.menu: account.menu_partner_ledger
+DEL ir.ui.menu: account.menu_print_journal
 DEL ir.ui.menu: account.menu_product_template_action
 NEW ir.ui.view: account.account_bank_journal_view_kanban
 NEW ir.ui.view: account.account_journal_dashboard_kanban_view_js
@@ -165,8 +176,6 @@ DEL ir.ui.view: account.external_layout_footer
 DEL ir.ui.view: account.view_account_config_settings
 DEL ir.ui.view: account.view_account_report_tree_hierarchy
 DEL ir.ui.view: account.view_move_line_form2
-DEL ir.ui.view: account_tax_cash_basis.view_account_config_cash_basis_inherit_form
-DEL ir.ui.view: account_tax_cash_basis.view_tax_form_cash_basis_inherit
 DEL ir.values: account.account_unreconcile_values
 DEL ir.values: account.action_account_balance_report_values1
 DEL ir.values: account.action_account_general_ledger_values

@@ -68,7 +68,7 @@ base         / ir.default               / condition (char)              : NEW
 base         / ir.default               / field_id (many2one)           : NEW relation: ir.model.fields, required: required
 base         / ir.default               / json_value (char)             : NEW required: required
 base         / ir.default               / user_id (many2one)            : NEW relation: res.users
-base         / ir.model.fields          / serialization_field_id (many2one): module is now 'base_sparse_field' ('base')
+base         / ir.model.fields          / serialization_field_id (many2one): DEL relation: ir.model.fields
 base         / ir.model.fields          / ttype (selection)             : selection_keys is now '['binary', 'boolean', 'char', 'date', 'datetime', 'float', 'html', 'integer', 'many2many', 'many2one', 'monetary', 'one2many', 'reference', 'selection', 'text']' ('function')
 base         / ir.module.category       / exclusive (boolean)           : NEW 
 base         / ir.module.module         / exclusion_ids (one2many)      : NEW relation: ir.module.module.exclusion
@@ -305,6 +305,7 @@ NEW res.country.state: base.state_co_31
 NEW res.country.state: base.state_co_32
 NEW res.country.state: base.state_co_33
 NEW res.country.state: base.state_it_su
+NEW res.currency: base.MRU (noupdate)
 DEL res.currency: base.VUB (noupdate)
 DEL res.font: base.font_courier (noupdate)
 DEL res.font: base.font_helvetica (noupdate)
