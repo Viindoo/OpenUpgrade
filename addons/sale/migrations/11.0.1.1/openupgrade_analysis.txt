@@ -4,7 +4,7 @@ sale         / crm.team                 / currency_id (many2one)        : module
 sale         / crm.team                 / dashboard_graph_model (False) : NEW selection_keys: ['account.invoice.report', 'crm.opportunity.report', 'sale.report'], mode: modify
 sale         / product.product          / track_service (selection)     : was renamed to service_type [nothing to do]
 sale         / product.template         / track_service (selection)     : was renamed to service_type [nothing to do]
-sale         / sale.order               / access_token (char)           : previously in module website_quote
+sale         / sale.order               / access_token (char)           : NEW 
 sale         / sale.order               / activity_ids (one2many)       : NEW relation: mail.activity
 sale         / sale.order               / procurement_group_id (many2one): module is now 'sale_stock' ('sale')
 sale         / sale.order               / project_id (many2one)         : was renamed to analytic_account_id [nothing to do]

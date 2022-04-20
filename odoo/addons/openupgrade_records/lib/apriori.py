@@ -48,6 +48,11 @@ renamed_modules = {
     ),
     # OCA/web
     'web_advanced_search_x2x': 'web_advanced_search',
+    # Viindoo/erponline-enterprise
+    'mrp_barcode': 'to_mrp_barcode',
+    'mrp_maintenance': 'to_mrp_maintenance',
+    'mrp_mps': 'to_mrp_mps',
+    'mrp_plm': 'to_mrp_plm',
 }
 
 merged_modules = {

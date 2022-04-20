@@ -4,9 +4,16 @@ fleet        / fleet.vehicle            / fuel_type (selection)         : select
 fleet        / fleet.vehicle            / model_year (char)             : NEW 
 fleet        / fleet.vehicle            / residual_value (float)        : NEW 
 fleet        / fleet.vehicle.cost       / description (char)            : NEW 
-fleet        / fleet.vehicle.log.contract / message_follower_ids (one2many): NEW relation: mail.followers
-fleet        / fleet.vehicle.log.contract / message_ids (one2many)        : NEW relation: mail.message
-fleet        / fleet.vehicle.log.contract / message_last_post (datetime)  : NEW 
+fleet        / fleet.vehicle.log.contract / message_channel_ids (many2many): previously in module to_fleet_accounting
+fleet        / fleet.vehicle.log.contract / message_follower_ids (one2many): previously in module to_fleet_accounting
+fleet        / fleet.vehicle.log.contract / message_ids (one2many)        : previously in module to_fleet_accounting
+fleet        / fleet.vehicle.log.contract / message_is_follower (boolean) : previously in module to_fleet_accounting
+fleet        / fleet.vehicle.log.contract / message_last_post (datetime)  : previously in module to_fleet_accounting
+fleet        / fleet.vehicle.log.contract / message_needaction (boolean)  : previously in module to_fleet_accounting
+fleet        / fleet.vehicle.log.contract / message_needaction_counter (integer): previously in module to_fleet_accounting
+fleet        / fleet.vehicle.log.contract / message_partner_ids (many2many): previously in module to_fleet_accounting
+fleet        / fleet.vehicle.log.contract / message_unread (boolean)      : previously in module to_fleet_accounting
+fleet        / fleet.vehicle.log.contract / message_unread_counter (integer): previously in module to_fleet_accounting
 fleet        / fleet.vehicle.log.contract / state (selection)             : selection_keys is now '['closed', 'diesoon', 'expired', 'futur', 'open']' ('['closed', 'open', 'toclose']')
 ---XML records in module 'fleet'---
 NEW ir.actions.act_window: fleet.fleet_vehicle_contract_types_action
