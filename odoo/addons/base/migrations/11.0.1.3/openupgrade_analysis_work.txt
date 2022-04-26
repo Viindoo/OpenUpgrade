@@ -101,7 +101,7 @@ base         / ir.default               / json_value (char)             : NEW re
 base         / ir.default               / user_id (many2one)            : NEW relation: res.users
 # DONE: post-migration: migrate 'default' ir_values to this new model
 
-base         / ir.model.fields          / serialization_field_id (many2one): module is now 'base_sparse_field' ('base')
+base         / ir.model.fields          / serialization_field_id (many2one): DEL relation: ir.model.fields
 # NOTHING TO DO, manually check / installation of new module needed after migration
 # We can't mark the new module base_sparse_field as to-install when serialization_field_id is used because the module list is not yet loaded at this point.
 
@@ -369,6 +369,7 @@ NEW res.country.state: base.state_co_30
 NEW res.country.state: base.state_co_31
 NEW res.country.state: base.state_co_32
 NEW res.country.state: base.state_co_33
+NEW res.currency: base.MRU (noupdate)
 DEL res.currency: base.VUB (noupdate)
 DEL res.font: base.font_courier (noupdate)
 DEL res.font: base.font_helvetica (noupdate)

@@ -68,37 +68,37 @@ base         / ir.default               / condition (char)              : NEW
 base         / ir.default               / field_id (many2one)           : NEW relation: ir.model.fields, required: required
 base         / ir.default               / json_value (char)             : NEW required: required
 base         / ir.default               / user_id (many2one)            : NEW relation: res.users
-base         / ir.model.fields          / serialization_field_id (many2one): module is now 'base_sparse_field' ('base')
+base         / ir.model.fields          / serialization_field_id (many2one): DEL relation: ir.model.fields
 base         / ir.model.fields          / ttype (selection)             : selection_keys is now '['binary', 'boolean', 'char', 'date', 'datetime', 'float', 'html', 'integer', 'many2many', 'many2one', 'monetary', 'one2many', 'reference', 'selection', 'text']' ('function')
-base         / ir.module.category       / exclusive (boolean)           : NEW 
+base         / ir.module.category       / exclusive (boolean)           : NEW
 base         / ir.module.module         / exclusion_ids (one2many)      : NEW relation: ir.module.module.exclusion
 base         / ir.module.module.exclusion / module_id (many2one)          : NEW relation: ir.module.module
-base         / ir.module.module.exclusion / name (char)                   : NEW 
+base         / ir.module.module.exclusion / name (char)                   : NEW
 base         / ir.ui.menu               / web_icon_data (binary)        : not a function anymore
-base         / res.bank                 / fax (char)                    : DEL 
-base         / res.company              / custom_footer (boolean)       : DEL 
+base         / res.bank                 / fax (char)                    : DEL
+base         / res.company              / custom_footer (boolean)       : DEL
 base         / res.company              / external_report_layout (selection): NEW selection_keys: ['background', 'boxed', 'clean', 'standard']
 base         / res.company              / font (many2one)               : DEL relation: res.font
-base         / res.company              / report_footer (text)          : NEW 
-base         / res.company              / report_header (text)          : NEW 
-base         / res.company              / rml_footer (text)             : DEL 
+base         / res.company              / report_footer (text)          : NEW
+base         / res.company              / report_header (text)          : NEW
+base         / res.company              / rml_footer (text)             : DEL
 base         / res.company              / rml_header (text)             : DEL required: required, req_default: function
-base         / res.company              / rml_header1 (char)            : DEL 
+base         / res.company              / rml_header1 (char)            : DEL
 base         / res.company              / rml_header2 (text)            : DEL required: required, req_default: function
 base         / res.company              / rml_header3 (text)            : DEL required: required, req_default: function
 base         / res.company              / rml_paper_format (selection)  : DEL required: required, selection_keys: ['a4', 'us_letter'], req_default: function
 base         / res.country              / address_view_id (many2one)    : NEW relation: ir.ui.view
 base         / res.country              / name_position (selection)     : NEW selection_keys: ['after', 'before']
-base         / res.country              / vat_label (char)              : NEW 
-base         / res.currency             / currency_subunit_label (char) : NEW 
-base         / res.currency             / currency_unit_label (char)    : NEW 
+base         / res.country              / vat_label (char)              : NEW
+base         / res.currency             / currency_subunit_label (char) : NEW
+base         / res.currency             / currency_unit_label (char)    : NEW
 base         / res.currency.rate        / name (datetime)               : type is now 'date' ('datetime')
 base         / res.groups               / is_portal (boolean)           : previously in module portal
-base         / res.partner              / fax (char)                    : DEL 
+base         / res.partner              / fax (char)                    : DEL
 base         / res.partner              / industry_id (many2one)        : NEW relation: res.partner.industry
-base         / res.partner.industry     / active (boolean)              : NEW 
-base         / res.partner.industry     / full_name (char)              : NEW 
-base         / res.partner.industry     / name (char)                   : NEW 
+base         / res.partner.industry     / active (boolean)              : NEW
+base         / res.partner.industry     / full_name (char)              : NEW
+base         / res.partner.industry     / name (char)                   : NEW
 report       / report.paperformat       / report_ids (one2many)         : relation is now 'ir.actions.report' ('ir.actions.report.xml')
 ---XML records in module 'base'---
 NEW ir.actions.act_window: base.action_currency_all_form
@@ -305,6 +305,7 @@ NEW res.country.state: base.state_co_31
 NEW res.country.state: base.state_co_32
 NEW res.country.state: base.state_co_33
 NEW res.country.state: base.state_it_su
+NEW res.currency: base.MRU (noupdate)
 DEL res.currency: base.VUB (noupdate)
 DEL res.font: base.font_courier (noupdate)
 DEL res.font: base.font_helvetica (noupdate)

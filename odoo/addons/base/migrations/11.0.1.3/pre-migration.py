@@ -78,12 +78,12 @@ def remove_currency_rates_of_the_same_day(env):
     dup = True
     while dup:
         env.cr.execute(
-            "SELECT MIN(id), count(*) FROM res_currency_rate GROUP BY name, currency_id, company_id HAVING count(*) > 1",
+            "SELECT MIN(id), count(*) FROM res_currency_rate GROUP BY %s, currency_id, company_id HAVING count(*) > 1",
+            (AsIs(openupgrade.get_legacy_name('name')),)
         )
         dup = env.cr.fetchone()
         if dup:
-            env.cr.execute("""DELETE FROM res_currency_rate WHERE id = %s""" % dup[0])
-            _logger.info("Currency rate with ID %s has been deleted" % dup[0])
+            openupgrade.logged_query(env.cr, "DELETE FROM res_currency_rate WHERE id = %s", (dup[0],))
 
 
 def fill_cron_action_server_pre(env):
