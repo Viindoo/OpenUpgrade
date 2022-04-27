@@ -1,8 +1,6 @@
 ---Fields in module 'portal'---
 portal       / account.analytic.account / website_message_ids (one2many): NEW relation: mail.message
 portal       / calendar.event           / website_message_ids (one2many): NEW relation: mail.message
-portal       / event.event              / website_message_ids (one2many): previously in module website_event
-portal       / event.registration       / website_message_ids (one2many): NEW relation: mail.message
 portal       / fleet.vehicle            / website_message_ids (one2many): NEW relation: mail.message
 portal       / fleet.vehicle.log.contract / website_message_ids (one2many): NEW relation: mail.message
 portal       / gamification.badge       / website_message_ids (one2many): NEW relation: mail.message
