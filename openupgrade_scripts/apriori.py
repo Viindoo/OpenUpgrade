@@ -11,6 +11,13 @@ renamed_modules = {
     "mail_client_extension": "mail_plugin",
     "payment_ingenico": "payment_ogone",
     # OCA/...
+    # Viindoo/tvtmaaddons
+    "to_hr_employee_birthday_filters": "viin_hr_employee_birthday",
+    "to_equipment_hierarchy": "viin_maintenance",
+    "viin_hr_equipment_hierarchy": "viin_hr_maintenance",
+    "to_slugifty_l10n_vn": "viin_unicode_slugify",
+    # Viindoo/erponline-enterprise
+    "to_enterprise_marks_account": "viin_hide_ent_modules_account",
 }
 
 # Merged modules contain a mapping from old module names to other,
@@ -28,6 +35,17 @@ merged_modules = {
     "website_form": "website",
     "website_sale_management": "website_sale",
     # OCA/...
+    # Viindoo/tvtmaaddons
+    "to_partner_business_type": "viin_partner_business_nature",
+    "to_partner_employee_size": "viin_partner_business_nature",
+    "to_partner_ownership_type": "viin_partner_business_nature",
+    "viin_crm_business_type": "viin_crm_business_nature",
+    "viin_crm_employee_size": "viin_crm_business_nature",
+    "to_hr_public_employee_birthday_filters": "viin_hr_employee_birthday",
+    "to_equipment_image": "viin_maintenance",
+    # Viindoo/odoo-tvtma
+    "to_tvtma_crm": "viin_crm",
+    "to_tvtma_sales": "viin_sale",
 }
 
 # only used here for upgrade_analysis
