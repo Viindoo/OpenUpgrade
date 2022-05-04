@@ -55,6 +55,12 @@ account      / account.move             / statement_line_id (many2one)  : DEL re
 account      / account.move.line        / statement_line_id (many2one)  : NEW relation: account.bank.statement.line
 # DONE: post-migration: move statement_line_id values from account.move to account.move.line
 
+account      / account.move             / tax_cash_basis_rec_id (many2one): NEW relation: account.partial.reconcile
+account      / account.tax              / cash_basis_account (many2one) : NEW relation: account.account
+account      / account.tax              / tax_exigibility (selection)   : NEW selection_keys: ['on_invoice', 'on_payment']
+account      / res.company              / tax_cash_basis_journal_id (many2one): NEW relation: account.journal
+# NOTHING TO DO: these fields has been move from 'account_tax_cash_basis' module to 'account' module
+
 account      / account.payment          / message_follower_ids (one2many): NEW relation: mail.followers
 account      / account.payment          / message_ids (one2many)        : NEW relation: mail.message
 account      / account.payment          / message_last_post (datetime)  : NEW 
