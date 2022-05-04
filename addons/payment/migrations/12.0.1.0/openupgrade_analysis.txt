@@ -2,7 +2,11 @@
 new model payment.acquirer.onboarding.wizard [transient]
 ---Fields in module 'payment'---
 payment      / account.invoice          / transaction_ids (many2many)   : NEW relation: payment.transaction
+payment      / payment.acquirer         / _order (False)                : NEW
 payment      / payment.acquirer         / qr_code (boolean)             : NEW
+payment      / payment.icon             / _order (False)                : NEW
+payment      / payment.token            / _order (False)                : NEW
+payment      / payment.transaction      / _order (False)                : NEW
 payment      / payment.transaction      / date (datetime)               : NEW
 payment      / payment.transaction      / date_validate (datetime)      : DEL
 payment      / payment.transaction      / invoice_ids (many2many)       : NEW relation: account.invoice

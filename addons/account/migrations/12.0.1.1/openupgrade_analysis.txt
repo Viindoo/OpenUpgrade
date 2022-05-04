@@ -5,13 +5,13 @@ obsolete model account.bank.accounts.wizard [transient]
 obsolete model account.common.account.report [transient]
 obsolete model account.common.partner.report [transient]
 obsolete model account.financial.report
-obsolete model accounting.report [transient]
 obsolete model account.move.line.reconcile [transient]
 obsolete model account.move.line.reconcile.writeoff [transient]
 obsolete model account.opening [transient]
 obsolete model account.report.general.ledger [transient]
 obsolete model account.report.partner.ledger [transient]
 obsolete model account.tax.report [transient]
+obsolete model accounting.report [transient]
 obsolete model report.account.report_financial [abstract]
 obsolete model report.account.report_generalledger [abstract]
 obsolete model report.account.report_overdue [abstract]
@@ -27,16 +27,27 @@ new model account.reconciliation.widget [abstract]
 new model account.setup.bank.manual.config [transient]
 new model report.account.report_invoice_with_payments [abstract]
 ---Fields in module 'account'---
+account      / account.account          / _order (False)                : NEW
 account      / account.account          / internal_group (selection)    : NEW selection_keys: function, isrelated: related, stored
+account      / account.account.tag      / _order (False)                : NEW
+account      / account.account.template / _order (False)                : NEW
+account      / account.account.type     / _order (False)                : NEW
 account      / account.account.type     / internal_group (selection)    : NEW selection_keys: ['asset', 'equity', 'expense', 'income', 'liability']
+account      / account.analytic.line    / _order (False)                : NEW mode: modify
 account      / account.analytic.line    / amount_currency (float)       : DEL
 account      / account.analytic.line    / currency_id (False)           : DEL mode: modify
 account      / account.analytic.line    / product_uom_id (many2one)     : module is now 'analytic' ('account')
 account      / account.analytic.line    / product_uom_id (many2one)     : relation is now 'uom.uom' ('product.uom') [nothing to do]
+account      / account.bank.statement   / _order (False)                : NEW
 account      / account.bank.statement   / accounting_date (date)        : NEW
 account      / account.bank.statement   / message_last_post (datetime)  : DEL
 account      / account.bank.statement   / message_main_attachment_id (many2one): NEW relation: ir.attachment
+account      / account.bank.statement.cashbox / _order (False)                : NEW
+account      / account.bank.statement.line / _order (False)                : NEW
 account      / account.bank.statement.line / account_number (char)         : NEW
+account      / account.cash.rounding    / _order (False)                : NEW
+account      / account.cashbox.line     / _order (False)                : NEW
+account      / account.chart.template   / _order (False)                : NEW
 account      / account.chart.template   / bank_account_code_prefix (char): now required
 account      / account.chart.template   / cash_account_code_prefix (char): now required
 account      / account.chart.template   / company_id (many2one)         : DEL relation: res.company
@@ -54,17 +65,28 @@ account      / account.financial.report / sequence (integer)            : DEL
 account      / account.financial.report / sign (selection)              : DEL required, selection_keys: [-1, 1], req_default: function
 account      / account.financial.report / style_overwrite (selection)   : DEL selection_keys: [0, 1, 2, 3, 4, 5, 6]
 account      / account.financial.report / type (selection)              : DEL selection_keys: ['account_report', 'account_type', 'accounts', 'sum']
+account      / account.fiscal.position  / _order (False)                : NEW
+account      / account.fiscal.position.account / _order (False)                : NEW
+account      / account.fiscal.position.account.template / _order (False)                : NEW
+account      / account.fiscal.position.tax / _order (False)                : NEW
+account      / account.fiscal.position.tax.template / _order (False)                : NEW
+account      / account.fiscal.position.template / _order (False)                : NEW
+account      / account.fiscal.year      / _order (False)                : NEW
 account      / account.fiscal.year      / company_id (many2one)         : NEW relation: res.company, required, req_default: function, hasdefault
 account      / account.fiscal.year      / date_from (date)              : NEW required
 account      / account.fiscal.year      / date_to (date)                : NEW required
 account      / account.fiscal.year      / name (char)                   : NEW required
+account      / account.full.reconcile   / _order (False)                : NEW
+account      / account.group            / _order (False)                : NEW
 account      / account.group            / parent_left (integer)         : DEL
 account      / account.group            / parent_path (char)            : NEW
 account      / account.group            / parent_right (integer)        : DEL
+account      / account.incoterms        / _order (False)                : NEW
+account      / account.invoice          / _order (False)                : NEW
 account      / account.invoice          / activity_date_deadline (date) : not related anymore
 account      / account.invoice          / activity_date_deadline (date) : not stored anymore
 account      / account.invoice          / activity_date_deadline (date) : now a function
-account      / account.invoice          / incoterm_id (many2one)        : previously in module l10n_be_intrastat
+account      / account.invoice          / incoterm_id (many2one)        : NEW relation: account.incoterms, hasdefault
 account      / account.invoice          / message_last_post (datetime)  : DEL
 account      / account.invoice          / message_main_attachment_id (many2one): NEW relation: ir.attachment
 account      / account.invoice          / reference_type (selection)    : DEL required, selection_keys: function, req_default: function
@@ -72,26 +94,36 @@ account      / account.invoice          / source_email (char)           : NEW
 account      / account.invoice          / state (selection)             : selection_keys is now '['cancel', 'draft', 'in_payment', 'open', 'paid']' ('['cancel', 'draft', 'open', 'paid']')
 account      / account.invoice          / vendor_bill_id (many2one)     : NEW relation: account.invoice
 account      / account.invoice          / vendor_display_name (char)    : NEW isfunction: function, stored
+account      / account.invoice.line     / _order (False)                : NEW
 account      / account.invoice.line     / display_type (selection)      : NEW selection_keys: ['line_note', 'line_section'], hasdefault
 account      / account.invoice.line     / uom_id (many2one)             : relation is now 'uom.uom' ('product.uom') [nothing to do]
-account      / account.invoice.tax      / analytic_tag_ids (many2many)  : NEW relation: account.analytic.tag
+account      / account.invoice.tax      / _order (False)                : NEW
+account      / account.journal          / _order (False)                : NEW
 account      / account.journal          / alias_id (many2one)           : NEW relation: mail.alias
 account      / account.journal          / bank_statements_source (selection): selection_keys is now 'function' ('['manual', 'undefined']')
 account      / account.journal          / post_at_bank_rec (boolean)    : NEW
+account      / account.move             / _order (False)                : NEW
 account      / account.move             / auto_reverse (boolean)        : NEW hasdefault
 account      / account.move             / reverse_date (date)           : NEW
 account      / account.move             / reverse_entry_id (many2one)   : NEW relation: account.move
 account      / account.move             / tax_type_domain (char)        : NEW
+account      / account.move.line        / _order (False)                : NEW
 account      / account.move.line        / product_uom_id (many2one)     : relation is now 'uom.uom' ('product.uom') [nothing to do]
 account      / account.move.line        / recompute_tax_line (boolean)  : NEW
 account      / account.move.line        / tax_line_grouping_key (char)  : NEW
+account      / account.partial.reconcile / _order (False)                : NEW
+account      / account.payment          / _order (False)                : NEW
 account      / account.payment          / company_id (many2one)         : not stored anymore
 account      / account.payment          / message_last_post (datetime)  : DEL
 account      / account.payment          / message_main_attachment_id (many2one): NEW relation: ir.attachment
 account      / account.payment          / multi (boolean)               : NEW
 account      / account.payment          / partner_bank_account_id (many2one): NEW relation: res.partner.bank
+account      / account.payment.method   / _order (False)                : NEW
+account      / account.payment.term     / _order (False)                : NEW
+account      / account.payment.term.line / _order (False)                : NEW
 account      / account.payment.term.line / day_of_the_month (integer)    : NEW
 account      / account.payment.term.line / option (selection)            : selection_keys is now '['after_invoice_month', 'day_after_invoice_date', 'day_current_month', 'day_following_month']' ('['day_after_invoice_date', 'fix_day_following_month', 'last_day_current_month', 'last_day_following_month']')
+account      / account.reconcile.model  / _order (False)                : NEW
 account      / account.reconcile.model  / analytic_tag_ids (many2many)  : NEW relation: account.analytic.tag
 account      / account.reconcile.model  / auto_reconcile (boolean)      : NEW
 account      / account.reconcile.model  / force_second_tax_included (boolean): NEW
@@ -111,6 +143,7 @@ account      / account.reconcile.model  / match_total_amount (boolean)  : NEW ha
 account      / account.reconcile.model  / match_total_amount_param (float): NEW hasdefault
 account      / account.reconcile.model  / rule_type (selection)         : NEW required, selection_keys: ['invoice_matching', 'writeoff_button', 'writeoff_suggestion'], req_default: function, hasdefault
 account      / account.reconcile.model  / second_analytic_tag_ids (many2many): NEW relation: account.analytic.tag
+account      / account.reconcile.model.template / _order (False)                : NEW
 account      / account.reconcile.model.template / auto_reconcile (boolean)      : NEW
 account      / account.reconcile.model.template / force_second_tax_included (boolean): NEW
 account      / account.reconcile.model.template / force_tax_included (boolean)  : NEW
@@ -128,9 +161,12 @@ account      / account.reconcile.model.template / match_same_currency (boolean) 
 account      / account.reconcile.model.template / match_total_amount (boolean)  : NEW hasdefault
 account      / account.reconcile.model.template / match_total_amount_param (float): NEW hasdefault
 account      / account.reconcile.model.template / rule_type (selection)         : NEW required, selection_keys: ['invoice_matching', 'writeoff_button', 'writeoff_suggestion'], req_default: function, hasdefault
+account      / account.tax              / _order (False)                : NEW
 account      / account.tax              / cash_basis_account (many2one) : was renamed to cash_basis_account_id [nothing to do]
 account      / account.tax              / tax_adjustment (boolean)      : DEL
 account      / account.tax              / type_tax_use (selection)      : selection_keys is now '['adjustment', 'none', 'purchase', 'sale']' ('['none', 'purchase', 'sale']')
+account      / account.tax.group        / _order (False)                : NEW
+account      / account.tax.template     / _order (False)                : NEW
 account      / account.tax.template     / cash_basis_account (many2one) : was renamed to cash_basis_account_id [nothing to do]
 account      / account.tax.template     / cash_basis_base_account_id (many2one): NEW relation: account.account.template
 account      / account.tax.template     / company_id (many2one)         : DEL relation: res.company
@@ -154,7 +190,7 @@ account      / res.company              / account_setup_company_data_done (boole
 account      / res.company              / account_setup_fy_data_done (boolean): DEL
 account      / res.company              / account_setup_fy_data_state (selection): NEW selection_keys: ['done', 'just_done', 'not_done'], hasdefault
 account      / res.company              / accounts_code_digits (integer): DEL
-account      / res.company              / incoterm_id (many2one)        : previously in module l10n_be_intrastat
+account      / res.company              / incoterm_id (many2one)        : NEW relation: account.incoterms
 account      / res.company              / invoice_is_email (boolean)    : NEW hasdefault
 account      / res.company              / invoice_is_print (boolean)    : NEW hasdefault
 account      / res.company              / invoice_reference_type (selection): NEW selection_keys: function, hasdefault
@@ -329,6 +365,9 @@ DEL ir.ui.view: account_cash_basis_base_account.view_tax_form_cash_basis_inherit
 DEL ir.ui.view: account_invoicing.assets_backend
 DEL ir.ui.view: account_invoicing.product_template_form_view_invoice_policy
 DEL ir.ui.view: account_invoicing.res_config_settings_view_form_inherit_account_invoicing
+DEL ir.ui.view: to_account_invoice_tax_analytic_tags.invoice_form
+DEL ir.ui.view: to_account_invoice_tax_analytic_tags.invoice_supplier_form
+DEL ir.ui.view: to_account_invoice_tax_analytic_tags.view_invoice_tax_form
 DEL mail.template: account.mail_template_data_notification_email_account_invoice (noupdate)
 NEW res.groups: account.group_fiscal_year
 NEW res.groups: account.group_products_in_bills

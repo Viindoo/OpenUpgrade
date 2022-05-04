@@ -1,5 +1,6 @@
 ---Models in module 'maintenance'---
 ---Fields in module 'maintenance'---
+maintenance  / maintenance.equipment    / _order (False)                : NEW
 maintenance  / maintenance.equipment    / activity_date_deadline (date) : not related anymore
 maintenance  / maintenance.equipment    / activity_date_deadline (date) : not stored anymore
 maintenance  / maintenance.equipment    / activity_date_deadline (date) : now a function
@@ -8,9 +9,11 @@ maintenance  / maintenance.equipment    / effective_date (date)         : NEW re
 maintenance  / maintenance.equipment    / message_last_post (datetime)  : DEL
 maintenance  / maintenance.equipment    / message_main_attachment_id (many2one): NEW relation: ir.attachment
 maintenance  / maintenance.equipment    / warranty (date)               : was renamed to warranty_date [nothing to do]
+maintenance  / maintenance.equipment.category / _order (False)                : NEW
 maintenance  / maintenance.equipment.category / company_id (many2one)         : NEW relation: res.company, hasdefault
 maintenance  / maintenance.equipment.category / message_last_post (datetime)  : DEL
 maintenance  / maintenance.equipment.category / message_main_attachment_id (many2one): NEW relation: ir.attachment
+maintenance  / maintenance.request      / _order (False)                : NEW
 maintenance  / maintenance.request      / activity_date_deadline (date) : not related anymore
 maintenance  / maintenance.request      / activity_date_deadline (date) : not stored anymore
 maintenance  / maintenance.request      / activity_date_deadline (date) : now a function
@@ -18,6 +21,8 @@ maintenance  / maintenance.request      / company_id (many2one)         : NEW re
 maintenance  / maintenance.request      / message_last_post (datetime)  : DEL
 maintenance  / maintenance.request      / message_main_attachment_id (many2one): NEW relation: ir.attachment
 maintenance  / maintenance.request      / technician_user_id (many2one) : was renamed to user_id [nothing to do]
+maintenance  / maintenance.stage        / _order (False)                : NEW
+maintenance  / maintenance.team         / _order (False)                : NEW
 maintenance  / maintenance.team         / active (boolean)              : NEW hasdefault
 maintenance  / maintenance.team         / company_id (many2one)         : NEW relation: res.company, hasdefault
 ---XML records in module 'maintenance'---

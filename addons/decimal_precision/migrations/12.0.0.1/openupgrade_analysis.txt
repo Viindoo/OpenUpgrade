@@ -1,4 +1,5 @@
 ---Models in module 'decimal_precision'---
 ---Fields in module 'decimal_precision'---
+decimal_precision / decimal.precision        / _order (False)                : NEW
+decimal_precision / decimal.precision.test   / _order (False)                : NEW
 ---XML records in module 'decimal_precision'---
----nothing has changed in this module--

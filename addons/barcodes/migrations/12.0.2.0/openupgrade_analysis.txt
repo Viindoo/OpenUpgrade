@@ -1,5 +1,7 @@
 ---Models in module 'barcodes'---
 ---Fields in module 'barcodes'---
+barcodes     / barcode.nomenclature     / _order (False)                : NEW
+barcodes     / barcode.rule             / _order (False)                : NEW
 barcodes     / res.company              / nomenclature_id (many2one)    : NEW relation: barcode.nomenclature, hasdefault
 ---XML records in module 'barcodes'---
 NEW ir.ui.view: barcodes.view_company_form_inherit

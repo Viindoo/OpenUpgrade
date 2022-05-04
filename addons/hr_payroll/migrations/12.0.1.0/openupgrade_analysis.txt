@@ -1,4 +1,27 @@
 ---Models in module 'hr_payroll'---
 ---Fields in module 'hr_payroll'---
+hr_payroll   / hr.contract.advantage.template / _order (False)                : NEW
+hr_payroll   / hr.contribution.register / _order (False)                : NEW
+hr_payroll   / hr.payroll.structure     / _order (False)                : NEW
+hr_payroll   / hr.payslip               / _order (False)                : NEW
+hr_payroll   / hr.payslip.input         / _order (False)                : NEW
+hr_payroll   / hr.payslip.line          / _order (False)                : NEW
+hr_payroll   / hr.payslip.run           / _order (False)                : NEW
+hr_payroll   / hr.payslip.worked_days   / _order (False)                : NEW
+hr_payroll   / hr.rule.input            / _order (False)                : NEW
+hr_payroll   / hr.salary.rule           / _order (False)                : NEW
+hr_payroll   / hr.salary.rule.category  / _order (False)                : NEW
 ---XML records in module 'hr_payroll'---
----nothing has changed in this module--
+decimal.precision: hr_payroll.decimal_payroll (noupdate switched)
+decimal.precision: hr_payroll.decimal_payroll_rate (noupdate switched)
+hr.contribution.register: hr_payroll.contrib_register_employees (noupdate switched)
+hr.payroll.structure: hr_payroll.structure_base (noupdate switched)
+hr.salary.rule: hr_payroll.hr_rule_basic (noupdate switched)
+hr.salary.rule: hr_payroll.hr_rule_net (noupdate switched)
+hr.salary.rule: hr_payroll.hr_rule_taxable (noupdate switched)
+hr.salary.rule.category: hr_payroll.ALW (noupdate switched)
+hr.salary.rule.category: hr_payroll.BASIC (noupdate switched)
+hr.salary.rule.category: hr_payroll.COMP (noupdate switched)
+hr.salary.rule.category: hr_payroll.DED (noupdate switched)
+hr.salary.rule.category: hr_payroll.GROSS (noupdate switched)
+hr.salary.rule.category: hr_payroll.NET (noupdate switched)

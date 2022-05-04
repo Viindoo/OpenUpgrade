@@ -1,7 +1,12 @@
 ---Models in module 'calendar'---
 ---Fields in module 'calendar'---
+calendar     / calendar.alarm           / _order (False)                : NEW
+calendar     / calendar.attendee        / _order (False)                : NEW
+calendar     / calendar.contacts        / _order (False)                : NEW
+calendar     / calendar.event           / _order (False)                : NEW
 calendar     / calendar.event           / message_last_post (datetime)  : DEL
 calendar     / calendar.event           / message_main_attachment_id (many2one): NEW relation: ir.attachment
+calendar     / calendar.event.type      / _order (False)                : NEW
 ---XML records in module 'calendar'---
 DEL calendar.event.type: calendar.categ_meet1 (noupdate)
 DEL calendar.event.type: calendar.categ_meet2 (noupdate)

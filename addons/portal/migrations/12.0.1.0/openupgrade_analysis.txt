@@ -3,6 +3,8 @@ new model portal.share [transient]
 ---Fields in module 'portal'---
 portal       / mail.blacklist           / website_message_ids (one2many): NEW relation: mail.message
 portal       / mail.mass_mailing.contact / website_message_ids (one2many): module is now 'mass_mailing' ('portal')
+portal       / mail.test                / website_message_ids (one2many): DEL relation: mail.message
+portal       / mail.test.simple         / website_message_ids (one2many): DEL relation: mail.message
 ---XML records in module 'portal'---
 NEW ir.actions.act_window: portal.portal_share_action
 NEW ir.ui.view: portal._assets_frontend_helpers

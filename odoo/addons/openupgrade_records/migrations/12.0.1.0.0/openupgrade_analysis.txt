@@ -1,4 +1,7 @@
 ---Models in module 'openupgrade_records'---
 ---Fields in module 'openupgrade_records'---
+openupgrade_records / openupgrade.attribute    / _order (False)                : NEW
+openupgrade_records / openupgrade.comparison.config / _order (False)                : NEW
+openupgrade_records / openupgrade.record       / _order (False)                : NEW
 ---XML records in module 'openupgrade_records'---
 NEW ir.model.access: openupgrade_records.access_openupgrade_comparison_config

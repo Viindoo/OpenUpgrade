@@ -1,5 +1,6 @@
 ---Models in module 'hr_holidays'---
 obsolete model hr.holidays (renamed to hr.leave)
+obsolete model hr.holidays.multiple
 obsolete model hr.holidays.remaining.leaves.user [sql_view]
 obsolete model hr.holidays.status (renamed to hr.leave.type)
 new model hr.leave (renamed from hr.holidays)
@@ -21,6 +22,7 @@ hr_holidays  / hr.holidays              / type (selection)              : DEL re
 hr_holidays  / hr.holidays.status       / double_validation (boolean)   : not stored anymore
 hr_holidays  / hr.holidays.status       / double_validation (boolean)   : now a function
 hr_holidays  / hr.holidays.status       / limit (boolean)               : DEL
+hr_holidays  / hr.leave                 / _order (False)                : NEW
 hr_holidays  / hr.leave                 / activity_ids (one2many)       : NEW relation: mail.activity
 hr_holidays  / hr.leave                 / message_main_attachment_id (many2one): NEW relation: ir.attachment
 hr_holidays  / hr.leave                 / mode_company_id (many2one)    : NEW relation: res.company
@@ -32,6 +34,7 @@ hr_holidays  / hr.leave                 / request_hour_to (selection)   : NEW se
 hr_holidays  / hr.leave                 / request_unit_custom (boolean) : NEW
 hr_holidays  / hr.leave                 / request_unit_half (boolean)   : NEW
 hr_holidays  / hr.leave                 / request_unit_hours (boolean)  : NEW
+hr_holidays  / hr.leave.allocation      / _order (False)                : NEW
 hr_holidays  / hr.leave.allocation      / accrual (boolean)             : NEW
 hr_holidays  / hr.leave.allocation      / accrual_limit (integer)       : NEW hasdefault
 hr_holidays  / hr.leave.allocation      / activity_ids (one2many)       : NEW relation: mail.activity
@@ -60,6 +63,7 @@ hr_holidays  / hr.leave.allocation      / second_approver_id (many2one) : NEW re
 hr_holidays  / hr.leave.allocation      / state (selection)             : NEW selection_keys: ['cancel', 'confirm', 'draft', 'refuse', 'validate', 'validate1'], hasdefault
 hr_holidays  / hr.leave.allocation      / unit_per_interval (selection) : NEW selection_keys: ['days', 'hours'], hasdefault
 hr_holidays  / hr.leave.allocation      / website_message_ids (one2many): NEW relation: mail.message
+hr_holidays  / hr.leave.type            / _order (False)                : NEW
 hr_holidays  / hr.leave.type            / allocation_type (selection)   : NEW selection_keys: ['fixed', 'fixed_allocation', 'no'], hasdefault
 hr_holidays  / hr.leave.type            / request_unit (selection)      : NEW required, selection_keys: ['day', 'hour'], req_default: function, hasdefault
 hr_holidays  / hr.leave.type            / sequence (integer)            : NEW hasdefault
@@ -69,6 +73,25 @@ hr_holidays  / hr.leave.type            / validation_type (selection)   : NEW se
 hr_holidays  / hr.leave.type            / validity_start (date)         : NEW hasdefault
 hr_holidays  / hr.leave.type            / validity_stop (date)          : NEW
 hr_holidays  / resource.calendar.leaves / holiday_id (many2one)         : relation is now 'hr.leave' ('hr.holidays') [nothing to do]
+to_hr_holidays_multiple / hr.holidays              / hr_holiday_multiple_id (many2one): DEL relation: hr.holidays.multiple
+to_hr_holidays_multiple / hr.holidays.multiple     / activity_date_deadline (date) : DEL
+to_hr_holidays_multiple / hr.holidays.multiple     / activity_ids (one2many)       : DEL relation: mail.activity
+to_hr_holidays_multiple / hr.holidays.multiple     / date_from (datetime)          : DEL
+to_hr_holidays_multiple / hr.holidays.multiple     / date_to (datetime)            : DEL
+to_hr_holidays_multiple / hr.holidays.multiple     / department_id (many2one)      : DEL relation: hr.department
+to_hr_holidays_multiple / hr.holidays.multiple     / holiday_status_id (many2one)  : DEL relation: hr.holidays.status, required
+to_hr_holidays_multiple / hr.holidays.multiple     / leave_ids (one2many)          : DEL relation: hr.holidays
+to_hr_holidays_multiple / hr.holidays.multiple     / manager_id (many2one)         : DEL relation: res.users
+to_hr_holidays_multiple / hr.holidays.multiple     / message_follower_ids (one2many): DEL relation: mail.followers
+to_hr_holidays_multiple / hr.holidays.multiple     / message_ids (one2many)        : DEL relation: mail.message
+to_hr_holidays_multiple / hr.holidays.multiple     / message_last_post (datetime)  : DEL
+to_hr_holidays_multiple / hr.holidays.multiple     / name (char)                   : DEL required
+to_hr_holidays_multiple / hr.holidays.multiple     / notes (text)                  : DEL
+to_hr_holidays_multiple / hr.holidays.multiple     / report_note (text)            : DEL
+to_hr_holidays_multiple / hr.holidays.multiple     / state (selection)             : DEL selection_keys: ['cancel', 'confirm', 'draft', 'refuse', 'validate']
+to_hr_holidays_multiple / hr.holidays.multiple     / type (selection)              : DEL required, selection_keys: ['add', 'remove'], req_default: function
+to_hr_holidays_multiple / hr.holidays.multiple     / user_id (many2one)            : DEL relation: res.users, required, req_default: function
+to_hr_holidays_multiple / hr.holidays.multiple     / website_message_ids (one2many): DEL relation: mail.message
 ---XML records in module 'hr_holidays'---
 NEW ir.actions.act_window: hr_holidays.hr_leave_action_action_approve_department
 NEW ir.actions.act_window: hr_holidays.hr_leave_action_action_department
@@ -93,6 +116,8 @@ DEL ir.actions.act_window: hr_holidays.open_department_holidays_approve
 DEL ir.actions.act_window: hr_holidays.open_employee_leaves
 DEL ir.actions.act_window: hr_holidays.request_approve_allocation
 DEL ir.actions.act_window: hr_holidays.request_approve_holidays
+DEL ir.actions.act_window: to_hr_holidays_multiple.hr_holidays_multiple_request_action
+DEL ir.actions.act_window: to_hr_holidays_multiple.hr_holidays_multiple_request_to_approve_action
 NEW ir.actions.act_window.view: hr_holidays.hhr_leave_action_new_request_view_form
 NEW ir.actions.act_window.view: hr_holidays.hr_leave_action_my_view_form
 NEW ir.actions.act_window.view: hr_holidays.hr_leave_action_my_view_tree
@@ -128,9 +153,11 @@ DEL ir.model.access: hr_holidays.access_hr_holidays_remain_user
 DEL ir.model.access: hr_holidays.access_hr_holidays_user
 DEL ir.model.access: hr_holidays.access_hr_holydays_status_employee
 DEL ir.model.access: hr_holidays.access_hr_holydays_status_manager
+DEL ir.model.access: to_hr_holidays_multiple.access_hr_holidays_multiple_user
 NEW ir.rule: hr_holidays.hr_leave_allocation_rule_employee
 NEW ir.rule: hr_holidays.hr_leave_allocation_rule_employee_update
 NEW ir.rule: hr_holidays.hr_leave_allocation_rule_manager
+NEW ir.rule: hr_holidays.hr_leave_allocation_rule_multicompany
 NEW ir.rule: hr_holidays.hr_leave_allocation_rule_officer_read
 NEW ir.rule: hr_holidays.hr_leave_allocation_rule_officer_update
 NEW ir.rule: hr_holidays.hr_leave_rule_employee
@@ -156,6 +183,8 @@ NEW ir.ui.menu: hr_holidays.menu_open_allocation
 DEL ir.ui.menu: hr_holidays.menu_open_allocation_holidays
 DEL ir.ui.menu: hr_holidays.menu_open_ask_holidays_new
 DEL ir.ui.menu: hr_holidays.menu_open_department_leave_allocation_approve
+DEL ir.ui.menu: to_hr_holidays_multiple.hr_holidays_multiple_request_menu
+DEL ir.ui.menu: to_hr_holidays_multiple.hr_holidays_multiple_request_to_approve_menu
 NEW ir.ui.view: hr_holidays.assets_backend
 NEW ir.ui.view: hr_holidays.hr_leave_allocation_view_form
 NEW ir.ui.view: hr_holidays.hr_leave_allocation_view_form_manager
@@ -185,6 +214,11 @@ DEL ir.ui.view: hr_holidays.view_hr_holidays_kanban
 DEL ir.ui.view: hr_holidays.view_hr_holidays_remaining_leaves_user_graph
 DEL ir.ui.view: hr_holidays.view_hr_holidays_remaining_leaves_user_tree
 DEL ir.ui.view: hr_holidays.view_hr_holidays_status_search
+DEL ir.ui.view: to_hr_holidays_multiple.edit_holiday_new
+DEL ir.ui.view: to_hr_holidays_multiple.multiple_leave_request_form_view
+DEL ir.ui.view: to_hr_holidays_multiple.multiple_leave_request_tree_view
+DEL ir.ui.view: to_hr_holidays_multiple.view_holiday_multiple_new_calendar
+DEL ir.ui.view: to_hr_holidays_multiple.view_hr_holidays_filter
 NEW mail.activity.type: hr_holidays.mail_act_leave_allocation_approval (noupdate)
 NEW mail.activity.type: hr_holidays.mail_act_leave_allocation_second_approval (noupdate)
 NEW mail.activity.type: hr_holidays.mail_act_leave_approval (noupdate)

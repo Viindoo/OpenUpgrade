@@ -1,5 +1,7 @@
 ---Models in module 'web_editor'---
 ---Fields in module 'web_editor'---
+web_editor   / web_editor.converter.test / _order (False)                : NEW
+web_editor   / web_editor.converter.test.sub / _order (False)                : NEW
 ---XML records in module 'web_editor'---
 NEW ir.ui.view: web_editor._assets_backend_helpers
 NEW ir.ui.view: web_editor._assets_frontend_helpers

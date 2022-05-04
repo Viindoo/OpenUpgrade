@@ -4,20 +4,21 @@ new model product.attribute.custom.value
 new model sale.payment.acquirer.onboarding.wizard [transient]
 new model sale.product.configurator [transient]
 ---Fields in module 'sale'---
+sale         / account.invoice.line     / _order (False)                : NEW mode: modify
 sale         / account.invoice.line     / layout_category_id (many2one) : DEL relation: sale.layout_category
 sale         / account.invoice.line     / layout_category_sequence (integer): DEL
 sale         / crm.team                 / dashboard_graph_model (False) : selection_keys is now '['account.invoice.report', 'crm.lead', 'sale.report']' ('['account.invoice.report', 'crm.opportunity.report', 'sale.report']')
 sale         / payment.acquirer         / so_reference_type (selection) : NEW selection_keys: ['partner', 'so_name'], hasdefault
 sale         / payment.transaction      / sale_order_ids (many2many)    : NEW relation: sale.order
 sale         / product.attribute        / type (selection)              : previously in module website_sale
+sale         / product.attribute.custom.value / _order (False)                : NEW
 sale         / product.attribute.custom.value / attribute_value_id (many2one) : NEW relation: product.attribute.value
 sale         / product.attribute.custom.value / custom_value (char)           : NEW
 sale         / product.attribute.custom.value / sale_order_line_id (many2one) : NEW relation: sale.order.line
 sale         / product.attribute.value  / html_color (char)             : previously in module website_sale
 sale         / product.attribute.value  / is_custom (boolean)           : NEW
-sale         / product.product          / optional_product_ids (many2many): previously in module website_sale_options
 sale         / product.product          / sales_count (integer)         : type is now 'float' ('integer')
-sale         / product.template         / optional_product_ids (many2many): previously in module website_sale_options
+sale         / product.template         / optional_product_ids (many2many): NEW relation: product.template
 sale         / product.template         / sales_count (integer)         : type is now 'float' ('integer')
 sale         / res.company              / portal_confirmation_pay (boolean): NEW
 sale         / res.company              / portal_confirmation_sign (boolean): NEW
@@ -30,18 +31,20 @@ sale         / sale.layout_category     / name (char)                   : DEL re
 sale         / sale.layout_category     / pagebreak (boolean)           : DEL
 sale         / sale.layout_category     / sequence (integer)            : DEL required, req_default: function
 sale         / sale.layout_category     / subtotal (boolean)            : DEL
+sale         / sale.order               / _order (False)                : NEW
 sale         / sale.order               / activity_date_deadline (date) : not related anymore
 sale         / sale.order               / activity_date_deadline (date) : not stored anymore
 sale         / sale.order               / activity_date_deadline (date) : now a function
-sale         / sale.order               / amount_undiscounted (float)   : previously in module website_quote
 sale         / sale.order               / currency_rate (float)         : NEW isfunction: function, stored
 sale         / sale.order               / message_last_post (datetime)  : DEL
 sale         / sale.order               / message_main_attachment_id (many2one): NEW relation: ir.attachment
 sale         / sale.order               / reference (char)              : NEW
+sale         / sale.order               / require_payment (boolean)     : NEW hasdefault
 sale         / sale.order               / require_signature (boolean)   : NEW hasdefault
 sale         / sale.order               / signature (binary)            : NEW attachment: True
 sale         / sale.order               / signed_by (char)              : NEW
 sale         / sale.order               / transaction_ids (many2many)   : NEW relation: payment.transaction
+sale         / sale.order.line          / _order (False)                : NEW
 sale         / sale.order.line          / amt_invoiced (float)          : DEL
 sale         / sale.order.line          / amt_to_invoice (float)        : DEL
 sale         / sale.order.line          / analytic_line_ids (one2many)  : NEW relation: account.analytic.line

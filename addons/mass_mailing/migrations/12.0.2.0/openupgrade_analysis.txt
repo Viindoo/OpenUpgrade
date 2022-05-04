@@ -3,11 +3,15 @@ new model mail.mass_mailing.list_contact_rel
 new model mass.mailing.list.merge [transient]
 new model mass.mailing.schedule.date [transient]
 ---Fields in module 'mass_mailing'---
+mass_mailing / mail.mail.statistics     / _order (False)                : NEW
 mass_mailing / mail.mail.statistics     / email (char)                  : NEW
 mass_mailing / mail.mail.statistics     / ignored (datetime)            : NEW
 mass_mailing / mail.mail.statistics     / state (selection)             : selection_keys is now '['bounced', 'exception', 'ignored', 'opened', 'outgoing', 'replied', 'sent']' ('['bounced', 'exception', 'opened', 'outgoing', 'replied', 'sent']')
+mass_mailing / mail.mass_mailing        / _order (False)                : NEW
 mass_mailing / mail.mass_mailing        / mail_server_id (many2one)     : NEW relation: ir.mail_server, hasdefault
 mass_mailing / mail.mass_mailing        / user_id (many2one)            : NEW relation: res.users, hasdefault
+mass_mailing / mail.mass_mailing.campaign / _order (False)                : NEW
+mass_mailing / mail.mass_mailing.contact / _order (False)                : NEW
 mass_mailing / mail.mass_mailing.contact / is_email_valid (boolean)      : NEW isfunction: function, stored
 mass_mailing / mail.mass_mailing.contact / message_last_post (datetime)  : DEL
 mass_mailing / mail.mass_mailing.contact / message_main_attachment_id (many2one): NEW relation: ir.attachment
@@ -16,13 +20,17 @@ mass_mailing / mail.mass_mailing.contact / opt_out (boolean)             : now a
 mass_mailing / mail.mass_mailing.contact / subscription_list_ids (one2many): NEW relation: mail.mass_mailing.list_contact_rel
 mass_mailing / mail.mass_mailing.contact / unsubscription_date (datetime): DEL
 mass_mailing / mail.mass_mailing.contact / website_message_ids (one2many): previously in module portal
+mass_mailing / mail.mass_mailing.list   / _order (False)                : NEW
 mass_mailing / mail.mass_mailing.list   / contact_ids (many2many)       : NEW relation: mail.mass_mailing.contact
 mass_mailing / mail.mass_mailing.list   / is_public (boolean)           : NEW hasdefault
 mass_mailing / mail.mass_mailing.list   / subscription_contact_ids (one2many): NEW relation: mail.mass_mailing.list_contact_rel
+mass_mailing / mail.mass_mailing.list_contact_rel / _order (False)                : NEW
 mass_mailing / mail.mass_mailing.list_contact_rel / contact_id (many2one)         : NEW relation: mail.mass_mailing.contact, required
 mass_mailing / mail.mass_mailing.list_contact_rel / list_id (many2one)            : NEW relation: mail.mass_mailing.list, required
 mass_mailing / mail.mass_mailing.list_contact_rel / opt_out (boolean)             : NEW hasdefault
 mass_mailing / mail.mass_mailing.list_contact_rel / unsubscription_date (datetime): NEW
+mass_mailing / mail.mass_mailing.stage  / _order (False)                : NEW
+mass_mailing / mail.mass_mailing.tag    / _order (False)                : NEW
 mass_mailing / res.company              / social_facebook (char)        : module is now 'social_media' ('mass_mailing')
 mass_mailing / res.company              / social_github (char)          : module is now 'social_media' ('mass_mailing')
 mass_mailing / res.company              / social_googleplus (char)      : module is now 'social_media' ('mass_mailing')

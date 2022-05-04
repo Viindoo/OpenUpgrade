@@ -27,6 +27,9 @@ mrp_repair   / mrp.repair.line          / price_subtotal (float)        : is now
 mrp_repair   / mrp.repair.line          / product_uom (many2one)        : relation is now 'uom.uom' ('product.uom') [nothing to do]
 mrp_repair   / mrp.repair.line          / repair_id (many2one)          : relation is now 'repair.order' ('mrp.repair') [nothing to do]
 mrp_repair   / stock.move               / repair_id (many2one)          : relation is now 'repair.order' ('mrp.repair') [nothing to do]
+repair       / repair.fee               / _order (False)                : NEW
+repair       / repair.line              / _order (False)                : NEW
+repair       / repair.order             / _order (False)                : NEW
 repair       / repair.order             / message_main_attachment_id (many2one): NEW relation: ir.attachment
 ---XML records in module 'repair'---
 NEW ir.actions.act_window: repair.act_repair_invoice

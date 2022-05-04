@@ -1,6 +1,6 @@
 ---Models in module 'mail'---
-model mail.test (moved to test_mail)
-model mail.test.simple (moved to test_mail)
+obsolete model mail.test
+obsolete model mail.test.simple
 new model mail.blacklist
 new model mail.blacklist.mixin [abstract]
 new model mail.moderation
@@ -18,9 +18,12 @@ mail         / ir.actions.server        / activity_user_field_name (char): NEW h
 mail         / ir.actions.server        / activity_user_id (many2one)   : NEW relation: res.users
 mail         / ir.actions.server        / activity_user_type (selection): NEW required, selection_keys: ['generic', 'specific'], req_default: function, hasdefault
 mail         / ir.actions.server        / state (False)                 : selection_keys is now '['code', 'email', 'followers', 'multi', 'next_activity', 'object_create', 'object_write']' ('['code', 'email', 'followers', 'multi', 'object_create', 'object_write']')
+mail         / ir.model                 / _order (False)                : NEW mode: modify
 mail         / ir.ui.view               / type (False)                  : NEW selection_keys: ['activity', 'calendar', 'diagram', 'form', 'gantt', 'graph', 'kanban', 'pivot', 'qweb', 'search', 'tree'], mode: modify
+mail         / mail.activity            / _order (False)                : NEW
 mail         / mail.activity            / automated (boolean)           : NEW
 mail         / mail.activity            / create_user_id (many2one)     : NEW relation: res.users, hasdefault
+mail         / mail.activity.type       / _order (False)                : NEW
 mail         / mail.activity.type       / active (boolean)              : NEW hasdefault
 mail         / mail.activity.type       / days (integer)                : was renamed to delay_count [nothing to do]
 mail         / mail.activity.type       / decoration_type (selection)   : NEW selection_keys: ['danger', 'warning']
@@ -30,11 +33,14 @@ mail         / mail.activity.type       / delay_unit (selection)        : NEW re
 mail         / mail.activity.type       / force_next (boolean)          : NEW hasdefault
 mail         / mail.activity.type       / mail_template_ids (many2many) : NEW relation: mail.template
 mail         / mail.activity.type       / res_model_change (boolean)    : NEW hasdefault
+mail         / mail.alias               / _order (False)                : NEW
+mail         / mail.blacklist           / _order (False)                : NEW
 mail         / mail.blacklist           / active (boolean)              : NEW hasdefault
 mail         / mail.blacklist           / email (char)                  : NEW required
 mail         / mail.blacklist           / message_follower_ids (one2many): NEW relation: mail.followers
 mail         / mail.blacklist           / message_ids (one2many)        : NEW relation: mail.message
 mail         / mail.blacklist           / message_main_attachment_id (many2one): NEW relation: ir.attachment
+mail         / mail.channel             / _order (False)                : NEW
 mail         / mail.channel             / message_last_post (datetime)  : DEL
 mail         / mail.channel             / message_main_attachment_id (many2one): NEW relation: ir.attachment
 mail         / mail.channel             / moderation (boolean)          : NEW
@@ -44,59 +50,42 @@ mail         / mail.channel             / moderation_ids (one2many)     : NEW re
 mail         / mail.channel             / moderation_notify (boolean)   : NEW
 mail         / mail.channel             / moderation_notify_msg (text)  : NEW
 mail         / mail.channel             / moderator_ids (many2many)     : NEW relation: res.users
+mail         / mail.channel.partner     / _order (False)                : NEW
+mail         / mail.followers           / _order (False)                : NEW
+mail         / mail.mail                / _order (False)                : NEW
+mail         / mail.message             / _order (False)                : NEW
 mail         / mail.message             / add_sign (boolean)            : NEW hasdefault
 mail         / mail.message             / layout (char)                 : NEW
 mail         / mail.message             / moderation_status (selection) : NEW selection_keys: ['accepted', 'pending_moderation', 'rejected']
 mail         / mail.message             / moderator_id (many2one)       : NEW relation: res.users
+mail         / mail.message.subtype     / _order (False)                : NEW
+mail         / mail.moderation          / _order (False)                : NEW
 mail         / mail.moderation          / channel_id (many2one)         : NEW relation: mail.channel, required
 mail         / mail.moderation          / email (char)                  : NEW required
 mail         / mail.moderation          / status (selection)            : NEW required, selection_keys: ['allow', 'ban']
+mail         / mail.notification        / _order (False)                : NEW
 mail         / mail.notification        / email_status (selection)      : selection_keys is now '['bounce', 'canceled', 'exception', 'ready', 'sent']' ('['bounce', 'exception', 'ready', 'sent']')
 mail         / mail.notification        / failure_reason (text)         : NEW
 mail         / mail.notification        / failure_type (selection)      : NEW selection_keys: ['BOUNCE', 'RECIPIENT', 'SMTP', 'UNKNOWN']
 mail         / mail.notification        / mail_id (many2one)            : NEW relation: mail.mail
+mail         / mail.shortcode           / _order (False)                : NEW
 mail         / mail.shortcode           / shortcode_type (selection)    : DEL required, selection_keys: ['image', 'text'], req_default: function
 mail         / mail.shortcode           / unicode_source (char)         : DEL
-mail         / mail.test                / __last_update (datetime)      : module is now 'test_mail' ('mail')
-mail         / mail.test                / _inherits (False)             : module is now 'test_mail' ('mail')
-mail         / mail.test                / alias_contact (selection)     : module is now 'test_mail' ('mail')
-mail         / mail.test                / alias_defaults (text)         : module is now 'test_mail' ('mail')
-mail         / mail.test                / alias_domain (char)           : module is now 'test_mail' ('mail')
-mail         / mail.test                / alias_force_thread_id (integer): module is now 'test_mail' ('mail')
-mail         / mail.test                / alias_id (many2one)           : module is now 'test_mail' ('mail')
-mail         / mail.test                / alias_model_id (many2one)     : module is now 'test_mail' ('mail')
-mail         / mail.test                / alias_name (char)             : module is now 'test_mail' ('mail')
-mail         / mail.test                / alias_parent_model_id (many2one): module is now 'test_mail' ('mail')
-mail         / mail.test                / alias_parent_thread_id (integer): module is now 'test_mail' ('mail')
-mail         / mail.test                / alias_user_id (many2one)      : module is now 'test_mail' ('mail')
-mail         / mail.test                / description (text)            : module is now 'test_mail' ('mail')
-mail         / mail.test                / display_name (char)           : module is now 'test_mail' ('mail')
-mail         / mail.test                / message_channel_ids (many2many): module is now 'test_mail' ('mail')
-mail         / mail.test                / message_follower_ids (one2many): module is now 'test_mail' ('mail')
-mail         / mail.test                / message_ids (one2many)        : module is now 'test_mail' ('mail')
-mail         / mail.test                / message_is_follower (boolean) : module is now 'test_mail' ('mail')
+mail         / mail.template            / _order (False)                : NEW
+mail         / mail.test                / _inherits (False)             : DEL
+mail         / mail.test                / alias_id (many2one)           : DEL relation: mail.alias, required
+mail         / mail.test                / description (text)            : DEL
+mail         / mail.test                / message_follower_ids (one2many): DEL relation: mail.followers
+mail         / mail.test                / message_ids (one2many)        : DEL relation: mail.message
 mail         / mail.test                / message_last_post (datetime)  : DEL
-mail         / mail.test                / message_needaction (boolean)  : module is now 'test_mail' ('mail')
-mail         / mail.test                / message_needaction_counter (integer): module is now 'test_mail' ('mail')
-mail         / mail.test                / message_partner_ids (many2many): module is now 'test_mail' ('mail')
-mail         / mail.test                / message_unread (boolean)      : module is now 'test_mail' ('mail')
-mail         / mail.test                / message_unread_counter (integer): module is now 'test_mail' ('mail')
-mail         / mail.test                / name (char)                   : module is now 'test_mail' ('mail')
-mail         / mail.test.simple         / __last_update (datetime)      : module is now 'test_mail' ('mail')
+mail         / mail.test                / name (char)                   : DEL
 mail         / mail.test.simple         / description (text)            : DEL
-mail         / mail.test.simple         / display_name (char)           : module is now 'test_mail' ('mail')
-mail         / mail.test.simple         / email_from (char)             : module is now 'test_mail' ('mail')
-mail         / mail.test.simple         / message_channel_ids (many2many): module is now 'test_mail' ('mail')
-mail         / mail.test.simple         / message_follower_ids (one2many): module is now 'test_mail' ('mail')
-mail         / mail.test.simple         / message_ids (one2many)        : module is now 'test_mail' ('mail')
-mail         / mail.test.simple         / message_is_follower (boolean) : module is now 'test_mail' ('mail')
+mail         / mail.test.simple         / email_from (char)             : DEL
+mail         / mail.test.simple         / message_follower_ids (one2many): DEL relation: mail.followers
+mail         / mail.test.simple         / message_ids (one2many)        : DEL relation: mail.message
 mail         / mail.test.simple         / message_last_post (datetime)  : DEL
-mail         / mail.test.simple         / message_needaction (boolean)  : module is now 'test_mail' ('mail')
-mail         / mail.test.simple         / message_needaction_counter (integer): module is now 'test_mail' ('mail')
-mail         / mail.test.simple         / message_partner_ids (many2many): module is now 'test_mail' ('mail')
-mail         / mail.test.simple         / message_unread (boolean)      : module is now 'test_mail' ('mail')
-mail         / mail.test.simple         / message_unread_counter (integer): module is now 'test_mail' ('mail')
-mail         / mail.test.simple         / name (char)                   : module is now 'test_mail' ('mail')
+mail         / mail.test.simple         / name (char)                   : DEL
+mail         / mail.tracking.value      / _order (False)                : NEW
 mail         / mail.tracking.value      / track_sequence (integer)      : NEW hasdefault
 mail         / res.partner              / activity_date_deadline (date) : not related anymore
 mail         / res.partner              / activity_date_deadline (date) : not stored anymore
@@ -120,9 +109,9 @@ NEW ir.cron: mail.ir_cron_mail_notify_channel_moderators (noupdate)
 NEW ir.model.access: mail.access_mail_activity_type_system
 NEW ir.model.access: mail.access_mail_blacklist_system
 NEW ir.model.access: mail.access_mail_moderation_user
-DEL ir.model.access: mail.access_mail_test_portal [renamed to test_mail module]
+DEL ir.model.access: mail.access_mail_test_portal
 DEL ir.model.access: mail.access_mail_test_simple
-DEL ir.model.access: mail.access_mail_test_user [renamed to test_mail module]
+DEL ir.model.access: mail.access_mail_test_user
 ir.rule: mail.mail_channel_rule (noupdate switched)
 NEW ir.rule: mail.mail_moderation_rule_user (noupdate)
 NEW ir.ui.menu: mail.mail_blacklist_menu

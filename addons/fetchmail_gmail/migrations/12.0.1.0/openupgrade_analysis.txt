@@ -1,0 +1,9 @@
+---Models in module 'fetchmail_gmail'---
+---Fields in module 'fetchmail_gmail'---
+fetchmail_gmail / fetchmail.server         / google_gmail_access_token (char): NEW
+fetchmail_gmail / fetchmail.server         / google_gmail_access_token_expiration (integer): NEW
+fetchmail_gmail / fetchmail.server         / google_gmail_authorization_code (char): NEW
+fetchmail_gmail / fetchmail.server         / google_gmail_refresh_token (char): NEW
+fetchmail_gmail / fetchmail.server         / use_google_gmail_service (boolean): NEW
+---XML records in module 'fetchmail_gmail'---
+NEW ir.ui.view: fetchmail_gmail.fetchmail_server_view_form

@@ -1,7 +1,9 @@
 ---Models in module 'hr'---
 ---Fields in module 'hr'---
+hr           / hr.department            / _order (False)                : NEW
 hr           / hr.department            / message_last_post (datetime)  : DEL
 hr           / hr.department            / message_main_attachment_id (many2one): NEW relation: ir.attachment
+hr           / hr.employee              / _order (False)                : NEW
 hr           / hr.employee              / activity_ids (one2many)       : NEW relation: mail.activity
 hr           / hr.employee              / additional_note (text)        : NEW
 hr           / hr.employee              / certificate (selection)       : NEW selection_keys: ['bachelor', 'master', 'other'], hasdefault
@@ -21,6 +23,8 @@ hr           / hr.employee              / spouse_complete_name (char)   : NEW
 hr           / hr.employee              / study_field (char)            : NEW
 hr           / hr.employee              / study_school (char)           : NEW
 hr           / hr.employee              / user_id (many2one)            : is now stored
+hr           / hr.employee.category     / _order (False)                : NEW
+hr           / hr.job                   / _order (False)                : NEW
 hr           / hr.job                   / message_last_post (datetime)  : DEL
 hr           / hr.job                   / message_main_attachment_id (many2one): NEW relation: ir.attachment
 hr           / mail.channel             / subscription_department_ids (many2many): NEW relation: hr.department

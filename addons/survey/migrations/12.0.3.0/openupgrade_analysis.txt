@@ -1,10 +1,17 @@
 ---Models in module 'survey'---
 ---Fields in module 'survey'---
+survey       / survey.label             / _order (False)                : NEW
+survey       / survey.page              / _order (False)                : NEW
+survey       / survey.question          / _order (False)                : NEW
+survey       / survey.stage             / _order (False)                : NEW
+survey       / survey.survey            / _order (False)                : NEW
 survey       / survey.survey            / activity_date_deadline (date) : not related anymore
 survey       / survey.survey            / activity_date_deadline (date) : not stored anymore
 survey       / survey.survey            / activity_date_deadline (date) : now a function
 survey       / survey.survey            / message_last_post (datetime)  : DEL
 survey       / survey.survey            / message_main_attachment_id (many2one): NEW relation: ir.attachment
+survey       / survey.user_input        / _order (False)                : NEW
+survey       / survey.user_input_line   / _order (False)                : NEW
 ---XML records in module 'survey'---
 DEL ir.actions.act_window: survey.action_partner_survey_mail
 NEW ir.ui.view: survey.403

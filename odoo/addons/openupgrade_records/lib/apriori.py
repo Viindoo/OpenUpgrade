@@ -30,6 +30,7 @@ renamed_modules = {
     'account_accountant': 'to_account_accountant',
     'account_asset': 'to_account_asset',
     'mrp_account': 'to_mrp_account',
+    'mrp_workorder': 'to_mrp_workorder',
     'quality': 'to_quality',
     'stock_barcode': 'to_stock_barcode',
     # OCA/server-brand
@@ -122,7 +123,8 @@ merged_modules = {
     'to_sale_backdate_delivery': 'to_sale_backdate',
     'to_sale_backdate_timesheet': 'to_sale_backdate',
     'to_sale_backdate_website_quote': 'to_sale_backdate',
-    
+    'to_hr_holidays_multiple': 'hr_holidays',
+
     # joomla2odoo
     'to_multi_website': 'website',
     'to_multi_website_blog': 'website_blog',

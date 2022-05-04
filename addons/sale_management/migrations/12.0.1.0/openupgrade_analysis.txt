@@ -1,60 +1,57 @@
 ---Models in module 'sale_management'---
-model sale.order.option (moved from website_quote)
-new model sale.order.template (renamed from sale.quote.template in module website_quote)
-new model sale.order.template.line (renamed from sale.quote.line in module website_quote)
-new model sale.order.template.option (renamed from sale.quote.option in module website_quote)
+new model sale.order.option
+new model sale.order.template
+new model sale.order.template.line
+new model sale.order.template.option
 ---Fields in module 'sale_management'---
 sale_management / digest.digest            / kpi_all_sale_total (boolean)  : NEW
 sale_management / sale.order               / sale_order_option_ids (one2many): NEW relation: sale.order.option
 sale_management / sale.order               / sale_order_template_id (many2one): NEW relation: sale.order.template
 sale_management / sale.order.line          / sale_order_option_ids (one2many): NEW relation: sale.order.option
-sale_management / sale.order.option        / __last_update (datetime)      : previously in module website_quote
-sale_management / sale.order.option        / discount (float)              : previously in module website_quote
-sale_management / sale.order.option        / display_name (char)           : previously in module website_quote
-sale_management / sale.order.option        / line_id (many2one)            : previously in module website_quote
-sale_management / sale.order.option        / name (text)                   : previously in module website_quote
-sale_management / sale.order.option        / order_id (many2one)           : previously in module website_quote
-sale_management / sale.order.option        / price_unit (float)            : previously in module website_quote
-sale_management / sale.order.option        / product_id (many2one)         : previously in module website_quote
-sale_management / sale.order.option        / quantity (float)              : previously in module website_quote
-sale_management / sale.order.option        / sequence (integer)            : previously in module website_quote
-sale_management / sale.order.option        / uom_id (many2one)             : previously in module website_quote
+sale_management / sale.order.option        / _order (False)                : NEW
+sale_management / sale.order.option        / discount (float)              : NEW
+sale_management / sale.order.option        / line_id (many2one)            : NEW relation: sale.order.line
+sale_management / sale.order.option        / name (text)                   : NEW required
+sale_management / sale.order.option        / order_id (many2one)           : NEW relation: sale.order
+sale_management / sale.order.option        / price_unit (float)            : NEW required
+sale_management / sale.order.option        / product_id (many2one)         : NEW relation: product.product, required
+sale_management / sale.order.option        / quantity (float)              : NEW required, req_default: function, hasdefault
+sale_management / sale.order.option        / sequence (integer)            : NEW
+sale_management / sale.order.option        / uom_id (many2one)             : NEW relation: uom.uom, required
+sale_management / sale.order.template      / _order (False)                : NEW
+sale_management / sale.order.template      / active (boolean)              : NEW hasdefault
+sale_management / sale.order.template      / mail_template_id (many2one)   : NEW relation: mail.template
+sale_management / sale.order.template      / name (char)                   : NEW required
+sale_management / sale.order.template      / note (text)                   : NEW
+sale_management / sale.order.template      / number_of_days (integer)      : NEW
+sale_management / sale.order.template      / require_payment (boolean)     : NEW hasdefault
 sale_management / sale.order.template      / require_signature (boolean)   : NEW hasdefault
 sale_management / sale.order.template      / sale_order_template_line_ids (one2many): NEW relation: sale.order.template.line
 sale_management / sale.order.template      / sale_order_template_option_ids (one2many): NEW relation: sale.order.template.option
+sale_management / sale.order.template.line / _order (False)                : NEW
+sale_management / sale.order.template.line / discount (float)              : NEW hasdefault
 sale_management / sale.order.template.line / display_type (selection)      : NEW selection_keys: ['line_note', 'line_section'], hasdefault
+sale_management / sale.order.template.line / name (text)                   : NEW required
+sale_management / sale.order.template.line / price_unit (float)            : NEW required
+sale_management / sale.order.template.line / product_id (many2one)         : NEW relation: product.product
+sale_management / sale.order.template.line / product_uom_id (many2one)     : NEW relation: uom.uom
+sale_management / sale.order.template.line / product_uom_qty (float)       : NEW required, req_default: function, hasdefault
 sale_management / sale.order.template.line / sale_order_template_id (many2one): NEW relation: sale.order.template, required
+sale_management / sale.order.template.line / sequence (integer)            : NEW hasdefault
+sale_management / sale.order.template.option / _order (False)                : NEW
+sale_management / sale.order.template.option / discount (float)              : NEW
+sale_management / sale.order.template.option / name (text)                   : NEW required
+sale_management / sale.order.template.option / price_unit (float)            : NEW required
+sale_management / sale.order.template.option / product_id (many2one)         : NEW relation: product.product, required
+sale_management / sale.order.template.option / quantity (float)              : NEW required, req_default: function, hasdefault
 sale_management / sale.order.template.option / sale_order_template_id (many2one): NEW relation: sale.order.template, required
-sale_management / sale.quote.line          / __last_update (datetime)      : previously in module website_quote
-sale_management / sale.quote.line          / discount (float)              : previously in module website_quote
-sale_management / sale.quote.line          / display_name (char)           : previously in module website_quote
-sale_management / sale.quote.line          / name (text)                   : previously in module website_quote
-sale_management / sale.quote.line          / price_unit (float)            : previously in module website_quote
-sale_management / sale.quote.line          / product_id (many2one)         : previously in module website_quote
-sale_management / sale.quote.line          / product_uom_id (many2one)     : previously in module website_quote
-sale_management / sale.quote.line          / product_uom_qty (float)       : previously in module website_quote
-sale_management / sale.quote.line          / sequence (integer)            : previously in module website_quote
-sale_management / sale.quote.option        / __last_update (datetime)      : previously in module website_quote
-sale_management / sale.quote.option        / discount (float)              : previously in module website_quote
-sale_management / sale.quote.option        / display_name (char)           : previously in module website_quote
-sale_management / sale.quote.option        / name (text)                   : previously in module website_quote
-sale_management / sale.quote.option        / price_unit (float)            : previously in module website_quote
-sale_management / sale.quote.option        / product_id (many2one)         : previously in module website_quote
-sale_management / sale.quote.option        / quantity (float)              : previously in module website_quote
-sale_management / sale.quote.option        / uom_id (many2one)             : previously in module website_quote
-sale_management / sale.quote.template      / __last_update (datetime)      : previously in module website_quote
-sale_management / sale.quote.template      / active (boolean)              : previously in module website_quote
-sale_management / sale.quote.template      / display_name (char)           : previously in module website_quote
-sale_management / sale.quote.template      / mail_template_id (many2one)   : previously in module website_quote
-sale_management / sale.quote.template      / name (char)                   : previously in module website_quote
-sale_management / sale.quote.template      / note (text)                   : previously in module website_quote
-sale_management / sale.quote.template      / number_of_days (integer)      : previously in module website_quote
+sale_management / sale.order.template.option / uom_id (many2one)             : NEW relation: uom.uom, required
 ---XML records in module 'sale_management'---
 NEW digest.digest: digest.digest_digest_default (noupdate)
-NEW ir.actions.act_window: sale.action_quotations [potentially moved from website_quote module]
+NEW ir.actions.act_window: sale.action_quotations
 NEW ir.actions.act_window: sale_management.sale_order_template_action
-NEW ir.model.access: sale_management.access_sale_order_option [renamed from website_quote module]
-NEW ir.model.access: sale_management.access_sale_order_option_all [renamed from website_quote module]
+NEW ir.model.access: sale_management.access_sale_order_option
+NEW ir.model.access: sale_management.access_sale_order_option_all
 NEW ir.model.access: sale_management.access_sale_order_template
 NEW ir.model.access: sale_management.access_sale_order_template_line
 NEW ir.model.access: sale_management.access_sale_order_template_line_manager

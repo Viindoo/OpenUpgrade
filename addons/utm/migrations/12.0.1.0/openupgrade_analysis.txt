@@ -1,4 +1,6 @@
 ---Models in module 'utm'---
 ---Fields in module 'utm'---
+utm          / utm.campaign             / _order (False)                : NEW
+utm          / utm.medium               / _order (False)                : NEW
+utm          / utm.source               / _order (False)                : NEW
 ---XML records in module 'utm'---
----nothing has changed in this module--

@@ -1,6 +1,9 @@
 ---Models in module 'stock_landed_costs'---
 ---Fields in module 'stock_landed_costs'---
+stock_landed_costs / stock.landed.cost        / _order (False)                : NEW
 stock_landed_costs / stock.landed.cost        / message_last_post (datetime)  : DEL
 stock_landed_costs / stock.landed.cost        / message_main_attachment_id (many2one): NEW relation: ir.attachment
+stock_landed_costs / stock.landed.cost.lines  / _order (False)                : NEW
+stock_landed_costs / stock.valuation.adjustment.lines / _order (False)                : NEW
 ---XML records in module 'stock_landed_costs'---
 NEW ir.ui.view: stock_landed_costs.stock_landed_cost_view_kanban

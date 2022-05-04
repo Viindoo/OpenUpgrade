@@ -1,4 +1,5 @@
 ---Models in module 'rating'---
 ---Fields in module 'rating'---
 rating       / mail.message             / rating_value (float)          : not stored anymore
+rating       / rating.rating            / _order (False)                : NEW
 ---XML records in module 'rating'---

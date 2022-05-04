@@ -6,11 +6,12 @@ website_sale / digest.digest            / kpi_website_sale_total (boolean): NEW
 website_sale / product.attribute        / type (selection)              : module is now 'sale' ('website_sale')
 website_sale / product.attribute        / type (selection)              : now required, req_default: function
 website_sale / product.attribute.value  / html_color (char)             : module is now 'sale' ('website_sale')
-website_sale / product.product          / website_description (html)    : previously in module website_quote
+website_sale / product.image            / _order (False)                : NEW
+website_sale / product.public.category  / _order (False)                : NEW
 website_sale / product.public.category  / website_id (many2one)         : NEW relation: website
 website_sale / product.public.category  / website_meta_og_img (char)    : NEW
+website_sale / product.style            / _order (False)                : NEW
 website_sale / product.template         / is_published (boolean)        : NEW
-website_sale / product.template         / website_description (html)    : previously in module website_quote
 website_sale / product.template         / website_id (many2one)         : NEW relation: website
 website_sale / product.template         / website_meta_og_img (char)    : NEW
 website_sale / product.template         / website_published (boolean)   : not stored anymore
@@ -20,10 +21,10 @@ website_sale / res.partner              / last_website_so_id (many2one) : not st
 website_sale / res.partner              / last_website_so_id (many2one) : now a function
 website_sale / sale.order               / can_directly_mark_as_paid (boolean): DEL
 website_sale / sale.order               / website_id (many2one)         : NEW relation: website
+website_sale / sale.order.line          / linked_line_id (many2one)     : NEW relation: sale.order.line
+website_sale / sale.order.line          / option_line_ids (one2many)    : NEW relation: sale.order.line
 website_sale / website                  / cart_abandoned_delay (float)  : NEW hasdefault
 website_sale / website                  / cart_recovery_mail_template_id (many2one): NEW relation: mail.template, hasdefault
-website_sale_options / product.product          / optional_product_ids (many2many): module is now 'sale' ('website_sale_options')
-website_sale_options / product.template         / optional_product_ids (many2many): module is now 'sale' ('website_sale_options')
 ---XML records in module 'website_sale'---
 NEW digest.digest: digest.digest_digest_default (noupdate)
 NEW ir.actions.act_window: website_sale.action_open_website_sale_onboarding_payment_acquirer_wizard
@@ -75,9 +76,4 @@ DEL ir.ui.view: website_sale.report_shop_saleorder_document
 DEL ir.ui.view: website_sale.variants
 DEL ir.ui.view: website_sale.variants_tree_view
 DEL ir.ui.view: website_sale.website_planner
-DEL ir.ui.view: website_sale_options.assets_frontend
-DEL ir.ui.view: website_sale_options.modal
-DEL ir.ui.view: website_sale_options.optional_products
-DEL ir.ui.view: website_sale_options.product_template_form_view
-DEL ir.ui.view: website_sale_options.products_add_to_cart
 DEL res.groups: website_sale.group_website_multi_image (noupdate)

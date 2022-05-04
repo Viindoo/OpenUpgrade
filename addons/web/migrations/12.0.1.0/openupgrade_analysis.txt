@@ -2,6 +2,7 @@
 obsolete model web.planner
 new model report.layout
 ---Fields in module 'web'---
+web          / report.layout            / _order (False)                : NEW
 web          / report.layout            / image (char)                  : NEW
 web          / report.layout            / pdf (char)                    : NEW
 web          / report.layout            / view_id (many2one)            : NEW relation: ir.ui.view, required

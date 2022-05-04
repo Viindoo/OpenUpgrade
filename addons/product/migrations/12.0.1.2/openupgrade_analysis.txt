@@ -7,17 +7,25 @@ new model product.template.attribute.exclusion
 new model product.template.attribute.line (renamed from product.attribute.line)
 new model product.template.attribute.value (renamed from product.attribute.price)
 ---Fields in module 'product'---
+product      / product.attribute        / _order (False)                : NEW
 product      / product.attribute        / attribute_line_ids (one2many) : relation is now 'product.template.attribute.line' ('product.attribute.line') [nothing to do]
 product      / product.attribute        / create_variant (boolean)      : now required, req_default: function
 product      / product.attribute        / create_variant (boolean)      : selection_keys is now '['always', 'dynamic', 'no_variant']' ('False')
 product      / product.attribute        / create_variant (boolean)      : type is now 'selection' ('boolean')
 product      / product.attribute.line   / value_ids (many2many)         : table is now 'product_attribute_value_product_template_attribute_line_rel' ('product_attribute_line_product_attribute_value_rel')
 product      / product.attribute.price  / value_id (many2one)           : DEL relation: product.attribute.value, required
+product      / product.attribute.value  / _order (False)                : NEW
 product      / product.attribute.value  / price_ids (one2many)          : DEL relation: product.attribute.price
 product      / product.attribute.value  / product_ids (many2many)       : DEL relation: product.product
+product      / product.category         / _order (False)                : NEW
 product      / product.category         / parent_left (integer)         : DEL
 product      / product.category         / parent_path (char)            : NEW
 product      / product.category         / parent_right (integer)        : DEL
+product      / product.packaging        / _order (False)                : NEW
+product      / product.price.history    / _order (False)                : NEW
+product      / product.pricelist        / _order (False)                : NEW
+product      / product.pricelist.item   / _order (False)                : NEW
+product      / product.product          / _order (False)                : NEW
 product      / product.product          / activity_date_deadline (date) : not related anymore
 product      / product.product          / activity_date_deadline (date) : not stored anymore
 product      / product.product          / activity_date_deadline (date) : now a function
@@ -26,7 +34,9 @@ product      / product.product          / message_last_post (datetime)  : DEL
 product      / product.product          / message_main_attachment_id (many2one): NEW relation: ir.attachment
 product      / product.product          / uom_id (many2one)             : relation is now 'uom.uom' ('product.uom') [nothing to do]
 product      / product.product          / uom_po_id (many2one)          : relation is now 'uom.uom' ('product.uom') [nothing to do]
+product      / product.supplierinfo     / _order (False)                : NEW
 product      / product.supplierinfo     / product_uom (many2one)        : relation is now 'uom.uom' ('product.uom') [nothing to do]
+product      / product.template         / _order (False)                : NEW
 product      / product.template         / activity_date_deadline (date) : not related anymore
 product      / product.template         / activity_date_deadline (date) : not stored anymore
 product      / product.template         / activity_date_deadline (date) : now a function
@@ -35,9 +45,12 @@ product      / product.template         / message_last_post (datetime)  : DEL
 product      / product.template         / message_main_attachment_id (many2one): NEW relation: ir.attachment
 product      / product.template         / uom_id (many2one)             : relation is now 'uom.uom' ('product.uom') [nothing to do]
 product      / product.template         / uom_po_id (many2one)          : relation is now 'uom.uom' ('product.uom') [nothing to do]
+product      / product.template.attribute.exclusion / _order (False)                : NEW
 product      / product.template.attribute.exclusion / product_template_attribute_value_id (many2one): NEW relation: product.template.attribute.value
 product      / product.template.attribute.exclusion / product_tmpl_id (many2one)    : NEW relation: product.template, required
 product      / product.template.attribute.exclusion / value_ids (many2many)         : NEW relation: product.template.attribute.value
+product      / product.template.attribute.line / _order (False)                : NEW
+product      / product.template.attribute.value / _order (False)                : NEW
 product      / product.template.attribute.value / exclude_for (one2many)        : NEW relation: product.template.attribute.exclusion
 product      / product.template.attribute.value / product_attribute_value_id (many2one): NEW relation: product.attribute.value, required
 product      / product.uom              / __last_update (datetime)      : module is now 'uom' ('product')

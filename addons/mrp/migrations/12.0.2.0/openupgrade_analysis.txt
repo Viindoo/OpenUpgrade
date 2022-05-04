@@ -5,10 +5,13 @@ obsolete model report.mrp.mrp_bom_structure_report [abstract]
 new model mrp.workcenter.productivity.loss.type
 new model report.mrp.report_bom_structure [abstract]
 ---Fields in module 'mrp'---
+mrp          / mrp.bom                  / _order (False)                : NEW
 mrp          / mrp.bom                  / message_last_post (datetime)  : DEL
 mrp          / mrp.bom                  / message_main_attachment_id (many2one): NEW relation: ir.attachment
 mrp          / mrp.bom                  / product_uom_id (many2one)     : relation is now 'uom.uom' ('product.uom') [nothing to do]
+mrp          / mrp.bom.line             / _order (False)                : NEW
 mrp          / mrp.bom.line             / product_uom_id (many2one)     : relation is now 'uom.uom' ('product.uom') [nothing to do]
+mrp          / mrp.document             / _order (False)                : NEW
 mrp          / mrp.message              / bom_id (many2one)             : DEL relation: mrp.bom
 mrp          / mrp.message              / message (html)                : DEL required
 mrp          / mrp.message              / name (text)                   : DEL
@@ -17,6 +20,7 @@ mrp          / mrp.message              / product_tmpl_id (many2one)    : DEL re
 mrp          / mrp.message              / routing_id (many2one)         : DEL relation: mrp.routing
 mrp          / mrp.message              / valid_until (date)            : DEL required, req_default: function
 mrp          / mrp.message              / workcenter_id (many2one)      : DEL relation: mrp.workcenter
+mrp          / mrp.production           / _order (False)                : NEW
 mrp          / mrp.production           / activity_date_deadline (date) : not related anymore
 mrp          / mrp.production           / activity_date_deadline (date) : not stored anymore
 mrp          / mrp.production           / activity_date_deadline (date) : now a function
@@ -24,18 +28,26 @@ mrp          / mrp.production           / message_last_post (datetime)  : DEL
 mrp          / mrp.production           / message_main_attachment_id (many2one): NEW relation: ir.attachment
 mrp          / mrp.production           / product_uom_id (many2one)     : relation is now 'uom.uom' ('product.uom') [nothing to do]
 mrp          / mrp.production           / product_uom_qty (float)       : NEW isfunction: function, stored
+mrp          / mrp.routing              / _order (False)                : NEW
+mrp          / mrp.routing.workcenter   / _order (False)                : NEW
+mrp          / mrp.unbuild              / _order (False)                : NEW
 mrp          / mrp.unbuild              / activity_date_deadline (date) : not related anymore
 mrp          / mrp.unbuild              / activity_date_deadline (date) : not stored anymore
 mrp          / mrp.unbuild              / activity_date_deadline (date) : now a function
 mrp          / mrp.unbuild              / message_last_post (datetime)  : DEL
 mrp          / mrp.unbuild              / message_main_attachment_id (many2one): NEW relation: ir.attachment
 mrp          / mrp.unbuild              / product_uom_id (many2one)     : relation is now 'uom.uom' ('product.uom') [nothing to do]
-mrp          / mrp.workcenter           / costs_hour (float)            : NEW hasdefault
+mrp          / mrp.workcenter           / _order (False)                : NEW
+mrp          / mrp.workcenter           / costs_hour (float)            : previously in module mrp_account
 mrp          / mrp.workcenter           / resource_calendar_id (many2one): is now stored
+mrp          / mrp.workcenter.productivity / _order (False)                : NEW
+mrp          / mrp.workcenter.productivity.loss / _order (False)                : NEW
 mrp          / mrp.workcenter.productivity.loss / loss_id (many2one)            : NEW relation: mrp.workcenter.productivity.loss.type
 mrp          / mrp.workcenter.productivity.loss / loss_type (selection)         : now related
 mrp          / mrp.workcenter.productivity.loss / loss_type (selection)         : selection_keys is now 'function' ('['availability', 'performance', 'productive', 'quality']')
+mrp          / mrp.workcenter.productivity.loss.type / _order (False)                : NEW
 mrp          / mrp.workcenter.productivity.loss.type / loss_type (selection)         : NEW required, selection_keys: ['availability', 'performance', 'productive', 'quality'], req_default: function, hasdefault
+mrp          / mrp.workorder            / _order (False)                : NEW
 mrp          / mrp.workorder            / message_last_post (datetime)  : DEL
 mrp          / mrp.workorder            / message_main_attachment_id (many2one): NEW relation: ir.attachment
 mrp          / mrp.workorder            / product_uom_id (many2one)     : relation is now 'uom.uom' ('product.uom') [nothing to do]

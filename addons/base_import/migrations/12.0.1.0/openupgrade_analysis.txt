@@ -3,18 +3,34 @@ new model base_import.mapping
 new model base_import.tests.models.complex
 new model base_import.tests.models.float
 ---Fields in module 'base_import'---
+base_import  / base_import.mapping      / _order (False)                : NEW
 base_import  / base_import.mapping      / column_name (char)            : NEW
 base_import  / base_import.mapping      / field_name (char)             : NEW
 base_import  / base_import.mapping      / res_model (char)              : NEW
+base_import  / base_import.tests.models.char / _order (False)                : NEW
+base_import  / base_import.tests.models.char.noreadonly / _order (False)                : NEW
+base_import  / base_import.tests.models.char.readonly / _order (False)                : NEW
+base_import  / base_import.tests.models.char.required / _order (False)                : NEW
+base_import  / base_import.tests.models.char.states / _order (False)                : NEW
+base_import  / base_import.tests.models.char.stillreadonly / _order (False)                : NEW
+base_import  / base_import.tests.models.complex / _order (False)                : NEW
 base_import  / base_import.tests.models.complex / c (char)                      : NEW
 base_import  / base_import.tests.models.complex / currency_id (many2one)        : NEW relation: res.currency
 base_import  / base_import.tests.models.complex / d (date)                      : NEW
 base_import  / base_import.tests.models.complex / dt (datetime)                 : NEW
 base_import  / base_import.tests.models.complex / f (float)                     : NEW
 base_import  / base_import.tests.models.complex / m (float)                     : NEW
+base_import  / base_import.tests.models.float / _order (False)                : NEW
 base_import  / base_import.tests.models.float / currency_id (many2one)        : NEW relation: res.currency
 base_import  / base_import.tests.models.float / value (float)                 : NEW
 base_import  / base_import.tests.models.float / value2 (float)                : NEW
+base_import  / base_import.tests.models.m2o / _order (False)                : NEW
+base_import  / base_import.tests.models.m2o.related / _order (False)                : NEW
+base_import  / base_import.tests.models.m2o.required / _order (False)                : NEW
+base_import  / base_import.tests.models.m2o.required.related / _order (False)                : NEW
+base_import  / base_import.tests.models.o2m / _order (False)                : NEW
+base_import  / base_import.tests.models.o2m.child / _order (False)                : NEW
+base_import  / base_import.tests.models.preview / _order (False)                : NEW
 ---XML records in module 'base_import'---
 NEW ir.model.access: base_import.access_base_import_mapping
 NEW ir.model.access: base_import.access_base_import_tests_models_complex
