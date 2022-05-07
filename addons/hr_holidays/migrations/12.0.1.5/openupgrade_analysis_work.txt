@@ -258,3 +258,26 @@ DEL mail.message.subtype: hr_holidays.mt_holidays_first_validated (noupdate)
 DEL mail.message.subtype: hr_holidays.mt_department_holidays_confirmed (noupdate)
 DEL mail.message.subtype: hr_holidays.mt_department_holidays_first_validated (noupdate)
 # DONE: post-migration: delete non continued old ones
+
+obsolete model hr.holidays.multiple
+to_hr_holidays_multiple / hr.holidays              / hr_holiday_multiple_id (many2one): DEL relation: hr.holidays.multiple
+to_hr_holidays_multiple / hr.holidays.multiple     / activity_date_deadline (date) : DEL
+to_hr_holidays_multiple / hr.holidays.multiple     / activity_ids (one2many)       : DEL relation: mail.activity
+to_hr_holidays_multiple / hr.holidays.multiple     / date_from (datetime)          : DEL
+to_hr_holidays_multiple / hr.holidays.multiple     / date_to (datetime)            : DEL
+to_hr_holidays_multiple / hr.holidays.multiple     / department_id (many2one)      : DEL relation: hr.department
+to_hr_holidays_multiple / hr.holidays.multiple     / holiday_status_id (many2one)  : DEL relation: hr.holidays.status, required
+to_hr_holidays_multiple / hr.holidays.multiple     / leave_ids (one2many)          : DEL relation: hr.holidays
+to_hr_holidays_multiple / hr.holidays.multiple     / manager_id (many2one)         : DEL relation: res.users
+to_hr_holidays_multiple / hr.holidays.multiple     / message_follower_ids (one2many): DEL relation: mail.followers
+to_hr_holidays_multiple / hr.holidays.multiple     / message_ids (one2many)        : DEL relation: mail.message
+to_hr_holidays_multiple / hr.holidays.multiple     / message_last_post (datetime)  : DEL
+to_hr_holidays_multiple / hr.holidays.multiple     / name (char)                   : DEL required
+to_hr_holidays_multiple / hr.holidays.multiple     / notes (text)                  : DEL
+to_hr_holidays_multiple / hr.holidays.multiple     / report_note (text)            : DEL
+to_hr_holidays_multiple / hr.holidays.multiple     / state (selection)             : DEL selection_keys: ['cancel', 'confirm', 'draft', 'refuse', 'validate']
+to_hr_holidays_multiple / hr.holidays.multiple     / type (selection)              : DEL required, selection_keys: ['add', 'remove'], req_default: function
+to_hr_holidays_multiple / hr.holidays.multiple     / user_id (many2one)            : DEL relation: res.users, required, req_default: function
+to_hr_holidays_multiple / hr.holidays.multiple     / website_message_ids (one2many): DEL relation: mail.message
+
+----nothing to do: Feature replaced by hr_holidays at v12
