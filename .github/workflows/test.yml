@@ -60,7 +60,7 @@ jobs:
       - name: Check out Odoo
         uses: actions/checkout@v2
         with:
-          repository: odoo/odoo
+          repository: Viindoo/odoo
           ref: "15.0"
           fetch-depth: 1
           path: odoo
