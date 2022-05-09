@@ -18,10 +18,12 @@ def fill_applicant_activities(env):
             ha.id,  im.id, im.model, ha.name, ha.title_action,
             %s, ha.date_action, ha.create_uid, ha.create_date,
             ha.write_uid, ha.write_date,
-            COALESCE(ha.user_id, hj.user_id, hd.manager_id, ha.create_uid)
+            COALESCE(ha.user_id, hj.user_id, rr.user_id, ha.create_uid)
          FROM hr_applicant AS ha
             INNER JOIN ir_model AS im ON im.model = 'hr.applicant'
             LEFT JOIN hr_department hd ON hd.id = ha.department_id
+            LEFT JOIN hr_employee he ON he.id = hd.manager_id
+            LEFT JOIN resource_resource rr ON rr.id = he.resource_id
             LEFT JOIN hr_job hj ON hj.id = ha.job_id
          WHERE
             title_action IS NOT NULL AND
