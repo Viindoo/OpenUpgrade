@@ -175,7 +175,7 @@ def create_stock_move_line(env):
             spo.picking_id,
             spo.product_id,
             smol.qty,
-            spo.product_uom_id,
+            pt.uom_id,
             smol.qty,
             smol.qty,
             COALESCE(sp.name, sm.name),
@@ -189,6 +189,7 @@ def create_stock_move_line(env):
                 ON smol.operation_id = spo.id
             INNER JOIN stock_move sm ON sm.id = smol.move_id
             INNER JOIN product_product pp ON spo.product_id = pp.id
+            LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
             LEFT JOIN stock_picking sp ON sp.id = spo.picking_id
             LEFT JOIN stock_quant sq ON sq.id = smol.reserved_quant_id
             LEFT JOIN stock_production_lot spl ON spl.id = sq.lot_id
