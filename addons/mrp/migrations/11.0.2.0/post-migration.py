@@ -105,7 +105,8 @@ def create_stock_move_lines_from_stock_move_lots(env):
         INNER JOIN mrp_production mp ON sm.raw_material_production_id = mp.id
         LEFT JOIN stock_move_lots sml ON (sml.move_id = sm.id
             AND sml.production_id = mp.id)
-        LEFT JOIN stock_production_lot spl ON sml.lot_id = spl.id"""
+        LEFT JOIN stock_production_lot spl ON sml.lot_id = spl.id
+        LEFT JOIN stock_quant sq ON sm.id = sq.reservation_id"""
     openupgrade.logged_query(
         env.cr, """
         INSERT INTO stock_move_line (%(insert_into)s
@@ -113,9 +114,7 @@ def create_stock_move_lines_from_stock_move_lots(env):
         SELECT %(select)s
         FROM %(from)s
         WHERE sm.state NOT IN ('cancel', 'confirmed', 'waiting')
-            AND sm.id NOT IN (SELECT sq.reservation_id
-                              FROM stock_quant sq
-                              WHERE sq.reservation_id IS NOT NULL)
+            AND sq.reservation_id IS NULL
         """ % {
             'insert_into': insert_into,
             'select': select,
@@ -161,7 +160,8 @@ def create_stock_move_lines_from_stock_move_lots(env):
     from_ = """stock_move sm
         INNER JOIN mrp_production mp ON sm.production_id = mp.id
         LEFT JOIN stock_move_lots sml ON sml.move_id = sm.id
-        LEFT JOIN stock_production_lot spl ON sml.lot_id = spl.id"""
+        LEFT JOIN stock_production_lot spl ON sml.lot_id = spl.id
+        LEFT JOIN stock_quant sq ON sm.id = sq.reservation_id"""
     openupgrade.logged_query(
         env.cr, """
         INSERT INTO stock_move_line (%(insert_into)s
@@ -170,9 +170,7 @@ def create_stock_move_lines_from_stock_move_lots(env):
         FROM %(from)s
         WHERE sm.state NOT IN ('cancel') AND (sml.lot_id IS NOT NULL OR
             sm.state = 'done')
-            AND sm.id NOT IN (SELECT sq.reservation_id
-                              FROM stock_quant sq
-                              WHERE sq.reservation_id IS NOT NULL)
+            AND sq.reservation_id IS NULL
         """ % {
             'insert_into': insert_into,
             'select': select,
@@ -197,24 +195,25 @@ def fill_stock_move_line_consume_rel(cr):
     openupgrade.logged_query(
         cr,
         """
-        INSERT INTO stock_move_line_consume_rel (consume_line_id,
-            produce_line_id)
-        SELECT DISTINCT sml1.id, sml2.id
-        FROM stock_quant_consume_rel sqcr
-        INNER JOIN stock_quant_move_rel sqmr1
-            ON sqmr1.quant_id = sqcr.consume_quant_id
-        INNER JOIN stock_quant_move_rel sqmr2
-            ON sqmr2.quant_id = sqcr.produce_quant_id
-        INNER JOIN stock_move_line sml1
-            ON sml1.move_id = sqmr1.move_id
-        INNER JOIN stock_move_line sml2
-            ON sml2.move_id = sqmr2.move_id
-        WHERE NOT EXISTS (
-            SELECT *
-            FROM stock_move_line_consume_rel
-            WHERE consume_line_id = sml1.id
-                AND produce_line_id = sml2.id
+        WITH consume_produce_move_rel AS (
+            SELECT DISTINCT sqmr1.move_id AS consume_move_id, sqmr2.move_id AS produce_move_id
+            FROM stock_quant_consume_rel sqcr
+            INNER JOIN stock_quant_move_rel sqmr1
+                ON sqmr1.quant_id = sqcr.consume_quant_id
+            INNER JOIN stock_quant_move_rel sqmr2
+                ON sqmr2.quant_id = sqcr.produce_quant_id
         )
+        INSERT INTO stock_move_line_consume_rel
+            (consume_line_id, produce_line_id)
+        SELECT DISTINCT sml1.id AS consume_line_id, sml2.id AS produce_line_id
+        FROM consume_produce_move_rel cpmr
+        INNER JOIN stock_move_line sml1
+            ON sml1.move_id = cpmr.consume_move_id
+        INNER JOIN stock_move_line sml2
+            ON sml2.move_id = cpmr.produce_move_id
+        LEFT JOIN stock_move_line_consume_rel smlcr
+            ON (sml1.id = smlcr.consume_line_id AND sml2.id = smlcr.produce_line_id)
+        WHERE smlcr.consume_line_id IS NULL AND smlcr.produce_line_id IS NULL
         """
     )
 
