@@ -2,11 +2,15 @@
 ---Fields in module 'website_slides'---
 website_slides / slide.channel            / completed_template_id (many2one): NEW relation: mail.template, hasdefault
 # NOTHING TO DO: Add new field and this field already have default data
+
 website_slides / slide.channel            / description (text)            : type is now 'html' ('text')
 website_slides / slide.channel            / description_short (text)      : type is now 'html' ('text')
 website_slides / slide.slide              / description (text)            : type is now 'html' ('text')
+# DONE: pre-migration: convert text to html
+
 website_slides / slide.slide              / embed_code (text)             : type is now 'html' ('text')
-# NOTHING TO DO: Automatic conversion from text to html is assured by PG
+# NOTHING TO DO: compute don't store
+
 ---XML records in module 'website_slides'---
 NEW ir.actions.act_window: website_slides.slide_channel_partner_action_report
 DEL ir.model.constraint: website_slides.constraint_slide_slide_exclusion_html_content_and_url
