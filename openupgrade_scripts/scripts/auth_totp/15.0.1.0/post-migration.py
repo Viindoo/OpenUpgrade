@@ -8,8 +8,12 @@ def migrate(env, version):
     openupgrade.logged_query(
         env.cr,
         """INSERT INTO auth_totp_device (id, name, user_id, scope, index, key)
-            SELECT id, name, user_id, '%s', index, key
+            SELECT id, name, user_id, 'browser', index, key
             FROM res_users_apikeys
-            WHERE scope = '2fa_trusted_device'"""
-        % ("browser"),
+            WHERE scope = '2fa_trusted_device'""",
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """ DELETE FROM res_users_apikeys
+            WHERE scope = '2fa_trusted_device'""",
     )
