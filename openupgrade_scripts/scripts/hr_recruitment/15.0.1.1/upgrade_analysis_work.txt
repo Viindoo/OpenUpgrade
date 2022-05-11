@@ -1,7 +1,7 @@
 ---Models in module 'hr_recruitment'---
 ---Fields in module 'hr_recruitment'---
 hr_recruitment / hr.applicant             / description (text)            : type is now 'html' ('text')
-# NOTHING TO DO: Automatic conversion from text to html is assured by PG
+# DONE: pre-migration: convert text fields to html
 
 hr_recruitment / hr.applicant             / meeting_ids (one2many)        : NEW relation: calendar.event
 # NOTHING TO DO: support count mettings in smart button with compute not store
