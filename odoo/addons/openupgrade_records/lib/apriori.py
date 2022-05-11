@@ -28,6 +28,10 @@ renamed_modules = {
     'sale_product_classification': 'product_abc_classification_sale',
     # OCA/stock-logistics-warehouse
     'stock_putaway_product_form': 'stock_putaway_product_template',
+    # Viindoo/tvtmaaddons
+    'hr_payroll': 'to_hr_payroll',
+    'hr_payroll_account': 'to_hr_payroll_account',
+    'to_hr_overtime_payroll': 'viin_hr_overtime_payroll',
 }
 
 merged_modules = {
@@ -135,6 +139,14 @@ merged_modules = {
     # OCA/payroll
     'hr_payroll': 'payroll',
     'hr_payroll_account': 'payroll_account',
+    # Viindoo/tvtmaaddons
+    'to_equipment_archive': 'maintenance',
+    'to_hr_advanced': 'to_hr_payroll',
+    'to_hr_payroll_account_advanced': 'to_hr_payroll_account',
+    'to_hr_payroll_contribution': 'to_hr_payroll',
+    'to_hr_payroll_leave_type_code': 'to_hr_payroll',
+    'to_l10n_vn_hr_insurance': 'to_l10n_vn_hr_payroll',
+    'to_l10n_vn_hr_insurance_account': 'to_l10n_vn_hr_payroll_account',
 }
 
 # only used here for openupgrade_records analysis:
