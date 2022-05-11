@@ -6,10 +6,14 @@ new model project.share.wizard [transient]
 new model project.task.burndown.chart.report [sql_view]
 new model project.task.stage.personal
 new model project.update
+# NOTHING TO DO: new model
+
 ---Fields in module 'project'---
 project      / account.analytic.tag     / task_ids (many2many)          : NEW relation: project.task
 project      / project.collaborator     / partner_id (many2one)         : NEW relation: res.partner, required
 project      / project.collaborator     / project_id (many2one)         : NEW relation: project.project, required
+# NOTHING TO DO: new feature
+
 project      / project.milestone        / deadline (date)               : NEW
 project      / project.milestone        / is_reached (boolean)          : NEW hasdefault
 project      / project.milestone        / message_follower_ids (one2many): NEW relation: mail.followers
@@ -21,14 +25,26 @@ project      / project.milestone        / reached_date (date)           : NEW is
 project      / project.milestone        / website_message_ids (one2many): NEW relation: mail.message
 project      / project.project          / activity_ids (one2many)       : NEW relation: mail.activity
 project      / project.project          / allow_task_dependencies (boolean): NEW hasdefault
+# NOTHING TO DO: new feature
+
 project      / project.project          / allowed_internal_user_ids (many2many): DEL relation: res.users
 project      / project.project          / allowed_portal_user_ids (many2many): DEL relation: res.users
+# DONE: post-migration: add followers for project
+
 project      / project.project          / collaborator_ids (one2many)   : NEW relation: project.collaborator
 project      / project.project          / last_update_id (many2one)     : NEW relation: project.update
+# NOTHING TO DO: new feature
+
 project      / project.project          / last_update_status (selection): NEW selection_keys: ['at_risk', 'off_track', 'on_hold', 'on_track'], hasdefault, isfunction: function, stored
+# DONE: pre-migration: new feature, create columns 'last_update_status' and set value default is 'on_track'
+
 project      / project.project          / milestone_ids (one2many)      : NEW relation: project.milestone
 project      / project.project          / stage_id (many2one)           : NEW relation: project.project.stage, hasdefault
+# NOTHING TO DO: new feature
+
 project      / project.project          / subtask_project_id (many2one) : DEL relation: project.project
+# NOTHING TO DO: not used anymore
+
 project      / project.project          / tag_ids (many2many)           : NEW relation: project.tags
 project      / project.project          / update_ids (one2many)         : NEW relation: project.update
 project      / project.project.stage    / active (boolean)              : NEW hasdefault
@@ -36,15 +52,25 @@ project      / project.project.stage    / fold (boolean)                : NEW
 project      / project.project.stage    / mail_template_id (many2one)   : NEW relation: mail.template
 project      / project.project.stage    / name (char)                   : NEW required
 project      / project.project.stage    / sequence (integer)            : NEW hasdefault
+# NOTHING TO DO: new feature
+
 project      / project.task             / allowed_user_ids (many2many)  : DEL relation: res.users
+# DONE: post-migration: add followers for task
+
 project      / project.task             / analytic_account_id (many2one): previously in module sale_timesheet
+# NOTHING TO DO: Handle by ORM
+
 project      / project.task             / analytic_tag_ids (many2many)  : NEW relation: account.analytic.tag
 project      / project.task             / depend_on_ids (many2many)     : NEW relation: project.task
 project      / project.task             / dependent_ids (many2many)     : NEW relation: project.task
 project      / project.task             / display_project_id (many2one) : NEW relation: project.project
 project      / project.task             / personal_stage_type_ids (many2many): NEW relation: project.task.type
+# NOTHING TO DO: new feature
+
 project      / project.task             / user_id (many2one)            : DEL relation: res.users
 project      / project.task             / user_ids (many2many)          : NEW relation: res.users, hasdefault
+# DONE: post-migration: renamed columns user_id -> user_ids and convert to many2many type
+
 project      / project.task.stage.personal / stage_id (many2one)           : NEW relation: project.task.type
 project      / project.task.stage.personal / task_id (many2one)            : NEW relation: project.task, required
 project      / project.task.stage.personal / user_id (many2one)            : NEW relation: res.users, required
@@ -62,6 +88,8 @@ project      / project.update           / project_id (many2one)         : NEW re
 project      / project.update           / status (selection)            : NEW required, selection_keys: ['at_risk', 'off_track', 'on_hold', 'on_track']
 project      / project.update           / user_id (many2one)            : NEW relation: res.users, required, req_default: function, hasdefault
 project      / project.update           / website_message_ids (one2many): NEW relation: mail.message
+# NOTHING TO DO: new feature
+
 ---XML records in module 'project'---
 NEW ir.actions.act_window: project.action_project_task_burndown_chart_report
 NEW ir.actions.act_window: project.open_view_project_all_group_stage
@@ -162,4 +190,4 @@ NEW project.project.stage: project.project_project_stage_2
 NEW project.project.stage: project.project_project_stage_3
 NEW res.groups: project.group_project_stages
 NEW res.groups: project.group_project_task_dependencies
-# NOTHING TO DO: noupdate="0" records
+# NOTHING TO DO
