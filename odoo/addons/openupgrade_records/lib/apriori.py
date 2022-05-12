@@ -32,6 +32,8 @@ renamed_modules = {
     'hr_payroll': 'to_hr_payroll',
     'hr_payroll_account': 'to_hr_payroll_account',
     'to_hr_overtime_payroll': 'viin_hr_overtime_payroll',
+    # Viindoo/odoo-web_gantt
+    'project_gantt': 'viin_project_gantt',
 }
 
 merged_modules = {
