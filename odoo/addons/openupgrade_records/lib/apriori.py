@@ -54,6 +54,8 @@ renamed_modules = {
     'mrp_mps': 'to_mrp_mps',
     'mrp_plm': 'to_mrp_plm',
     'quality_mrp': 'to_quality_mrp',
+    # Viindoo/odoo-web_gantt
+    'web_gantt': 'viin_web_gantt',
 }
 
 merged_modules = {
