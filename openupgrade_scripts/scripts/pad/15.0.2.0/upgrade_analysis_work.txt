@@ -2,7 +2,7 @@
 ---Fields in module 'pad'---
 pad          / res.company              / pad_key (char)                : DEL
 pad          / res.company              / pad_server (char)             : DEL
-# NOTHING TO DO: user need setup pad_key and pad_server on setting
+# NOTHING TO DO: pre-migration
 
 ---XML records in module 'pad'---
 DEL ir.ui.view: pad.assets_backend
