@@ -42,6 +42,28 @@ def merge_quants(env):
             )
 
 
+def noupdate_obsolete_model_records(cr):
+    """ Set noupdate = True for the obsolete model 'procurement.group' record,
+    so when we upgrade 'stock' module later, this model record will not be deleted,
+    which will raise error because this model is not declared in any python files.
+    """
+    models = [
+        'procurement.order'
+    ]
+    openupgrade.logged_query(
+        cr,
+        """
+        UPDATE ir_model_data
+        SET noupdate = TRUE
+        WHERE model = 'ir.model' AND res_id IN (
+            SELECT id FROM ir_model WHERE model IN %s
+        )
+        """,
+        (tuple(models), )
+    )
+
+
 @openupgrade.migrate(use_env=True)
 def migrate(env, version):
     merge_quants(env)
+    noupdate_obsolete_model_records(env.cr)
