@@ -149,6 +149,7 @@ merged_modules = {
     'to_hr_payroll_leave_type_code': 'to_hr_payroll',
     'to_l10n_vn_hr_insurance': 'to_l10n_vn_hr_payroll',
     'to_l10n_vn_hr_insurance_account': 'to_l10n_vn_hr_payroll_account',
+    'to_account_journal_entry_chatter': 'account',
 }
 
 # only used here for openupgrade_records analysis:
