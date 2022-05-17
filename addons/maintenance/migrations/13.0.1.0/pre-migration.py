@@ -28,3 +28,10 @@ def switch_noupdate_records(env):
 @openupgrade.migrate()
 def migrate(env, version):
     switch_noupdate_records(env)
+    if openupgrade.column_exists(
+            env.cr, "maintenance_request", "active"):
+        openupgrade.rename_columns(env.cr, {
+            'maintenance_request': [
+                ('active', None),
+            ],
+        })
