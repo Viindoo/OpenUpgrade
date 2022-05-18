@@ -211,9 +211,7 @@ def fill_stock_move_line_consume_rel(cr):
             ON sml1.move_id = cpmr.consume_move_id
         INNER JOIN stock_move_line sml2
             ON sml2.move_id = cpmr.produce_move_id
-        LEFT JOIN stock_move_line_consume_rel smlcr
-            ON (sml1.id = smlcr.consume_line_id AND sml2.id = smlcr.produce_line_id)
-        WHERE smlcr.consume_line_id IS NULL AND smlcr.produce_line_id IS NULL
+        ON CONFLICT (consume_line_id, produce_line_id) DO NOTHING;
         """
     )
 
