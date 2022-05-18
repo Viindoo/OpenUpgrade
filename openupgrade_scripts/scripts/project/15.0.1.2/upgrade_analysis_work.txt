@@ -29,7 +29,7 @@ project      / project.project          / allow_task_dependencies (boolean): NEW
 
 project      / project.project          / allowed_internal_user_ids (many2many): DEL relation: res.users
 project      / project.project          / allowed_portal_user_ids (many2many): DEL relation: res.users
-# DONE: post-migration: add followers for project
+# DONE: post-migration: add followers to project project records
 
 project      / project.project          / collaborator_ids (one2many)   : NEW relation: project.collaborator
 project      / project.project          / last_update_id (many2one)     : NEW relation: project.update
@@ -55,7 +55,7 @@ project      / project.project.stage    / sequence (integer)            : NEW ha
 # NOTHING TO DO: new feature
 
 project      / project.task             / allowed_user_ids (many2many)  : DEL relation: res.users
-# DONE: post-migration: add followers for task
+# DONE: post-migration: add followers to project task records
 
 project      / project.task             / analytic_account_id (many2one): previously in module sale_timesheet
 # NOTHING TO DO: Handle by ORM
@@ -63,9 +63,11 @@ project      / project.task             / analytic_account_id (many2one): previo
 project      / project.task             / analytic_tag_ids (many2many)  : NEW relation: account.analytic.tag
 project      / project.task             / depend_on_ids (many2many)     : NEW relation: project.task
 project      / project.task             / dependent_ids (many2many)     : NEW relation: project.task
-project      / project.task             / display_project_id (many2one) : NEW relation: project.project
 project      / project.task             / personal_stage_type_ids (many2many): NEW relation: project.task.type
 # NOTHING TO DO: new feature
+
+project      / project.task             / display_project_id (many2one) : NEW relation: project.project
+# DONE: fill value for project task with parent_id is NULL
 
 project      / project.task             / user_id (many2one)            : DEL relation: res.users
 project      / project.task             / user_ids (many2many)          : NEW relation: res.users, hasdefault
