@@ -23,6 +23,9 @@ _column_renames = {
     'stock_move_line': [
         ('lot_produced_id', None),
     ],
+    'mrp_routing_workcenter': [
+        ('worksheet', None),
+    ],
 }
 
 _column_copies = {
