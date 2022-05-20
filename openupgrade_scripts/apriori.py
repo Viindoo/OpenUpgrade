@@ -16,9 +16,10 @@ renamed_modules = {
     "to_hr_employee_birthday_filters": "viin_hr_employee_birthday",
     "to_equipment_hierarchy": "viin_maintenance",
     "viin_hr_equipment_hierarchy": "viin_hr_maintenance",
-    "to_slugifty_l10n_vn": "viin_unicode_slugify",
+    "to_slugify_l10n_vn": "viin_unicode_slugify",
     # Viindoo/erponline-enterprise
     "to_enterprise_marks_account": "viin_hide_ent_modules_account",
+    "viin_mobile_notification_firebase": "viin_mobile_firebase",
 }
 
 # Merged modules contain a mapping from old module names to other,
@@ -47,6 +48,9 @@ merged_modules = {
     # Viindoo/odoo-tvtma
     "to_tvtma_crm": "viin_crm",
     "to_tvtma_sales": "viin_sale",
+    # Viindoo/enterprise
+    "viin_mobile_notification": "viin_mobile",
+    "viin_mobile_login": "viin_mobile",
 }
 
 # only used here for upgrade_analysis
