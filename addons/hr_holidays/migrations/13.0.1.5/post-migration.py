@@ -62,7 +62,7 @@ def assign_employee_leave_manager(env):
     )
     if approver_group:
         approver_group.sudo().write({
-            'users': [(4, x) for x in leave_managers.ids]
+            'users': [(4, user.id) for user in leave_managers if not user.share]
         })
 
 
