@@ -32,6 +32,7 @@ renamed_modules = {
     'hr_payroll': 'to_hr_payroll',
     'hr_payroll_account': 'to_hr_payroll_account',
     'to_hr_overtime_payroll': 'viin_hr_overtime_payroll',
+    'to_stock_picking_validate_manual_time': 'to_stock_picking_backdate',
     # Viindoo/odoo-web_gantt
     'project_gantt': 'viin_project_gantt',
 }
