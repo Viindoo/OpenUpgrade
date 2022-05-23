@@ -8,7 +8,7 @@ sale         / sale.order               / note (text)                   : type i
 
 sale         / sale.order.line          / product_packaging_id (many2one): NEW relation: product.packaging, hasdefault
 sale         / sale.order.line          / product_packaging_qty (float) : NEW
-# NOTHING TO DO: new feature
+# NOTHING TO DO: handled in sale_stock module (renamed column from product_packaging to product_packaging_id)
 
 ---XML records in module 'sale'---
 NEW ir.actions.act_window: sale.action_accrued_revenue_entry
