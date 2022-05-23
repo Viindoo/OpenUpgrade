@@ -1,26 +1,54 @@
 ---Models in module 'sale_timesheet'---
 obsolete model project.task.create.sale.order [transient]
 ---Fields in module 'sale_timesheet'---
-sale_timesheet / account.analytic.line    / non_allow_billable (boolean)  : DEL
 sale_timesheet / account.analytic.line    / order_id (many2one)           : NEW relation: sale.order, isrelated: related, stored
+# DONE: pre-migration: prepare order_id's value
+
+sale_timesheet / account.analytic.line    / non_allow_billable (boolean)  : DEL
+# NOTHING TO DO: non_allow_billable is not used anymore
+
 sale_timesheet / account.analytic.line    / timesheet_invoice_type (selection): selection_keys is now '['billable_fixed', 'billable_time', 'non_billable', 'other_costs', 'other_revenues', 'service_revenues', 'timesheet_revenues']' ('['billable_fixed', 'billable_time', 'non_billable', 'non_billable_project', 'non_billable_timesheet']')
+# DONE: end-migration: call _compute_timesheet_invoice_type
+
 sale_timesheet / product.template         / service_upsell_threshold (float): NEW hasdefault
+# NOTHING TO DO
+
 sale_timesheet / project.project          / bill_type (selection)         : DEL selection_keys: ['customer_project', 'customer_task']
+# NOTHING TO DO: bill_type is not used anymore
+
 sale_timesheet / project.project          / pricing_type (selection)      : not stored anymore
 sale_timesheet / project.project          / pricing_type (selection)      : now a function
 sale_timesheet / project.project          / pricing_type (selection)      : selection_keys is now '['employee_rate', 'fixed_rate', 'task_rate']' ('['employee_rate', 'fixed_rate']')
+# NOTHING TO DO: non-stored field
+
 sale_timesheet / project.sale.line.employee.map / cost (float)                  : NEW isfunction: function, stored
 sale_timesheet / project.sale.line.employee.map / is_cost_changed (boolean)     : NEW isfunction: function, stored
+# DONE: pre-migration: compute value of fields
+
 sale_timesheet / project.sale.line.employee.map / sale_line_id (many2one)       : now a function
+# NOTHING TO DO
+
 sale_timesheet / project.sale.line.employee.map / timesheet_product_id (many2one): DEL relation: product.product
+# NOTHING TO DO: timesheet_product_id is not used anymore
+
 sale_timesheet / project.task             / analytic_account_id (many2one): is now stored
 sale_timesheet / project.task             / analytic_account_id (many2one): module is now 'project' ('sale_timesheet')
 sale_timesheet / project.task             / analytic_account_id (many2one): not related anymore
+# DONE: pre-migration: set value of analytic_account_id
+
 sale_timesheet / project.task             / non_allow_billable (boolean)  : DEL
+# NOTHING TO DO: non_allow_billable is not used anymore, we use allow_billable instead
+
 sale_timesheet / project.task             / timesheet_product_id (many2one): not stored anymore
 sale_timesheet / project.task             / timesheet_product_id (many2one): now related
+# NOTHING TO DO
+
 sale_timesheet / sale.order.line          / has_displayed_warning_upsell (boolean): NEW
+# NOTHING TO DO: new field for new feature
+
 sale_timesheet / sale.order.line          / remaining_hours (float)       : is now stored
+# DONE: end-migration: prepare value of remaining_hours
+
 ---XML records in module 'sale_timesheet'---
 DEL ir.actions.act_window: sale_timesheet.project_profitability_report_action
 DEL ir.actions.act_window: sale_timesheet.project_task_action_multi_create_sale_order
