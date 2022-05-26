@@ -1,7 +1,7 @@
 ---Models in module 'sale_stock'---
 ---Fields in module 'sale_stock'---
 sale_stock   / sale.order               / effective_date (date)         : type is now 'datetime' ('date')
-# DONE: post-migration: set datetime values with the user tz into account
+# DONE: post-migration: set effective_date = min(pickings.date_done)
 
 sale_stock   / sale.order.line          / product_packaging (many2one)  : DEL relation: product.packaging
 # DONE: pre-migration: rename to product_packaging_id, call _onchange_update_product_packaging_qty to compute product_packaging_qty
