@@ -111,6 +111,7 @@ merged_modules = {
     "to_warehouse_imp": "viin_stock",
     "to_l10n_vn_state_group": "to_res_state_group",
     "to_account_expense_tracking": "to_hr_expense",
+    "to_l10n_vn_fleet_driver": "to_fleet_driver",
     # Viindoo/odoo-tvtma
     "viin_hr_department_multilang": "viin_hr",
 }
