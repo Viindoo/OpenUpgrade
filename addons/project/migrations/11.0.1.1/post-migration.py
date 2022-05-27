@@ -225,6 +225,9 @@ def migrate(env, version):
     set_default_values(env)
     if openupgrade.table_exists(env.cr, 'project_issue'):
         convert_issues(env)
+        openupgrade.set_xml_ids_noupdate_value(
+            env, 'project', ['model_project_issue'], True
+        )
     openupgrade.load_data(
         env.cr, 'project', 'migrations/11.0.1.1/noupdate_changes.xml'
     )
