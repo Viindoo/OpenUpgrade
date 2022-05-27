@@ -311,6 +311,17 @@ def add_helper_voucher_move_rel(env):
     )
 
 
+def clear_unwanted_currency_id_account_move(env):
+    """ Clear unwanted 'currency_id' values from 'account.move.line' which is
+    duplicated with the 'company_currency_id' values, in order to add the new
+    constraint of 'clear_unwanted_currency_id_account_move_line'.
+    """
+    openupgrade.logged_query(env.cr, """
+        UPDATE account_move_line SET currency_id = NULL
+        WHERE currency_id = company_currency_id AND currency_id IS NOT NULL
+    """)
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     cr = env.cr
@@ -338,5 +349,6 @@ def migrate(env, version):
     fill_account_move_commercial_partner_id(env)
     set_account_move_currency_id_required(env)
     add_helper_invoice_move_rel(env)
+    clear_unwanted_currency_id_account_move(env)
     if openupgrade.table_exists(cr, 'account_voucher'):
         add_helper_voucher_move_rel(env)
