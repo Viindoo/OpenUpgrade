@@ -103,22 +103,15 @@ def _fill_mailing_mailing_schedule_type(env):
     )
 
 
-def _compute_model_res_id_mailing_trace(env):
+def _delete_invalid_records_mailing_trace(env):
+    # Delete invalidata which trigger issue due to the new constaint
+    # model: now required
+    # res_id: now required
     openupgrade.logged_query(
         env.cr,
         """
-        UPDATE mailing_trace
-        SET model = CASE
-                WHEN im.model != 'mailing.list' THEN im.model
-                ELSE 'mailing.contact'
-                END
-        FROM
-            mailing_trace as mt
-            INNER JOIN mailing_mailing AS mm
-                ON mt.mass_mailing_id = mm.id
-            INNER JOIN ir_model AS im
-                ON im.id = mm.mailing_model_id
-        WHERE mt.model IS NULL
+        DELETE FROM mailing_trace
+        WHERE model IS NULL OR res_id IS NULL
         """,
     )
 
@@ -150,6 +143,6 @@ def migrate(env, version):
     _map_mailing_mailing_reply_to_mode(env)
     _map_mailing_trace_failure_type(env)
     _map_mailing_trace_trace_status(env)
-    _compute_model_res_id_mailing_trace(env)
+    _delete_invalid_records_mailing_trace(env)
     _fill_mailing_mailing_schedule_type(env)
     _compute_ab_testing_total_pc(env)

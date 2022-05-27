@@ -30,7 +30,7 @@ mass_mailing / mailing.trace            / model (char)                  : now re
 mass_mailing / mailing.trace            / res_id (integer)              : now required
 mass_mailing / mailing.trace            / res_id (integer)              : relation is now 'model' ('False') [nothing to do]
 mass_mailing / mailing.trace            / res_id (integer)              : type is now 'many2one_reference' ('integer')
-# DONE: pre-migration: compute value of model, ignore res_id
+# DONE: pre-migration: delete invalid data: model is null or res_id is null
 
 mass_mailing / mailing.trace            / scheduled (datetime)          : DEL
 mass_mailing / mailing.trace            / state_update (datetime)       : DEL
