@@ -7,7 +7,7 @@ def _fast_fill_account_analytic_line_order_id(env):
         env.cr,
         """
         ALTER TABLE account_analytic_line
-        ADD COLUMN IF NOT EXISTS order_id integer DEFAULT NULL
+        ADD COLUMN IF NOT EXISTS order_id integer
         """,
     )
     openupgrade.logged_query(
@@ -21,205 +21,128 @@ def _fast_fill_account_analytic_line_order_id(env):
     )
 
 
-def _compute_is_cost_changed(env):
-    if not openupgrade.column_exists(
+def _fast_fill_project_sale_line_employee_map_is_cost_changed(env):
+    openupgrade.logged_query(
         env.cr,
-        "project_sale_line_employee_map",
-        "is_cost_changed",
-    ):
-        openupgrade.logged_query(
-            env.cr,
-            """
-            ALTER TABLE project_sale_line_employee_map
-            ADD COLUMN is_cost_changed boolean
-            """,
-        )
+        """
+        ALTER TABLE project_sale_line_employee_map
+        ADD COLUMN IF NOT EXISTS is_cost_changed boolean
+        """,
+    )
+    # 1. Set is_cost_changed = False when employee_id IS NULL
     openupgrade.logged_query(
         env.cr,
         """
             UPDATE project_sale_line_employee_map
             SET is_cost_changed = CASE
-                WHEN employee_id IS NOT NULL THEN true
-                ELSE false
+                WHEN employee_id IS NULL THEN false
+                ELSE true
                 END
             WHERE is_cost_changed IS NULL
             """,
     )
 
 
-def _compute_cost(env):
-    if not openupgrade.column_exists(
-        env.cr,
-        "project_sale_line_employee_map",
-        "cost",
-    ):
-        openupgrade.logged_query(
-            env.cr,
-            """
-            ALTER TABLE project_sale_line_employee_map
-            ADD COLUMN cost numeric
-            """,
-        )
+def _fast_fill_project_sale_line_employee_map_cost(env):
     openupgrade.logged_query(
         env.cr,
         """
-            UPDATE project_sale_line_employee_map AS pslem
-            SET cost = CASE
-                WHEN he.timesheet_cost IS NOT NULL THEN he.timesheet_cost
-                ELSE 0
-                END
-            FROM hr_employee AS he
-                WHERE pslem.employee_id = he.id
+        ALTER TABLE project_sale_line_employee_map
+        ADD COLUMN IF NOT EXISTS cost numeric
+        """,
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+            UPDATE project_sale_line_employee_map
+            SET cost = 0
+            WHERE is_cost_changed = false AND employee_id IS NULL
+            """,
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+            UPDATE project_sale_line_employee_map emp_map
+            SET cost = emp.timesheet_cost
+            FROM hr_employee emp
+            WHERE emp_map.is_cost_changed = false AND emp_map.employee_id IS NOT NULL
+                AND emp_map.employee_id = emp.id
             """,
     )
 
 
-def _set_value_of_analytic_account_id(env):
+def _fill_project_task_analytic_account_id(env):
     openupgrade.logged_query(
         env.cr,
         """
-            UPDATE project_task
+            UPDATE project_task task
             SET analytic_account_id = so.analytic_account_id
-            FROM
-                project_task AS pt
-                INNER JOIN sale_order AS so
-                    ON pt.sale_order_id = so.id
-            WHERE pt.analytic_account_id IS NULL
+            FROM sale_order so
+            WHERE task.sale_order_id = so.id AND task.sale_order_id IS NOT NULL
+                AND task.analytic_account_id IS NULL
             """,
     )
 
 
-def _compute_timesheet_invoice_type(env):
+def _re_fill_account_analytic_line_timesheet_invoice_type(env):
     openupgrade.logged_query(
         env.cr,
         """
-        WITH subquery (
-                order_line_id,
-                product_id,
-                product_type,
-                product_invoice_policy
-                ) AS (
-                    SELECT sol.id AS sol_id, product_id, pt.type, pt.invoice_policy
-                    FROM sale_order_line sol
-                        JOIN product_template AS pt
-                            ON pt.id = sol.product_id
+        WITH aal_tmp AS (
+            SELECT aal.id AS aal_id,
+                CASE
+                    WHEN product IS NOT NULL
+                        AND tmpl.type = 'service' THEN 'service_revenues'
+                    WHEN aal.amount >=0 THEN 'other_revenues' ELSE 'other_costs' END
+                AS timesheet_invoice_type
+            FROM account_analytic_line aal
+            LEFT JOIN sale_order_line so_line ON aal.so_line = so_line.id
+            LEFT JOIN product_product product ON so_line.product_id = product.id
+            LEFT JOIN product_template tmpl ON tmpl.id = product.product_tmpl_id
+            WHERE aal.project_id IS NULL
         )
-        UPDATE account_analytic_line AS aal
-        SET timesheet_invoice_type = CASE
-            WHEN aal.amount > 0 THEN 'other_revenues'
-            ELSE 'other_costs'
+        UPDATE account_analytic_line aal
+        SET timesheet_invoice_type = aal_tmp.timesheet_invoice_type
+        FROM aal_tmp WHERE aal_tmp.aal_id = aal.id
+        """,
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        WITH aal_tmp AS (
+            SELECT aal.id AS aal_id,
+            CASE
+            WHEN so_line IS NOT NULL AND product IS NOT NULL
+                AND tmpl.type = 'service' AND tmpl.invoice_policy = 'order'
+                THEN 'billable_fixed'
+            WHEN so_line IS NOT NULL AND product IS NOT NULL
+                AND tmpl.type = 'service' AND tmpl.invoice_policy = 'delivery'
+                AND tmpl.service_type = 'timesheet' AND aal.amount > 0
+                THEN 'timesheet_revenues'
+            WHEN so_line IS NOT NULL AND product IS NOT NULL
+                AND tmpl.type = 'service' AND tmpl.invoice_policy = 'delivery'
+                AND tmpl.service_type = 'timesheet' AND aal.amount <= 0
+                THEN 'billable_time'
+            WHEN so_line IS NOT NULL AND product IS NOT NULL
+                AND tmpl.type = 'service' AND tmpl.invoice_policy = 'delivery'
+                AND tmpl.service_type != 'timesheet'
+                THEN 'billable_fixed'
+            WHEN so_line IS NOT NULL AND product IS NOT NULL
+                AND tmpl.type = 'service' AND tmpl.invoice_policy = 'order'
+                THEN 'billable_fixed'
+            WHEN so_line IS NULL OR (product IS NOT NULL AND tmpl.type != 'service')
+                THEN 'non_billable'
             END
-        FROM subquery sb
-        WHERE
-            project_id IS NULL
-            AND NOT (
-                aal.so_line IS NOT NULL
-                AND aal.so_line = sb.order_line_id
-                AND sb.product_type = 'service'
-            )
-        """,
-    )
-    openupgrade.logged_query(
-        env.cr,
-        """
-        WITH subquery (
-                order_line_id,
-                product_id,
-                product_type,
-                product_invoice_policy
-                ) AS (
-                    SELECT sol.id AS sol_id, product_id, pt.type, pt.invoice_policy
-                    FROM sale_order_line sol
-                        JOIN product_template AS pt
-                            ON pt.id = sol.product_id
+            AS timesheet_invoice_type
+        FROM account_analytic_line aal
+        LEFT JOIN sale_order_line so_line ON aal.so_line = so_line.id
+        LEFT JOIN product_product product ON so_line.product_id = product.id
+        LEFT JOIN product_template tmpl ON tmpl.id = product.product_tmpl_id
+        WHERE aal.project_id IS NOT NULL AND aal.timesheet_invoice_type IS NULL
         )
-        UPDATE account_analytic_line AS aal
-        SET timesheet_invoice_type = CASE
-            WHEN aal.amount > 0 THEN 'other_revenues'
-            ELSE 'other_costs'
-            END
-        FROM subquery sb
-        WHERE
-            project_id IS NULL
-            AND (
-                aal.so_line IS NOT NULL
-                AND aal.so_line = sb.order_line_id
-                AND    sb.product_type = 'service'
-            )
-        """,
-    )
-    openupgrade.logged_query(
-        env.cr,
-        """
-        UPDATE account_analytic_line AS aal
-        SET timesheet_invoice_type = 'non_billable'
-        WHERE
-            project_id IS NOT NULL
-            AND aal.so_line IS NULL
-        """,
-    )
-    openupgrade.logged_query(
-        env.cr,
-        """
-        WITH subquery (
-                order_line_id,
-                product_id,
-                product_type,
-                product_invoice_policy
-                ) AS (
-                    SELECT sol.id AS sol_id, product_id, pt.type, pt.invoice_policy
-                    FROM sale_order_line sol
-                        JOIN product_template AS pt
-                            ON pt.id = sol.product_id
-        )
-        UPDATE account_analytic_line AS aal
-        SET timesheet_invoice_type = Null
-        FROM subquery sb
-        WHERE
-            project_id IS NOT NULL
-            AND aal.so_line IS NOT NULL
-            AND aal.so_line = sb.order_line_id
-            AND sb.product_type != 'service'
-        """,
-    )
-    openupgrade.logged_query(
-        env.cr,
-        """
-        WITH subquery (
-                order_line_id,
-                product_id,
-                product_type,
-                product_invoice_policy
-                ) AS (
-                    SELECT sol.id AS sol_id, product_id, pt.type, pt.invoice_policy
-                    FROM sale_order_line sol
-                        JOIN product_template AS pt
-                            ON pt.id = sol.product_id
-        )
-        UPDATE account_analytic_line AS aal
-        SET timesheet_invoice_type = Case
-            WHEN
-                sb.product_type = 'service'
-                AND sb.product_invoice_policy = 'timesheet'
-                AND aal.amount > 0
-            THEN 'timesheet_revenues'
-            WHEN
-                sb.product_type = 'service'
-                AND sb.product_invoice_policy = 'timesheet'
-                AND aal.amount <= 0
-            THEN 'billable_time'
-            WHEN
-                sb.product_type = 'service'
-                AND sb.product_invoice_policy = 'order'
-            THEN 'billable_fixed'
-            ELSE Null
-            END
-        FROM subquery sb
-        WHERE
-            project_id IS NOT NULL
-            AND aal.so_line IS NOT NULL
-            AND aal.so_line = sb.order_line_id
-            AND sb.product_type = 'service'
+        UPDATE account_analytic_line aal
+        SET timesheet_invoice_type = aal_tmp.timesheet_invoice_type
+        FROM aal_tmp WHERE aal_tmp.aal_id = aal.id
         """,
     )
 
@@ -227,7 +150,7 @@ def _compute_timesheet_invoice_type(env):
 @openupgrade.migrate()
 def migrate(env, version):
     _fast_fill_account_analytic_line_order_id(env)
-    _compute_is_cost_changed(env)
-    _compute_cost(env)
-    _set_value_of_analytic_account_id(env)
-    _compute_timesheet_invoice_type(env)
+    _fast_fill_project_sale_line_employee_map_is_cost_changed(env)
+    _fast_fill_project_sale_line_employee_map_cost(env)
+    _fill_project_task_analytic_account_id(env)
+    _re_fill_account_analytic_line_timesheet_invoice_type(env)
