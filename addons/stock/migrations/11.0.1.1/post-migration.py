@@ -97,7 +97,7 @@ def set_partially_available_state(env):
         env.cr, """
         UPDATE stock_move
         SET state = 'partially_available'
-        WHERE partially_available AND state != 'done'"""
+        WHERE partially_available AND state NOT IN ('done', 'cancel')"""
     )
 
 
