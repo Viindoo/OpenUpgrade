@@ -20,6 +20,9 @@ renamed_modules = {
     # Viindoo/erponline-enterprise
     "to_enterprise_marks_account": "viin_hide_ent_modules_account",
     "viin_mobile_notification_firebase": "viin_mobile_firebase",
+    "to_enterprise_marks_inter_company": "viin_hide_ent_modules_inter_company",
+    "to_enterprise_marks_mrp": "viin_hide_ent_modules_mrp",
+    "to_enterprise_marks_stock": "viin_hide_ent_modules_stock",
 }
 
 # Merged modules contain a mapping from old module names to other,
