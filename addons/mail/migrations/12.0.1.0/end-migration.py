@@ -85,6 +85,16 @@ def resubscribe_general_channel(env):
     if channel:
         channel.message_subscribe(channel_ids=channel.ids)
 
+def unlink_deprecated_message_from_channel(env):
+    openupgrade.logged_query(
+        env.cr,
+        """DELETE FROM mail_message_mail_channel_rel
+           WHERE mail_message_id in (
+               SELECT mm.id FROM mail_message_mail_channel_rel mmmcr
+               JOIN mail_message mm ON mmmcr.mail_message_id = mm.id
+               AND mm.model IS not null
+               AND mm.model not in %s)""", (tuple(env.registry.models),))
+
 
 @openupgrade.migrate(use_env=True)
 def migrate(env, version):
@@ -92,3 +102,4 @@ def migrate(env, version):
     fill_mail_thread_message_main_attachment_id(env)
     remove_activity_date_deadline_column(env)
     resubscribe_general_channel(env)
+    unlink_deprecated_message_from_channel(env)
