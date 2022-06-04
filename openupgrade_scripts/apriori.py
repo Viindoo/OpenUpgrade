@@ -23,6 +23,13 @@ renamed_modules = {
     "to_enterprise_marks_inter_company": "viin_hide_ent_modules_inter_company",
     "to_enterprise_marks_mrp": "viin_hide_ent_modules_mrp",
     "to_enterprise_marks_stock": "viin_hide_ent_modules_stock",
+    "viin_enterprise_marks_event": "viin_hide_ent_modules_event",
+    "viin_enterprise_marks_expense": "viin_hide_ent_modules_expense",
+    "viin_enterprise_marks_hr_timesheet": "viin_hide_ent_modules_hr_timesheet",
+    "viin_enterprise_marks_project": "viin_hide_ent_modules_project",
+    "viin_enterprise_marks_sale": "viin_hide_ent_modules_sale",
+    "viin_enterprise_marks_purchase": "viin_hide_ent_modules_purchase",
+    "viin_enterprise_marks_website": "viin_hide_ent_modules_websitewebsite",
 }
 
 # Merged modules contain a mapping from old module names to other,
