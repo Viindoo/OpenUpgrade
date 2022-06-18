@@ -17,6 +17,7 @@ renamed_modules = {
     "to_equipment_hierarchy": "viin_maintenance",
     "viin_hr_equipment_hierarchy": "viin_hr_maintenance",
     "to_slugify_l10n_vn": "viin_unicode_slugify",
+    "to_res_state_group": "viin_base_state_group",
     # Viindoo/erponline-enterprise
     "to_enterprise_marks_account": "viin_hide_ent_modules_account",
     "viin_mobile_notification_firebase": "viin_mobile_firebase",
@@ -46,7 +47,6 @@ merged_modules = {
     "website_event_track_exhibitor": "website_event_exhibitor",
     "website_form": "website",
     "website_sale_management": "website_sale",
-    "to_res_state_group": "viin_base_state_group",
     # OCA/...
     # Viindoo/tvtmaaddons
     "to_partner_business_type": "viin_partner_business_nature",
