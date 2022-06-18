@@ -46,6 +46,7 @@ merged_modules = {
     "website_event_track_exhibitor": "website_event_exhibitor",
     "website_form": "website",
     "website_sale_management": "website_sale",
+    "to_res_state_group": "viin_base_state_group",
     # OCA/...
     # Viindoo/tvtmaaddons
     "to_partner_business_type": "viin_partner_business_nature",
