@@ -3,7 +3,7 @@ hr           / hr.employee              / _inherits (False)             : DEL
 hr           / hr.employee              / permit_no (char)              : NEW 
 hr           / hr.employee              / visa_expire (date)            : NEW 
 hr           / hr.employee              / visa_no (char)                : NEW
-# Nothing to do
+# Done: recompute fields on post-migration
 
 ---XML records in module 'hr'---
 NEW ir.actions.act_window: hr.hr_config_settings_action
