@@ -24,8 +24,29 @@ def _create_new_vietnam_accounts(env):
             (company.id, vn_template.id, tuple(account_ids)),
         )
 
+def _update_en_name_accounts(env):
+    """update name to english to sync with improvements on 14.0"""
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE account_account AS aa
+        SET name = atp.name
+        FROM account_account_template AS atp
+        WHERE aa.code = atp.code
+        """,
+    )
+
+def _override_ir_translations(env):
+    lang = env['res.lang'].search([('code', '=', 'vi_VN')])
+    if lang:
+        mods = env['ir.module.module'].search([('state', '=', 'installed')])
+        mods._update_translations(lang, True)
+        env.cr.execute('ANALYZE ir_translation')
+
 
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.load_data(env.cr, "l10n_vn", "14.0.2.0.1/noupdate_changes.xml")
     _create_new_vietnam_accounts(env)
+    _update_en_name_accounts(env)
+    _override_ir_translations(env)
