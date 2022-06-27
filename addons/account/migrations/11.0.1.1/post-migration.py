@@ -159,7 +159,7 @@ def cancel_no_entry_posted_payments(env):
     payments = env['account.payment'].search([('state', 'in', ['posted', 'reconciled']),
                                               ('move_line_ids', '=', False)])
     _logger.info("Cancelling all no-entry-posted-payments with ids: %s" % payments.ids)
-    payments.action_cancel()
+    payments.cancel()
 
 
 @openupgrade.migrate()
