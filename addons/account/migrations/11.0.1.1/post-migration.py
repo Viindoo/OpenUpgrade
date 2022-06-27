@@ -151,6 +151,22 @@ def fill_account_move_line_tax_base_amount(env):
         """,
     )
 
+def cancel_no_entry_posted_payments(env):
+    env.cr.execute("""
+        SELECT id  
+        FROM account_payment 
+        WHERE id IN (
+            SELECT ap.id FROM account_payment ap 
+            LEFT JOIN account_move_line aml ON aml.payment_id = ap.id
+            WHERE ap.state IN ('posted', 'reconciled')
+            AND aml.id IS NULL
+            ORDER BY ap.id);
+    """)
+    payment_ids = [r[0] for r in env.cr.fetchall()]
+    _logger.info("Cancelling all no-entry-posted-payments with ids: %s" % payment_ids)
+    payments = env['account.payment'].browse(payment_ids)
+    payments.action_cancel()
+
 
 @openupgrade.migrate()
 def migrate(env, version):
@@ -202,6 +218,7 @@ def migrate(env, version):
     fill_account_invoice_line_total(env)
     fill_account_move_line_tax_base_amount(env)
     _migrate_security(env)
+    cancel_no_entry_posted_payments(env)
 
     openupgrade.load_data(
         env.cr, 'account', 'migrations/11.0.1.1/noupdate_changes.xml',
