@@ -5,6 +5,10 @@
 from psycopg2.extensions import AsIs
 from openupgradelib import openupgrade
 
+import logging
+
+_logger = logging.getLogger(__name__)
+
 
 @openupgrade.logging()
 def _migrate_security(env):
