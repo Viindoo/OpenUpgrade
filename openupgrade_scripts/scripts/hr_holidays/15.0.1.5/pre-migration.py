@@ -19,12 +19,13 @@ def _fast_fill_hr_leave_employee_company_id(env):
 
 
 def _map_hr_leave_state(env):
-    openupgrade.map_values(
+    openupgrade.logged_query(
         env.cr,
-        "state",
-        "state",
-        [("cancel", "refuse")],
-        table="hr_leave",
+        """
+        UPDATE hr_leave
+        SET state = 'refuse'
+        WHERE state = 'cancel'
+        """,
     )
 
 
