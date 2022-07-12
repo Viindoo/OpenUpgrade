@@ -103,9 +103,25 @@ def _map_hr_leave_type_allocation_validation_type(env):
         """
         UPDATE hr_leave_type
         SET allocation_validation_type =
-            CASE WHEN allocation_validation_type = 'hr' THEN 'set'
-            ELSE 'officer' END
-        WHERE allocation_validation_type IN ('hr', 'both', 'manager')
+            CASE WHEN allocation_validation_type IN ('hr', 'both', 'manager') THEN 'officer'
+            ELSE 'no' END
+        """,
+    )
+
+
+def _fast_fill_hr_leave_type_requires_allocation(env):
+    openupgrade.logged_query(
+        env.cr,
+        """
+        ALTER TABLE hr_leave_type
+        ADD COLUMN IF NOT EXISTS requires_allocation CHARACTER VARYING""",
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE hr_leave_type
+        SET requires_allocation =
+            CASE WHEN allocation_type = 'no' THEN 'no' ELSE 'yes' END
         """,
     )
 
@@ -122,7 +138,7 @@ def _fast_fill_hr_leave_type_employee_requests(env):
         """
         UPDATE hr_leave_type
         SET employee_requests =
-            CASE WHEN allocation_type = 'no' THEN 'no' ELSE 'yes' END
+            CASE WHEN allocation_type = 'fixed_allocation' THEN 'yes' ELSE 'no' END
         """,
     )
 
@@ -232,6 +248,7 @@ def migrate(env, version):
     _convert_datetime_to_date_hr_leave_allocation_date_to(env)
     _fast_fill_hr_leave_allocation_employee_company_id(env)
     _map_hr_leave_type_allocation_validation_type(env)
+    _fast_fill_hr_leave_type_requires_allocation(env)
     _fast_fill_hr_leave_type_employee_requests(env)
     _fast_fill_hr_leave_employee_ids(env)
     _fast_fill_hr_leave_multi_employee(env)
