@@ -49,7 +49,7 @@ def _prepare_in_svl_vals(move, quantity, unit_cost, product, is_dropship):
     return vals
 
 
-def _prepare_out_svl_vals(move, quantity, unit_cost, product):
+def _prepare_out_svl_vals(move, quantity, unit_cost, product, value=0.0, cost_method=False):
     # Quantity is negative for out valuation layers.
     quantity = -quantity
     vals = _prepare_common_svl_vals(move, product)
@@ -60,6 +60,11 @@ def _prepare_out_svl_vals(move, quantity, unit_cost, product):
         "remaining_qty": 0.0,
         "remaining_value": 0.0,
     })
+    if cost_method == 'fifo':
+        vals.update({
+            "value": value,
+            "unit_cost": value/quantity if quantity else 0,
+            })
     return vals
 
 
@@ -100,6 +105,7 @@ def get_stock_moves(env, company_id, product_id):
     env.cr.execute("""
         SELECT sm.id, sm.company_id, sm.product_id, sm.date, sm.product_qty, sm.reference,
             COALESCE(sm.price_unit, 0.0) AS price_unit,
+            COALESCE(sm.value, 0.0) AS value,
             sm.create_uid, sm.create_date, sm.write_uid, sm.write_date,
             CASE WHEN (sl.usage <> 'internal' AND (sl.usage <> 'transit' OR sl.company_id <> sm.company_id))
                    AND (sld.usage = 'internal' OR (sld.usage = 'transit' AND sld.company_id = sm.company_id))
@@ -204,7 +210,8 @@ def generate_stock_valuation_layer(env):
                                 svl_in_index += 1
                     if product.cost_method == 'fifo':
                         svl_vals = _prepare_out_svl_vals(
-                            move, move["product_qty"], abs(move["price_unit"]), product)
+                            move, move["product_qty"], abs(move["price_unit"]), product,
+                            value=move["value"], cost_method=product.cost_method)
                     else:
                         svl_vals = _prepare_out_svl_vals(
                             move, move["product_qty"], previous_price, product)
