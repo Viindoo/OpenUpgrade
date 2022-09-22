@@ -32,6 +32,14 @@ def _make_correct_account_type(env):
     )
 
 
+def _recompute_amount_residual(env):
+    account_move_lines_to_recompute = env['account.move.line'].search([
+        ('parent_state', '=', 'posted'),
+        ('move_id.payment_state', 'in', ['not_paid', 'in_payment', 'partial'])])
+    account_move_lines_to_recompute._compute_amount_residual()
+
+
 @openupgrade.migrate()
 def migrate(env, version):
+    _recompute_amount_residual(env)
     _make_correct_account_type(env)
