@@ -49,7 +49,7 @@ def _prepare_in_svl_vals(move, quantity, unit_cost, product, is_dropship):
     return vals
 
 
-def _prepare_out_svl_vals(move, quantity, unit_cost, product, value=0.0, cost_method=False):
+def _prepare_out_svl_vals(move, quantity, unit_cost, product, value=0.0):
     # Quantity is negative for out valuation layers.
     quantity = -quantity
     vals = _prepare_common_svl_vals(move, product)
@@ -60,7 +60,7 @@ def _prepare_out_svl_vals(move, quantity, unit_cost, product, value=0.0, cost_me
         "remaining_qty": 0.0,
         "remaining_value": 0.0,
     })
-    if cost_method == 'fifo':
+    if product.cost_method == 'fifo':
         vals.update({
             "value": value,
             "unit_cost": value/quantity if quantity else 0,
@@ -166,11 +166,13 @@ def generate_stock_valuation_layer(env):
                     have_qty = not float_is_zero(previous_qty, precision_digits=precision_uom)
                     while h_index < len(history_lines) and history_lines[h_index]["datetime"] < move["date"]:
                         price_history_rec = history_lines[h_index]
-                        if float_compare(price_history_rec["cost"], previous_price, precision_digits=precision_price):
+                        old_price = history_lines[h_index-1]["cost"] if h_index > 0 else price_history_rec["cost"]
+                        if float_compare(price_history_rec["cost"], old_price, precision_digits=precision_price):
                             if have_qty:
                                 svl_vals = _prepare_man_svl_vals(
-                                    price_history_rec, previous_price, previous_qty, company, product)
+                                    price_history_rec, old_price, previous_qty, company, product)
                                 svl_man_vals_list.append(svl_vals)
+                            old_price = price_history_rec["cost"]
                             previous_price = price_history_rec["cost"]
                         h_index += 1
                 # Add in svl
@@ -183,8 +185,11 @@ def generate_stock_valuation_layer(env):
                         previous_price = float_round(
                             (previous_price * previous_qty + move["price_unit"] * move["product_qty"]) / total_qty,
                             precision_digits=precision_price)
+                    valuation_price_unit = move["price_unit"]
+                    if product.cost_method == 'standard':
+                        valuation_price_unit = price_history_rec["cost"]
                     svl_vals = _prepare_in_svl_vals(
-                        move, move["product_qty"], move["price_unit"], product, is_dropship)
+                        move, move["product_qty"], valuation_price_unit, product, is_dropship)
                     svl_in_vals_list.append(svl_vals)
                     previous_qty = total_qty
                 # Add out svl
@@ -211,10 +216,13 @@ def generate_stock_valuation_layer(env):
                     if product.cost_method == 'fifo':
                         svl_vals = _prepare_out_svl_vals(
                             move, move["product_qty"], abs(move["price_unit"]), product,
-                            value=move["value"], cost_method=product.cost_method)
+                            value=move["value"])
                     else:
+                        valuation_price_unit = previous_price
+                        if product.cost_method == 'standard':
+                            valuation_price_unit = price_history_rec["cost"]
                         svl_vals = _prepare_out_svl_vals(
-                            move, move["product_qty"], previous_price, product)
+                            move, move["product_qty"], valuation_price_unit, product)
                     svl_out_vals_list.append(svl_vals)
                     previous_qty -= move["product_qty"]
             # Add manual adjusts after last move
@@ -223,11 +231,12 @@ def generate_stock_valuation_layer(env):
                 # useless for Fifo because we have price unit on product form
                 while h_index < len(history_lines):
                     price_history_rec = history_lines[h_index]
-                    if float_compare(price_history_rec["cost"], previous_price, precision_digits=precision_price):
+                    old_price = history_lines[h_index-1]["cost"] if h_index > 0 else price_history_rec["cost"]
+                    if float_compare(price_history_rec["cost"], old_price, precision_digits=precision_price):
                         svl_vals = _prepare_man_svl_vals(
-                            price_history_rec, previous_price, previous_qty, company, product)
+                            price_history_rec, old_price, previous_qty, company, product)
                         svl_man_vals_list.append(svl_vals)
-                        previous_price = price_history_rec["cost"]
+                        old_price = price_history_rec["cost"]
                     h_index += 1
             all_svl_list.extend(svl_in_vals_list + svl_out_vals_list + svl_man_vals_list)
     if all_svl_list:
