@@ -85,8 +85,39 @@ def prefill_stock_picking_type_sequence_code(env):
     )
 
 
+def convert_field(cr, model, field, target_model):
+    table = model.replace('.', '_')
+
+    cr.execute("""SELECT 1
+                    FROM information_schema.columns
+                   WHERE table_name = %s
+                     AND column_name = %s
+               """, (table, field))
+    if not cr.fetchone():
+        return
+
+    cr.execute("SELECT id FROM ir_model_fields WHERE model=%s AND name=%s", (model, field))
+    [fields_id] = cr.fetchone()
+
+    cr.execute("""
+        INSERT INTO ir_property(name, type, fields_id, company_id, res_id, value_reference)
+        SELECT %(field)s, 'many2one', %(fields_id)s, company_id, CONCAT('{model},', id),
+               CONCAT('{target_model},', {field})
+          FROM {table} t
+         WHERE {field} IS NOT NULL
+           AND NOT EXISTS(SELECT 1
+                            FROM ir_property
+                           WHERE fields_id=%(fields_id)s
+                             AND company_id=t.company_id
+                             AND res_id=CONCAT('{model},', t.id))
+    """.format(**locals()), locals())
+
+    cr.execute('ALTER TABLE "{0}" DROP COLUMN "{1}" CASCADE'.format(table, field))
+
+
 @openupgrade.migrate()
 def migrate(env, version):
+    convert_field(env.cr, 'product.template', 'responsible_id', 'res.users')
     openupgrade.copy_columns(env.cr, _column_copies)
     if openupgrade.table_exists(env.cr, 'report_stock_quantity'):
         # OCA module `stock_forecast_report` was installed
