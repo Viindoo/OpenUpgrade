@@ -3,6 +3,8 @@ from openupgradelib import openupgrade
 
 @openupgrade.migrate()
 def migrate(env, version):
+    openupgrade.rename_models(env.cr, [("event.answer", "event.question.answer")])
+
     openupgrade.rename_tables(
         env.cr,
         [("event_answer", "event_question_answer")],

@@ -38,7 +38,7 @@ stock        / stock.rule               / propagate_date_minimum_delta (integer)
 # NOTHING TO DO: not used anymore
 
 stock        / stock.move               / orderpoint_id (many2one)      : NEW relation: stock.warehouse.orderpoint
-# DONE: post-migration: filled
+# NOTHING TO DO: New field related to the new replenishment system with no sense for past moves
 
 stock        / stock.move               / priority (selection)          : now a function
 stock        / stock.move               / priority (selection)          : selection_keys is now '['0', '1']' ('['0', '1', '2', '3']')
