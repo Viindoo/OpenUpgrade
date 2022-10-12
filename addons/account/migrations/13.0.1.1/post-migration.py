@@ -1044,9 +1044,9 @@ def migrate(env, version):
     fill_res_partner_ranks(env)
     try_to_fill_account_account_tag_country_id(env)
     create_account_tax_repartition_lines(env)
-    move_tags_from_taxes_to_repartition_lines(env)
+    # move_tags_from_taxes_to_repartition_lines(env)
     assign_tax_repartition_line_to_move_lines(env)
-    assign_account_tags_to_move_lines(env)
+    # assign_account_tags_to_move_lines(env)
     compute_balance_for_draft_invoice_lines(env)
     _recompute_move_entries_totals(env)
     openupgrade.load_data(
