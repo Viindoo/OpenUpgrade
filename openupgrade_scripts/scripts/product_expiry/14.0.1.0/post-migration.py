@@ -10,8 +10,18 @@ def migrate(env, version):
         """
         UPDATE product_template
         SET use_expiration_date = TRUE
-        WHERE expiration_time > 0
-        """,
+        WHERE expiration_time > 0""",
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE product_template pt
+        SET use_expiration_date = TRUE
+        FROM stock_production_lot spl
+        JOIN product_product pp ON spl.product_id = pp.id
+        WHERE pp.product_tmpl_id = pt.id AND (
+            spl.expiration_date IS NOT NULL OR spl.removal_date IS NOT NULL
+            OR spl.use_date IS NOT NULL OR spl.alert_date IS NOT NULL)""",
     )
     openupgrade.logged_query(
         # sml has lot_it

@@ -8,8 +8,7 @@ from odoo.tools.translate import _
 
 def fill_fleet_vehicle_log_contract_fields(env):
     openupgrade.logged_query(
-        env.cr,
-        """
+        env.cr, """
         UPDATE
             fleet_vehicle_log_contract as fvlc
         SET
@@ -45,6 +44,30 @@ def fill_fleet_vehicle_log_services_fields(env):
         WHERE
             fvc.id =  fvls.cost_id
         """,
+    )
+
+
+# https://github.com/OCA/OpenUpgrade/pull/2859
+def fill_fleet_vehicle_log_contract_service_ids(env):
+    openupgrade.logged_query(
+        env.cr,
+        """
+        INSERT INTO fleet_service_type_fleet_vehicle_log_contract_rel
+        (fleet_vehicle_log_contract_id, fleet_service_type_id)
+        SELECT fvlc.id, fvc.cost_subtype_id
+        FROM fleet_vehicle_log_contract fvlc
+        JOIN fleet_vehicle_cost fvc ON fvc.parent_id = fvlc.cost_id
+        WHERE fvc.cost_subtype_id IS NOT NULL
+        """,
+    )
+
+# https://github.com/OCA/OpenUpgrade/pull/2859
+def set_fleet_vehicle_log_services_state(env):
+    """Set all records to 'done', as it was the supposed option in v13 and the ORM
+    default 'todo' is not suitable.
+    """
+    openupgrade.logged_query(
+        env.cr, "UPDATE fleet_vehicle_log_services SET state = 'done'"
     )
 
 
@@ -127,13 +150,16 @@ def set_module_viin_fleet_to_install(env):
         UPDATE ir_module_module
         SET state='to install'
         WHERE name = 'viin_fleet' AND state='uninstalled'
-        """
+        """,
     )
+
 
 @openupgrade.migrate()
 def migrate(env, version):
     fill_fleet_vehicle_log_contract_fields(env)
     fill_fleet_vehicle_log_services_fields(env)
+    fill_fleet_vehicle_log_contract_service_ids(env)
+    set_fleet_vehicle_log_services_state(env)
     map_fleet_vehicle_log_contract_state(env)
     delete_domain_from_view(env)
     openupgrade.load_data(env.cr, "fleet", "14.0.0.1/noupdate_changes.xml")

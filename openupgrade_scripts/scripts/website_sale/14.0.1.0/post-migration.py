@@ -50,4 +50,10 @@ def migrate(env, version):
         WHERE pt.id = sub.product_template_id AND pt.website_ribbon_id IS NULL""",
     )
     openupgrade.load_data(env.cr, "website_sale", "14.0.1.0/noupdate_changes.xml")
-    openupgrade.delete_records_safely_by_xml_id(env, ["website_sale.image_full"])
+    openupgrade.logged_query(
+        env.cr,
+        """
+        DELETE FROM ir_model_data
+        WHERE module = 'website_sale' and name = 'image_full'
+        """,
+    )

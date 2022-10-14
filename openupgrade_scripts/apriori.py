@@ -11,7 +11,7 @@ renamed_modules = {
     # OCA/account-invoice-reporting
     "account_invoice_comment_template": "account_comment_template",
     # OCA/bank-statement-import
-    # "account_bank_statement_import": "account_statement_import",  # from odoo
+    "account_bank_statement_import": "account_statement_import",  # from odoo
     "account_bank_statement_import_bypass_check": "account_statement_import_bypass_check",  # noqa: B950
     "account_bank_statement_clear_partner": "account_statement_clear_partner",
     "account_bank_statement_import_camt_details": "account_statement_import_camt_details",  # noqa: B950
@@ -43,6 +43,8 @@ renamed_modules = {
     "l10n_es_account_bank_statement_import_n43": "l10n_es_account_statement_import_n43",
     # OCA/server-tools
     "openupgrade_records": "upgrade_analysis",
+    # OCA/web
+    "web_confirm_duplicate": "web_copy_confirm",
     # OCA/...
     # Viindoo/tvtmaaddons
     "to_print_payment_vi": "viin_l10n_vn_payment_print",
@@ -84,15 +86,30 @@ merged_modules = {
     "pos_cash_rounding": "point_of_sale",
     "pos_kitchen_printer": "pos_restaurant",
     "pos_reprint": "point_of_sale",
+    "theme_default": "website",
     "website_theme_install": "website",
+    # odoo/design-themes
+    "theme_graphene_blog": "theme_graphene",
+    # odoo/enterprise
+    "hr_holidays_gantt_calendar": "hr_holidays_gantt",
+    # OCA/intrastat-extrastat
+    "hs_code_link": "product_harmonized_system_delivery",
+    # OCA/event
+    "website_event_questions_free_text": "website_event_questions",
+    # OCA/margin-analysis
+    "sale_order_margin_percent": "sale_margin",
     # OCA/partner-contact
     "base_vat_sanitized": "base_vat",
     "partner_bank_active": "base",
-    # OCA/stock-logistics-warehouse
-    "stock_inventory_include_exhausted": "stock",
     # OCA/project
     "project_description": "project",
     "project_stage_closed": "project",
+    # OCA/sale-reporting
+    "report_qweb_pdf_fixed_column": "web",
+    # OCA/sale-workflow
+    "sale_order_price_recalculation": "sale",
+    # OCA/stock-logistics-warehouse
+    "stock_inventory_include_exhausted": "stock",
     # OCA/survey
     "survey_description": "survey",
     # OCA/web
