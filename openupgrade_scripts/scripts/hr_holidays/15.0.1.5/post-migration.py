@@ -2,11 +2,6 @@ import logging
 
 from openupgradelib import openupgrade
 
-from odoo import api
-from odoo.exceptions import ValidationError
-
-from odoo.addons.hr_holidays.models.hr_leave import HolidaysRequest
-
 _logger = logging.getLogger(__name__)
 
 
@@ -49,7 +44,7 @@ def _map_hr_leave_allocation_date_to(env):
             WHERE id IN %s
             """
             % (
-                openupgrade.get_legacy_name("date_to"), 
+                openupgrade.get_legacy_name("date_to"),
                 tuple(allocations_to_update.ids),
             ),
         )
