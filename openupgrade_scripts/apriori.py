@@ -61,6 +61,7 @@ renamed_modules = {
     "to_einvoice_common": "l10n_vn_edi",
     "to_accounting_sinvoice": "viin_l10n_vn_accounting_sinvoice",
     "to_accounting_vninvoice": "viin_l10n_vn_accounting_vninvoice",
+    "to_accounting_vninvoice_summary": "viin_l10n_vn_accounting_vninvoice_summary",
     # Viindoo/erponline-enterprise
     "to_enterprice_marks_account": "to_enterprise_marks_account",
     "to_enterprice_marks_mrp": "to_enterprise_marks_mrp",
