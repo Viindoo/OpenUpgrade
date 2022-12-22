@@ -2,11 +2,17 @@
 # Copyright 2020 Andrii Skrypka <andrijskrypa@ukr.net>
 # Copyright 2020 ForgeFlow <http://www.forgeflow.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
-from openupgradelib import openupgrade
+from openupgradelib import openupgrade, openupgrade_90
 
 _unlink_by_xmlid = [
     'mrp.sequence_mrp_unbuild',
 ]
+
+attachment_fields = {
+    'mrp.routing.workcenter': [
+        ('worksheet', None),
+    ],
+}
 
 
 def fill_bom_product_template_attribute_value(env):
@@ -292,3 +298,4 @@ def migrate(env, version):
     enable_group_mrp_byproducts(env)
     generate_wo_line(env)
     fill_planned_datetime(env)
+    openupgrade_90.convert_binary_field_to_attachment(env, attachment_fields)
