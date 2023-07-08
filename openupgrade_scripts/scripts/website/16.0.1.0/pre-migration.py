@@ -4,23 +4,26 @@ _xmlids_renames = [
     (
         "website.group_website_publisher",
         "website.group_website_restricted_editor",
-    )
+    ),
+    (
+        "website_sale.menu_reporting",
+        "website.menu_reporting",
+    ),
 ]
 
 # delete xml xpath for odoo add it again
 _xmlids_delete = [
-    "website.s_image_gallery_options",
-    "website.s_product_catalog_options",
-    "website.s_table_of_content_options",
-    "website.s_media_list_options",
-    "website.s_timeline_options",
     "website.website_configurator",
+    "website.website_menu",
 ]
 
 
-def _set_xml_ids_noupdate_value(env):
-    openupgrade.set_xml_ids_noupdate_value(
-        env, "website", ["action_website", "s_masonry_block_default_image_2"], False
+def delete_constraint_website_visitor_partner_uniq(env):
+    openupgrade.delete_sql_constraint_safely(
+        env,
+        "website",
+        "website_visitor",
+        "partner_uniq",
     )
 
 
@@ -52,10 +55,26 @@ def _fill_language_ids_if_null(env):
     )
 
 
+def keep_the_first_domain_when_duplicate(env):
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE website
+        SET domain = NULL
+        WHERE id NOT IN (
+        SELECT MIN(id)
+        FROM website
+        GROUP BY domain
+        );
+        """,
+    )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
-    _set_xml_ids_noupdate_value(env)
     _fill_partner_id_if_null(env)
     _fill_language_ids_if_null(env)
     openupgrade.rename_xmlids(env.cr, _xmlids_renames)
     openupgrade.delete_records_safely_by_xml_id(env, _xmlids_delete)
+    delete_constraint_website_visitor_partner_uniq(env)
+    keep_the_first_domain_when_duplicate(env)
