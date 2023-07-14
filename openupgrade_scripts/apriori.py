@@ -24,6 +24,8 @@ renamed_modules = {
     # Viindoo/tvtmaaddons
     "to_hr_contract_actions": "viin_hr_contract",
     "to_hr_skills_recruitment": "viin_hr_recruitment_skills_resume",
+    "to_stock_backdate": "viin_stock_backdate",
+    "to_stock_picking_backdate": "viin_stock_account_backdate",
     "to_uom_mail_thread": "viin_mail_thread_uom",
     "viin_webp": "viin_web_editor",
     # Viindoo/enterprise
