@@ -49,6 +49,31 @@ def update_translatable_fields(cr):
             continue
         columns = tools.sql.table_columns(cr, table)
         if field in columns:
+            if field == "description":
+                # in product.function and product.collection models
+                # it has constrains name!=description, when in pre-migration
+                # the base will convert the description field to jsonb,
+                # but because of 'check name!=description',
+                # the error is caused by two different fields
+                # can't compare => Solution to delete sql constrain
+                # in pre-migration con base (only if this module is installed)
+                # then when migrate those 2 modules, it's going to re-adds itself
+                if table == "product_function":
+                    openupgrade.logged_query(
+                        cr,
+                        """
+                        ALTER TABLE product_function
+                        DROP CONSTRAINT IF EXISTS product_function_name_description_check
+                        """,
+                    )
+                elif table == "product_collection":
+                    openupgrade.logged_query(
+                        cr,
+                        """
+                        ALTER TABLE product_collection
+                        DROP CONSTRAINT IF EXISTS product_collection_name_description_check
+                        """,
+                    )
             if columns[field]["udt_name"] in ["varchar", "text"]:
                 tools.sql.convert_column_translatable(cr, table, field, "jsonb")
         else:
