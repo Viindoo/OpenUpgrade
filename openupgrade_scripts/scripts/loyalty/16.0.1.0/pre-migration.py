@@ -163,6 +163,12 @@ def _create_column(env):
         env.cr,
         """
         ALTER TABLE loyalty_rule
+        ADD COLUMN IF NOT EXISTS program_id INTEGER"""
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        ALTER TABLE loyalty_rule
         ADD COLUMN IF NOT EXISTS company_id INTEGER"""
     )
     openupgrade.logged_query(
@@ -202,9 +208,9 @@ def _fill_loyalty_card_expiration_date(env):
 
         UPDATE loyalty_card card
         SET expiration_date = CASE
-            WHEN  cte.validity_duration > 0
-                THEN card.create_date.date + card.validity_duration
-            ELSE 0
+            WHEN cte.validity_duration > 0
+                THEN (card.create_date::date + INTERVAL '1 day' * cte.validity_duration)::date
+            ELSE NULL::date
             END
         FROM cte
         WHERE cte.program_id = card.program_id"""
@@ -239,6 +245,7 @@ def _fill_loyalty_program_currency_id(env):
             WHEN cte.currency_id IS NOT NULL THEN cte.currency_id
             ELSE NULL
             END
+        FROM cte
         WHERE program.company_id = cte.company_id"""
     )
 
@@ -253,7 +260,8 @@ def _fill_loyalty_program_date_to(env):
         )
 
         UPDATE loyalty_program program
-        SET date_to = cte.rule_date_to.date
+        SET date_to = cte.rule_date_to::date
+        FROM cte
         WHERE program.rule_id = cte.rule_id"""
     )
 
@@ -437,7 +445,8 @@ def _fill_loyalty_rule_minimum_amount_tax_mode(env):
         UPDATE loyalty_rule
         SET minimum_amount_tax_mode = CASE
             WHEN minimum_amount_tax_mode = 'tax_excluded' THEN 'excl'
-            ELSE 'incl'"""
+            ELSE 'incl'
+        END"""
     )
 
 
