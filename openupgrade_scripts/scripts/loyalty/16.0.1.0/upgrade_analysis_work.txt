@@ -152,7 +152,8 @@ loyalty      / loyalty.reward           / discount_product_tag_id (many2one): NE
 # NOTHING TO DO
 
 loyalty      / loyalty.reward           / program_id (many2one)         : NEW relation: loyalty.program, required
-# DONE pre-migration: duplicate it, then set the program_id value for them to be equal to all the programs that they linked to this bounty on version 15.0 # TO DO
+
+# DONE pre-migration: duplicate it, then set the program_id value for them to be equal to all the programs that they linked to this bounty on version 15.0
 
 loyalty      / loyalty.reward           / required_points (float)       : NEW hasdefault: default
 # NOTHING TO DO
