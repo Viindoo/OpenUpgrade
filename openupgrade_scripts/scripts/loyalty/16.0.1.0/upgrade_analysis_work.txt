@@ -214,7 +214,7 @@ loyalty      / loyalty.rule             / reward_point_amount (float)   : NEW ha
 # NOTHING TO DO
 
 loyalty      / loyalty.rule             / reward_point_mode (selection) : NEW required, selection_keys: function, hasdefault: default
-# NOTHING TO DO
+# DONE: pre-migration. add column & set value default to 'order'
 
 loyalty      / loyalty.rule             / reward_point_split (boolean)  : NEW hasdefault: default
 # NOTHING TO DO

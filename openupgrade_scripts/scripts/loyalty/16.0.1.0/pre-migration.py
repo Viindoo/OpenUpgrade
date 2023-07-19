@@ -136,7 +136,7 @@ def _create_column(env):
         ALTER TABLE loyalty_program
           ADD COLUMN IF NOT EXISTS date_to DATE"""
     )
-    
+
     # Reward
     openupgrade.logged_query(
         env.cr,
@@ -176,6 +176,13 @@ def _create_column(env):
         """
         ALTER TABLE loyalty_rule
           ADD COLUMN IF NOT EXISTS mode CHARACTER VARYING"""
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        ALTER TABLE loyalty_rule
+          ADD COLUMN IF NOT EXISTS reward_point_mode CHARACTER VARYING
+      DEFAULT 'order'"""
     )
 
 
@@ -438,6 +445,71 @@ def _fill_loyalty_rule_code(env):
     )
 
 
+def _fill_loyalty_rule_program_id(env):
+    openupgrade.logged_query(
+        env.cr,
+        """
+        SELECT rule_id
+          FROM loyalty_program
+         GROUP BY rule_id
+        HAVING COUNT(*)>1
+        """,
+    )
+
+    for i in env.cr.fetchall():
+        openupgrade.logged_query(
+            env.cr,
+            """
+            SELECT id, rule_id
+              FROM loyalty_program
+             WHERE rule_id = %s
+            """,
+            (i['rule_id'],),
+        )
+
+        for index, row in enumerate(env.cr.fetchall()):
+            if row == 0:
+                openupgrade.logged_query(
+                    env.cr,
+                    """
+                    UPDATE loyalty_rule
+                       SET program_id = %s
+                     WHERE id = %s
+                    """,
+                    (row[index]['id'], row[index]['program_id'],),
+                )
+            else:
+                openupgrade.logged_query(
+                    env.cr,
+                    """
+                    INSERT INTO loyalty_rule (
+                        reward_point_mode,
+                        minimum_amount_tax_mode
+                    )
+
+                    SELECT
+                        reward_point_mode,
+                        minimum_amount_tax_mode
+                    FROM loyalty_rule
+                    WHERE id = %s
+                    RETURNING id;
+                    """,
+                    (row[index]['rule_id'],),
+                )
+
+                new_row_id = env.cr.fetchall()[0][0]
+
+                openupgrade.logged_query(
+                    env.cr,
+                    """
+                    UPDATE loyalty_rule
+                       SET program_id = %s
+                     WHERE id = %s
+                    """,
+                    (row[index]['id'], new_row_id,),
+                )
+
+
 def _fill_loyalty_rule_company_id(env):
     """
         This function needs to run after the program_id column has a value
@@ -502,7 +574,8 @@ def migrate(env, version):
     _fill_loyalty_discount_mode(env)
     _fill_loyalty_reward_type_if_null(env)
     _fill_loyalty_rule_code(env)
-    _fill_loyalty_rule_company_id(env)
     _fill_loyalty_rule_minimum_amount_tax_mode(env)
+    _fill_loyalty_rule_program_id(env)
+    _fill_loyalty_rule_company_id(env)
     _fill_loyalty_rule_mode(env)
     _rename_xmlids(env)
