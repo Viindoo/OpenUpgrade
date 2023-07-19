@@ -327,7 +327,6 @@ def _fill_loyalty_reward_program_id(env):
         SELECT reward_id
           FROM loyalty_program
          GROUP BY reward_id
-        HAVING COUNT(*)>1
         """,
     )
 
@@ -339,11 +338,11 @@ def _fill_loyalty_reward_program_id(env):
               FROM loyalty_program
              WHERE reward_id = %s
             """,
-            (i["reward_id"],),
+            (i[0],),
         )
 
-        for index, row in enumerate(env.cr.fetchall()):
-            if row == 0:
+        for index, values in enumerate(env.cr.fetchall()):
+            if index == 0:
                 openupgrade.logged_query(
                     env.cr,
                     """
@@ -352,8 +351,8 @@ def _fill_loyalty_reward_program_id(env):
                      WHERE id = %s
                     """,
                     (
-                        row[index]["id"],
-                        row[index]["program_id"],
+                        values[0],
+                        values[1],
                     ),
                 )
             else:
@@ -386,7 +385,7 @@ def _fill_loyalty_reward_program_id(env):
                     WHERE id = %s
                     RETURNING id;
                     """,
-                    (row[index]["reward_id"],),
+                    (values[1],),
                 )
 
                 new_row_id = env.cr.fetchall()[0][0]
@@ -399,7 +398,7 @@ def _fill_loyalty_reward_program_id(env):
                      WHERE id = %s
                     """,
                     (
-                        row[index]["id"],
+                        values[0],
                         new_row_id,
                     ),
                 )
@@ -459,7 +458,6 @@ def _fill_loyalty_rule_program_id(env):
         SELECT rule_id
           FROM loyalty_program
          GROUP BY rule_id
-        HAVING COUNT(*)>1
         """,
     )
 
@@ -471,11 +469,11 @@ def _fill_loyalty_rule_program_id(env):
               FROM loyalty_program
              WHERE rule_id = %s
             """,
-            (i["rule_id"],),
+            (i[0],),
         )
 
-        for index, row in enumerate(env.cr.fetchall()):
-            if row == 0:
+        for index, values in enumerate(env.cr.fetchall()):
+            if index == 0:
                 openupgrade.logged_query(
                     env.cr,
                     """
@@ -484,8 +482,8 @@ def _fill_loyalty_rule_program_id(env):
                      WHERE id = %s
                     """,
                     (
-                        row[index]["id"],
-                        row[index]["program_id"],
+                        values[0],
+                        values[1],
                     ),
                 )
             else:
@@ -504,7 +502,7 @@ def _fill_loyalty_rule_program_id(env):
                     WHERE id = %s
                     RETURNING id;
                     """,
-                    (row[index]["rule_id"],),
+                    (values[1],),
                 )
 
                 new_row_id = env.cr.fetchall()[0][0]
@@ -517,7 +515,7 @@ def _fill_loyalty_rule_program_id(env):
                      WHERE id = %s
                     """,
                     (
-                        row[index]["id"],
+                        values[0],
                         new_row_id,
                     ),
                 )
