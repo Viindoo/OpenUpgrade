@@ -34,12 +34,12 @@ def _fill_partner_id_if_null(env):
     openupgrade.logged_query(
         env.cr,
         """
-        UPDATE website_visitor
-        SET partner_id = CASE
-            WHEN length(access_token) != 32 THEN CAST(access_token AS integer)
-            ELSE partner_id
-                        END
-        WHERE partner_id IS NULL;
+        UPDATE website_visitor v
+           SET partner_id = p.id
+          FROM res_partner p
+         WHERE v.partner_id IS NULL
+           AND length(v.access_token) != 32
+           AND p.id = CAST(v.access_token AS integer);
         """,
     )
 
@@ -49,25 +49,33 @@ def _fill_language_ids_if_null(env):
         env.cr,
         """
         INSERT INTO website_lang_rel (website_id, lang_id)
-        SELECT w.id, rl.id
-        FROM website w
-        CROSS JOIN res_lang rl
-        WHERE w.id NOT IN (SELECT website_id FROM website_lang_rel)
-        AND rl.active = true;
-        """,
+        SELECT w.id, w.default_lang_id
+          FROM website w
+         WHERE NOT EXISTS (
+            SELECT 1
+              FROM website_lang_rel wlr
+             WHERE wlr.website_id = w.id
+         );
+         """,
     )
 
 
-def keep_the_first_domain_when_duplicate(env):
+def _fill_homepage_url(env):
+    openupgrade.logged_query(
+        env.cr,
+        """
+        ALTER TABLE website
+            ADD COLUMN IF NOT EXISTS homepage_url CHARACTER VARYING
+        """,
+    )
     openupgrade.logged_query(
         env.cr,
         """
         UPDATE website
-        SET domain = NULL
-        WHERE id NOT IN (
-        SELECT MIN(id)
-        FROM website
-        GROUP BY domain
+           SET homepage_url = (
+        SELECT url
+          FROM website_page
+         WHERE website_page.id = website.homepage_id
         );
         """,
     )
@@ -96,5 +104,5 @@ def migrate(env, version):
     openupgrade.rename_xmlids(env.cr, _xmlids_renames)
     openupgrade.delete_records_safely_by_xml_id(env, _xmlids_delete)
     delete_constraint_website_visitor_partner_uniq(env)
-    keep_the_first_domain_when_duplicate(env)
     boostrap_5_migration(env)
+    _fill_homepage_url(env)

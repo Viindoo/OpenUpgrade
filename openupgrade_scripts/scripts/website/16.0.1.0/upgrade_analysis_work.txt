@@ -61,9 +61,6 @@ DEL ir.model.access: website.access_website_ir_ui_view_publisher
 # NOTHING TO DO
 
 NEW ir.model.constraint: website.constraint_website_domain_unique
-
-# DONE: Having duplicate domains will keep the first one in pre-migration
-
 DEL ir.model.constraint: website.constraint_website_visitor_partner_uniq
 
 # DONE: safely delete pre-migration
