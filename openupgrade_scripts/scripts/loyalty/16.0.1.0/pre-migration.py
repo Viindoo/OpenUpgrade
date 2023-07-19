@@ -1,6 +1,5 @@
 from openupgradelib import openupgrade
 
-
 _model_renames = [
     ("coupon.coupon", "loyalty.card"),
     ("coupon.program", "loyalty.program"),
@@ -84,7 +83,7 @@ _field_renames = [
     ),
 ]
 
-_rename_xmlids = [
+_xmlid_renames = [
     ("sale_gift_card.mail_template_gift_card", "loyalty.mail_template_gift_card"),
     ("gift_card.gift_card_product_50", "loyalty.gift_card_product_50"),
 ]
@@ -108,33 +107,33 @@ def _create_column(env):
         env.cr,
         """
         ALTER TABLE loyalty_card
-          ADD COLUMN IF NOT EXISTS company_id INTEGER"""
+          ADD COLUMN IF NOT EXISTS company_id INTEGER""",
     )
     openupgrade.logged_query(
         env.cr,
         """
         ALTER TABLE loyalty_card
-          ADD COLUMN IF NOT EXISTS expiration_date DATE"""
+          ADD COLUMN IF NOT EXISTS expiration_date DATE""",
     )
-    
+
     # Program
     openupgrade.logged_query(
         env.cr,
         """
         ALTER TABLE loyalty_program
-          ADD COLUMN IF NOT EXISTS currency_id INTEGER"""
+          ADD COLUMN IF NOT EXISTS currency_id INTEGER""",
     )
     openupgrade.logged_query(
         env.cr,
         """
         ALTER TABLE loyalty_program
-          ADD COLUMN IF NOT EXISTS trigger CHARACTER VARYING"""
+          ADD COLUMN IF NOT EXISTS trigger CHARACTER VARYING""",
     )
     openupgrade.logged_query(
         env.cr,
         """
         ALTER TABLE loyalty_program
-          ADD COLUMN IF NOT EXISTS date_to DATE"""
+          ADD COLUMN IF NOT EXISTS date_to DATE""",
     )
 
     # Reward
@@ -142,14 +141,13 @@ def _create_column(env):
         env.cr,
         """
         ALTER TABLE loyalty_reward
-          ADD COLUMN IF NOT EXISTS company_id INTEGER"""
+          ADD COLUMN IF NOT EXISTS company_id INTEGER""",
     )
     openupgrade.logged_query(
         env.cr,
         """
         ALTER TABLE loyalty_reward
-          ADD COLUMN IF NOT EXISTS program_id INTEGER
-        """,
+          ADD COLUMN IF NOT EXISTS program_id INTEGER""",
     )
 
     # Rule
@@ -157,36 +155,37 @@ def _create_column(env):
         env.cr,
         """
         ALTER TABLE loyalty_rule
-          ADD COLUMN IF NOT EXISTS code CHARACTER VARYING"""
+          ADD COLUMN IF NOT EXISTS code CHARACTER VARYING""",
     )
     openupgrade.logged_query(
         env.cr,
         """
         ALTER TABLE loyalty_rule
-          ADD COLUMN IF NOT EXISTS program_id INTEGER"""
+          ADD COLUMN IF NOT EXISTS program_id INTEGER""",
     )
     openupgrade.logged_query(
         env.cr,
         """
         ALTER TABLE loyalty_rule
-          ADD COLUMN IF NOT EXISTS company_id INTEGER"""
+          ADD COLUMN IF NOT EXISTS company_id INTEGER""",
     )
     openupgrade.logged_query(
         env.cr,
         """
         ALTER TABLE loyalty_rule
-          ADD COLUMN IF NOT EXISTS mode CHARACTER VARYING"""
+          ADD COLUMN IF NOT EXISTS mode CHARACTER VARYING""",
     )
     openupgrade.logged_query(
         env.cr,
         """
         ALTER TABLE loyalty_rule
           ADD COLUMN IF NOT EXISTS reward_point_mode CHARACTER VARYING
-      DEFAULT 'order'"""
+      DEFAULT 'order'""",
     )
 
 
-# ============================================ Card ======================================
+# =========================== Card ==============================
+
 
 def _fill_loyalty_card_company_id(env):
     openupgrade.logged_query(
@@ -200,7 +199,7 @@ def _fill_loyalty_card_company_id(env):
         UPDATE loyalty_card card
            SET company_id = cte.company_id
           FROM cte
-         WHERE cte.program_id = card.program_id"""
+         WHERE cte.program_id = card.program_id""",
     )
 
 
@@ -220,10 +219,12 @@ def _fill_loyalty_card_expiration_date(env):
             ELSE NULL::date
            END
           FROM cte
-         WHERE cte.program_id = card.program_id"""
+         WHERE cte.program_id = card.program_id""",
     )
 
-# ============================================ Program ======================================
+
+# ========================= Program ==============================
+
 
 def _fill_loyalty_program_applies_on(env):
     openupgrade.logged_query(
@@ -234,7 +235,7 @@ def _fill_loyalty_program_applies_on(env):
             WHEN applies_on = 'on_current_order' THEN 'current'
             WHEN applies_on = 'on_next_order' THEN 'future'
             ELSE 'both'
-           END"""
+           END""",
     )
 
 
@@ -253,7 +254,7 @@ def _fill_loyalty_program_currency_id(env):
             ELSE NULL
            END
           FROM cte
-         WHERE program.company_id = cte.company_id"""
+         WHERE program.company_id = cte.company_id""",
     )
 
 
@@ -269,7 +270,7 @@ def _fill_loyalty_program_date_to(env):
         UPDATE loyalty_program program
            SET date_to = cte.rule_date_to::date
           FROM cte
-         WHERE program.rule_id = cte.rule_id"""
+         WHERE program.rule_id = cte.rule_id""",
     )
 
 
@@ -281,7 +282,7 @@ def _fill_loyalty_program_program_type(env):
            SET program_type = CASE
             WHEN program_type = 'coupon_program' THEN 'coupons'
             ELSE 'promotion'
-           END"""
+           END""",
     )
 
 
@@ -293,16 +294,16 @@ def _fill_loyalty_program_trigger(env):
            SET trigger = CASE
             WHEN program_type = 'coupon' THEN 'with_code'
             ELSE 'auto'
-             END"""
+             END""",
     )
 
 
-# ============================= Reward ==============================
+# ========================= Reward ==============================
 
 
 def _fill_loyalty_reward_company_id(env):
     """
-        This function needs to run after the program_id column has a value
+    This function needs to run after the program_id column has a value
     """
     openupgrade.logged_query(
         env.cr,
@@ -315,7 +316,7 @@ def _fill_loyalty_reward_company_id(env):
         UPDATE loyalty_reward reward
            SET company_id = cte.company_id
           FROM cte
-         WHERE reward.program_id = cte.program_id"""
+         WHERE reward.program_id = cte.program_id""",
     )
 
 
@@ -338,7 +339,7 @@ def _fill_loyalty_reward_program_id(env):
               FROM loyalty_program
              WHERE reward_id = %s
             """,
-            (i['reward_id'],),
+            (i["reward_id"],),
         )
 
         for index, row in enumerate(env.cr.fetchall()):
@@ -350,7 +351,10 @@ def _fill_loyalty_reward_program_id(env):
                        SET program_id = %s
                      WHERE id = %s
                     """,
-                    (row[index]['id'], row[index]['program_id'],),
+                    (
+                        row[index]["id"],
+                        row[index]["program_id"],
+                    ),
                 )
             else:
                 openupgrade.logged_query(
@@ -382,7 +386,7 @@ def _fill_loyalty_reward_program_id(env):
                     WHERE id = %s
                     RETURNING id;
                     """,
-                    (row[index]['reward_id'],),
+                    (row[index]["reward_id"],),
                 )
 
                 new_row_id = env.cr.fetchall()[0][0]
@@ -394,7 +398,10 @@ def _fill_loyalty_reward_program_id(env):
                        SET program_id = %s
                      WHERE id = %s
                     """,
-                    (row[index]['id'], new_row_id,),
+                    (
+                        row[index]["id"],
+                        new_row_id,
+                    ),
                 )
 
 
@@ -407,7 +414,7 @@ def _fill_loyalty_discount_applicability(env):
             WHEN discount_applicability = 'specific_products' THEN 'specific'
             WHEN discount_applicability = 'cheapest_product' THEN 'cheapest'
             ELSE 'order'
-           END"""
+           END""",
     )
 
 
@@ -419,7 +426,7 @@ def _fill_loyalty_discount_mode(env):
            SET discount_mode = CASE
             WHEN discount_mode = 'fixed_amount' THEN 'per_point'
             ELSE 'percent'
-           END"""
+           END""",
     )
 
 
@@ -429,11 +436,11 @@ def _fill_loyalty_reward_type_if_null(env):
         """
         UPDATE loyalty_reward
            SET reward_type = 'discount'
-         WHERE reward_type IS NULL"""
+         WHERE reward_type IS NULL""",
     )
 
 
-# ============================= Rule ==============================
+# =========================== Rule ==============================
 
 
 def _fill_loyalty_rule_code(env):
@@ -441,7 +448,7 @@ def _fill_loyalty_rule_code(env):
         env.cr,
         """
         UPDATE loyalty_rule
-           SET code = ''"""
+           SET code = ''""",
     )
 
 
@@ -464,7 +471,7 @@ def _fill_loyalty_rule_program_id(env):
               FROM loyalty_program
              WHERE rule_id = %s
             """,
-            (i['rule_id'],),
+            (i["rule_id"],),
         )
 
         for index, row in enumerate(env.cr.fetchall()):
@@ -476,7 +483,10 @@ def _fill_loyalty_rule_program_id(env):
                        SET program_id = %s
                      WHERE id = %s
                     """,
-                    (row[index]['id'], row[index]['program_id'],),
+                    (
+                        row[index]["id"],
+                        row[index]["program_id"],
+                    ),
                 )
             else:
                 openupgrade.logged_query(
@@ -494,7 +504,7 @@ def _fill_loyalty_rule_program_id(env):
                     WHERE id = %s
                     RETURNING id;
                     """,
-                    (row[index]['rule_id'],),
+                    (row[index]["rule_id"],),
                 )
 
                 new_row_id = env.cr.fetchall()[0][0]
@@ -506,13 +516,16 @@ def _fill_loyalty_rule_program_id(env):
                        SET program_id = %s
                      WHERE id = %s
                     """,
-                    (row[index]['id'], new_row_id,),
+                    (
+                        row[index]["id"],
+                        new_row_id,
+                    ),
                 )
 
 
 def _fill_loyalty_rule_company_id(env):
     """
-        This function needs to run after the program_id column has a value
+    This function needs to run after the program_id column has a value
     """
     openupgrade.logged_query(
         env.cr,
@@ -525,7 +538,7 @@ def _fill_loyalty_rule_company_id(env):
         UPDATE loyalty_rule rule
            SET company_id = cte.company_id
           FROM cte
-         WHERE rule.program_id = cte.program_id"""
+         WHERE rule.program_id = cte.program_id""",
     )
 
 
@@ -537,7 +550,7 @@ def _fill_loyalty_rule_minimum_amount_tax_mode(env):
            SET minimum_amount_tax_mode = CASE
             WHEN minimum_amount_tax_mode = 'tax_excluded' THEN 'excl'
             ELSE 'incl'
-           END"""
+           END""",
     )
 
 
@@ -546,13 +559,11 @@ def _fill_loyalty_rule_mode(env):
         env.cr,
         """
         UPDATE loyalty_rule
-           SET mode = 'auto'"""
+           SET mode = 'auto'""",
     )
 
-# ====================================== XML IDS ===============================
 
-def _rename_xmlids(env):
-    openupgrade.rename_xmlids(env.cr, _rename_xmlids)
+# =============================== Migrate ===============================
 
 
 @openupgrade.migrate()
@@ -578,4 +589,4 @@ def migrate(env, version):
     _fill_loyalty_rule_program_id(env)
     _fill_loyalty_rule_company_id(env)
     _fill_loyalty_rule_mode(env)
-    _rename_xmlids(env)
+    openupgrade.rename_xmlids(env.cr, _xmlid_renames)
