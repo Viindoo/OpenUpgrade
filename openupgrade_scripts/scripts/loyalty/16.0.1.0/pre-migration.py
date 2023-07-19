@@ -271,8 +271,10 @@ def _fill_loyalty_program_program_type(env):
         env.cr,
         """
         UPDATE loyalty_program
-        SET program_type = 'promotion'
-        WHERE program_type IS NULL"""
+        SET program_type = CASE
+            WHEN program_type = 'coupon_program' THEN 'coupons'
+            ELSE 'promotion'
+            END"""
     )
 
 
