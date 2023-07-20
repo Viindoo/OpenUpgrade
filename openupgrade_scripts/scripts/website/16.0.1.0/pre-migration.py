@@ -75,7 +75,6 @@ def _fill_homepage_url(env):
            SET homepage_url = website_page.url
         FROM website_page
         WHERE website_page.id = website.homepage_id
-        );
         """,
     )
 
