@@ -72,10 +72,9 @@ def _fill_homepage_url(env):
         env.cr,
         """
         UPDATE website
-           SET homepage_url = (
-        SELECT url
-          FROM website_page
-         WHERE website_page.id = website.homepage_id
+           SET homepage_url = website_page.url
+        FROM website_page
+        WHERE website_page.id = website.homepage_id
         );
         """,
     )
