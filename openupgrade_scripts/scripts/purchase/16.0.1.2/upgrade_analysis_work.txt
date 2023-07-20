@@ -6,7 +6,7 @@ purchase     / account.analytic.applicability / business_domain (False)       : 
 purchase     / product.category         / property_account_creditor_price_difference_categ (many2one): module is now 'purchase_price_diff' ('purchase')
 purchase     / product.product          / property_account_creditor_price_difference (many2one): module is now 'purchase_price_diff' ('purchase')
 purchase     / product.template         / property_account_creditor_price_difference (many2one): module is now 'purchase_price_diff' ('purchase')
-# DONE pre-migration: rename_fields
+# NOTHING TO DO
 
 purchase     / purchase.order.line      / account_analytic_id (many2one): DEL relation: account.analytic.account
 purchase     / purchase.order.line      / analytic_distribution (json)  : NEW hasdefault: compute
