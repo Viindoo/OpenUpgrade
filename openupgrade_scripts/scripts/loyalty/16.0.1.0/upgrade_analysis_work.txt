@@ -123,7 +123,7 @@ loyalty      / loyalty.reward           / description (char)            : NEW ha
 # DONE pre-migration: renamed column from reward_description
 
 loyalty      / loyalty.reward           / discount (float)              : NEW hasdefault: default
-# DONE pre-migration: renamed column from discount_percentage
+# DONE pre-migration: renamed column from discount_percentage - after fill data if value = 0
 
 loyalty      / loyalty.reward           / discount_applicability (selection): NEW selection_keys: ['cheapest', 'order', 'specific'], hasdefault: default
 # DONE pre-migration: renamed column from discount_apply_on
@@ -162,7 +162,7 @@ loyalty      / loyalty.reward           / reward_product_id (many2one)  : NEW re
 # NOTHING TO DO
 
 loyalty      / loyalty.reward           / reward_product_qty (integer)  : NEW hasdefault: default
-# DONE pre-migration: renamed from reward_product_quantity
+# DONE pre-migration: renamed from reward_product_quantity - SET value before renamed field
 
 loyalty      / loyalty.reward           / reward_product_tag_id (many2one): NEW relation: product.tag
 # NOTHING TO DO
@@ -208,7 +208,7 @@ loyalty      / loyalty.rule             / product_tag_id (many2one)     : NEW re
 # NOTHING TO DO
 
 loyalty      / loyalty.rule             / program_id (many2one)         : NEW relation: loyalty.program, required
-# DONE pre-migration: duplicate it, then set the program_id value for them to be equal to all the programs that they linked to this bounty on version 15.0 # TO DO
+# DONE pre-migration: duplicate it, then set the program_id value for them to be equal to all the programs that they linked to this bounty on version 15.0
 
 loyalty      / loyalty.rule             / reward_point_amount (float)   : NEW hasdefault: default
 # NOTHING TO DO
@@ -242,10 +242,16 @@ NEW ir.model.constraint: loyalty.constraint_loyalty_program_check_max_usage
 # NOTHING TO DO
 
 NEW ir.model.constraint: loyalty.constraint_loyalty_reward_discount_positive
+# DONE: pre-migration:
+# SET discount_percentage = 10 if value = 0. at version 15 allow value = 0
+
 NEW ir.model.constraint: loyalty.constraint_loyalty_reward_product_qty_positive
+# DONE: pre-migration:
+# SET reward_product_quantity = 1 if reward_product_quantity <= 0 and reward_type = 'product' before renamed field
+
 NEW ir.model.constraint: loyalty.constraint_loyalty_reward_required_points_positive
 NEW ir.model.constraint: loyalty.constraint_loyalty_rule_reward_point_amount_positive
-#TODO
+# NOTHING TO DO: new field
 
 NEW ir.rule: loyalty.sale_loyalty_card_company_rule (noupdate)
 NEW ir.rule: loyalty.sale_loyalty_program_company_rule (noupdate)

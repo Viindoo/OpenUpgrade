@@ -301,6 +301,26 @@ def _fill_loyalty_program_trigger(env):
 # ========================= Reward ==============================
 
 
+def _fill_loyalty_reward_discount_percentage_if_zero(env):
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE loyalty_reward reward
+           SET discount_percentage = 10
+         WHERE discount_percentage = 0""",
+    )
+
+
+def _fill_loyalty_reward_reward_product_quantity(env):
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE loyalty_reward reward
+           SET reward_product_quantity = 1
+         WHERE reward_product_quantity < 0 AND reward_type = 'product'""",
+    )
+
+
 def _fill_loyalty_reward_company_id(env):
     """
     This function needs to run after the program_id column has a value
@@ -568,6 +588,8 @@ def _fill_loyalty_rule_mode(env):
 def migrate(env, version):
     _rename_models(env)
     _rename_tables(env)
+    _fill_loyalty_reward_discount_percentage_if_zero(env)
+    _fill_loyalty_reward_reward_product_quantity(env)
     _rename_fields(env)
     _create_column(env)
     _fill_loyalty_card_company_id(env)
