@@ -164,28 +164,6 @@ def copy_fields(env):
     )
 
 
-def _mark_move_line_statement_unreconciled(env):
-    # 1. create legacy_statement column in account_move_line table
-    openupgrade.logged_query(
-        env.cr,
-        """
-        ALTER TABLE account_move_line
-        ADD COLUMN IF NOT EXISTS legacy_statement_unreconcile BOOLEAN
-        """,
-    )
-
-    # 2. mark account move line is statement unreconciled in legacy_statement
-    openupgrade.logged_query(
-        env.cr,
-        """
-        UPDATE account_move_line
-        SET legacy_statement_unreconcile = TRUE
-        WHERE account_internal_type = 'liquidity'
-        AND statement_line_id IS NULL
-        """,
-    )
-
-
 def add_move_id_field_account_bank_statement_line(env):
     if not openupgrade.column_exists(
         env.cr, "account_bank_statement_line", "currency_id"
@@ -564,7 +542,6 @@ def migrate(env, version):
     openupgrade.set_xml_ids_noupdate_value(
         env, "account", ["account_analytic_line_rule_billing_user"], True
     )
-    _mark_move_line_statement_unreconciled(env)
     copy_fields(env)
     rename_fields(env)
     m2m_tables_account_journal_renamed(env)
