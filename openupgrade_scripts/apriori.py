@@ -34,6 +34,8 @@ renamed_modules = {
     "viin_webp": "viin_web_editor",
     # Viindoo/enterprise
     # Viindoo/odoo-tvtma
+    "viin_saas_membership_white_label": "viin_saas_reseller_white_label",
+    "viin_viindoo_membership": "viin_viindoo_saas_reseller",
 }
 
 # Merged modules contain a mapping from old module names to other,
@@ -86,6 +88,9 @@ merged_modules = {
     # Viindoo/enterprise
     "viin_website_seo_advisor_patch1": "viin_website_seo_advisor",
     # Viindoo/odoo-tvtma
+    "viin_saas_membership": "viin_saas_reseller",
+    "viin_saas_reseller_portal": "viin_saas_reseller",
+    "viin_viindoo_membership_white_label": "viin_viindoo_saas_reseller",
 }
 
 # only used here for upgrade_analysis
