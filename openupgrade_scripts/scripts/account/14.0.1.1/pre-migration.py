@@ -178,10 +178,23 @@ def _mark_move_line_statement_unreconciled(env):
     openupgrade.logged_query(
         env.cr,
         """
-        UPDATE account_move_line
-        SET legacy_statement_unreconcile = TRUE
-        WHERE account_internal_type = 'liquidity'
-        AND statement_line_id IS NULL
+        UPDATE account_move_line aml
+            SET legacy_statement_unreconcile = TRUE
+        WHERE id in
+            (select aml.id
+            from account_move_line aml
+            join account_journal aj on aml.journal_id = aj.id
+            join account_account aa on aml.account_id = aa.id
+            where aj.type in ('bank', 'cash') and aml.statement_line_id is NULL
+            and (aml.account_id = aj.default_debit_account_id or aml.account_id = aj.default_credit_account_id)
+            and (aml.display_type NOT IN ('line_section', 'line_note') OR aml.display_type is null)
+            and (
+                aj.is_advance_journal = false
+                or
+                
+                aj.is_advance_journal is null -- Anh em xem lai cho nay vi co database ko co truong nay
+                )
+            and aml.parent_state = 'posted')
         """,
     )
 

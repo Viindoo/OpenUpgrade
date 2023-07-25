@@ -143,6 +143,20 @@ def fill_partial_reconcile_debit_and_credit_amounts(env):
                 OR r.debit_currency_id = c.currency_id)
        """,
     )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE account_partial_reconcile r
+        SET debit_amount_currency = r.amount_currency,
+            credit_amount_currency = r.amount_currency
+        FROM res_company c
+        WHERE r.company_id = c.id
+            AND r.debit_amount_currency IS NULL
+            AND r.credit_amount_currency is NULL
+            AND r.credit_currency_id = r.debit_currency_id
+            AND r.credit_currency_id != c.currency_id
+       """,
+    )
     # compute debit and credit amount when currencies are different
     partial_reconcile_lines = (
         env["account.partial.reconcile"]
@@ -817,33 +831,6 @@ def _create_ir_config_parameter_constraint_start_date(env):
     )
 
 
-def _switch_default_account_and_outstanding_account(env):
-    openupgrade.logged_query(
-        env.cr,
-        """
-        WITH subquery as (
-            SELECT aml.id as aml_id,
-            aj.payment_debit_account_id,
-            aj.payment_credit_account_id,
-            aml.debit, aml.credit
-            FROM account_move_line aml
-            JOIN account_journal aj on aml.journal_id = aj.id
-            WHERE legacy_statement_unreconcile = TRUE
-            AND aj.type IN ('bank', 'cash')
-        )
-        UPDATE account_move_line aml
-        SET account_id =
-        CASE
-            WHEN subquery.debit > 0 THEN subquery.payment_debit_account_id
-            WHEN subquery.credit > 0 THEN subquery.payment_credit_account_id
-        END
-        FROM subquery
-        WHERE aml.id = subquery.aml_id
-        AND aml.display_type NOT IN ('line_section', 'line_note')
-        """,
-    )
-
-
 @openupgrade.migrate()
 def migrate(env, version):
     fill_account_journal_posted_before(env)
@@ -880,5 +867,4 @@ def migrate(env, version):
         ["email_template_edi_invoice", "mail_template_data_payment_receipt"],
     )
     _migrate_currency_exchange_account_company(env)
-    _create_ir_config_parameter_constraint_start_date(env)
-    _switch_default_account_and_outstanding_account(env)
+    _create_ir_config_parameter_constraint_start_date(env)    

@@ -30,8 +30,35 @@ def _make_correct_account_type(env):
         env.cr,
         query,
     )
+    
+def _switch_default_account_and_outstanding_account(env):
+    openupgrade.logged_query(
+        env.cr,
+        """
+        WITH subquery as (
+            SELECT aml.id as aml_id,
+            aj.payment_debit_account_id,
+            aj.payment_credit_account_id,
+            aml.debit, aml.credit
+            FROM account_move_line aml
+            JOIN account_journal aj on aml.journal_id = aj.id
+            WHERE legacy_statement_unreconcile = TRUE
+            AND aj.type IN ('bank', 'cash')
+        )
+        UPDATE account_move_line aml
+        SET account_id =
+        CASE
+            WHEN subquery.debit > 0 THEN subquery.payment_debit_account_id
+            WHEN subquery.credit > 0 THEN subquery.payment_credit_account_id
+        END
+        FROM subquery
+        WHERE aml.id = subquery.aml_id
+        AND (aml.display_type NOT IN ('line_section', 'line_note') OR aml.display_type IS NULL)
+        """,
+    )
 
 
 @openupgrade.migrate()
 def migrate(env, version):
     _make_correct_account_type(env)
+    _switch_default_account_and_outstanding_account(env)
