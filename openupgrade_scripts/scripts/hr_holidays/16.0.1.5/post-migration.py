@@ -11,13 +11,13 @@ def set_allocation_validation_type(env):
     where it set "officer".
     """
     openupgrade.logged_query(
-        env.cr, "UPDATE hr_leave_type SET allocation_validation_type = 'no'"
-    )
-    openupgrade.logged_query(
         env.cr,
-        """UPDATE hr_leave_type
-        SET allocation_validation_type = 'officer'
-        WHERE employee_requests = 'no'
+        """
+        UPDATE hr_leave_type
+            SET allocation_validation_type = CASE
+                WHEN employee_requests = 'no' THEN 'officer'
+                ELSE 'no'
+                END
         """,
     )
 
