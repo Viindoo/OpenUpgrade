@@ -96,6 +96,8 @@ merged_modules = {
     "viin_website_seo_advisor_patch1": "viin_website_seo_advisor",
     "viin_website_patch1": "viin_website",
     "viin_website_helpdesk_patch1": "viin_website_helpdesk",
+    # Viindoo/saas-infrastructure
+    "viin_saas_sale_subscription_free_product": "viin_saas_sale_subscription_loyalty",
     # Viindoo/odoo-tvtma
     "viin_saas_membership": "viin_saas_reseller",
     "viin_saas_reseller_portal": "viin_saas_reseller",
