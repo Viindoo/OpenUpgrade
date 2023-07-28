@@ -97,9 +97,9 @@ loyalty      / loyalty.program          / portal_visible (boolean)      : NEW ha
 
 loyalty      / loyalty.program          / program_type (selection)      : NEW required, selection_keys: ['buy_x_get_y', 'coupons', 'ewallet', 'gift_card', 'loyalty', 'next_order_coupons', 'promo_code', 'promotion'], hasdefault: default
 # DONE: pre-migration:
-# 1. if promo_code_usage = 'code_needed' then program_type = 'promo_code'
+# 1. if reward_product_id is not null then program_type = 'buy_x_get_y'
 # 2. if promo_applicability = 'on_next_order' then program_type = 'next_order_coupons'
-# 3. if reward_product_id is not null then program_type = 'buy_x_get_y'
+# 3. if promo_code_usage = 'code_needed' then program_type = 'promo_code'
 
 loyalty      / loyalty.program          / reward_ids (one2many)         : NEW relation: loyalty.reward, hasdefault: compute
 loyalty      / loyalty.program          / rule_ids (one2many)           : NEW relation: loyalty.rule, hasdefault: compute

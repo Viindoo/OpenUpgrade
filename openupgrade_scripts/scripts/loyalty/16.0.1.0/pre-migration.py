@@ -148,13 +148,14 @@ def _fill_loyalty_card_expiration_date(env):
 
 # ========================= Program ==============================
 def _map_loyalty_program_program_type(env):
-    # 1. if promo_code_usage = 'code_needed' then program_type = 'promo_code'
+    # 1. if reward_product_id is not null then program_type = 'buy_x_get_y'
     openupgrade.logged_query(
         env.cr,
         """
-        UPDATE loyalty_program
-           SET program_type = 'promo_code'
-        WHERE promo_code_usage = 'code_needed'
+        UPDATE loyalty_program program
+           SET program_type = 'buy_x_get_y'
+        FROM loyalty_reward reward
+        WHERE reward.reward_product_id IS NOT NULL AND program.reward_id = reward.id
         """,
     )
     # 2. if promo_applicability = 'on_next_order' then program_type = 'next_order_coupons'
@@ -166,14 +167,13 @@ def _map_loyalty_program_program_type(env):
         WHERE promo_applicability = 'on_next_order'
         """,
     )
-    # 3. if reward_product_id is not null then program_type = 'buy_x_get_y'
+    # 3. if promo_code_usage = 'code_needed' then program_type = 'promo_code'
     openupgrade.logged_query(
         env.cr,
         """
-        UPDATE loyalty_program program
-           SET program_type = 'buy_x_get_y'
-        FROM loyalty_reward reward
-        WHERE reward.reward_product_id IS NOT NULL AND program.reward_id = reward.id
+        UPDATE loyalty_program
+           SET program_type = 'promo_code'
+        WHERE promo_code_usage = 'code_needed'
         """,
     )
 
