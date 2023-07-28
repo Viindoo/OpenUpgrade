@@ -1,7 +1,8 @@
 ---Models in module 'loyalty'---
 new model loyalty.card ( renamed from coupon.coupon )
 new model loyalty.generate.wizard [transient] ( renamed from coupon.generate.wizard )
-# DONE: renamed models
+# DONE: pre-migration: renamed models
+# DONE: pre-migration: move gift_cart data to loyalty_card
 
 new model loyalty.mail ( new model )
 # NOTHING TO DO
@@ -9,7 +10,7 @@ new model loyalty.mail ( new model )
 new model loyalty.program ( renamed from coupon.program )
 new model loyalty.reward ( renamed from coupon.reward )
 new model loyalty.rule ( renamed from coupon.rule )
-# DONE: renamed models
+# DONE: pre-migration: renamed models
 
 
 =============================================Loyalty.Card================================================================
@@ -57,9 +58,9 @@ loyalty      / loyalty.program          / active (boolean)              : NEW ha
 # NOTHING TO DO
 
 loyalty      / loyalty.program          / applies_on (selection)        : NEW required, selection_keys: ['both', 'current', 'future'], hasdefault: default
-# DONE: pre-migration: renamed column & refill data
-# Add new a selection key `both`.
-# Selection_key_change = {'on_current_order': 'current', 'on_next_order': 'future'}
+# DONE: pre-migration:
+1. if program_type IN ('coupons', 'promotion', 'promo_code', 'buy_x_get_y') THEN 'current'
+2. if program_type IN ('gift_card', 'ewallet', 'next_order_coupons') THEN 'future'
 
 loyalty      / loyalty.program          / available_on (boolean)        : NEW
 # NOTHING TO DO: store = False
@@ -95,17 +96,21 @@ loyalty      / loyalty.program          / portal_visible (boolean)      : NEW ha
 # NOTHING TO DO
 
 loyalty      / loyalty.program          / program_type (selection)      : NEW required, selection_keys: ['buy_x_get_y', 'coupons', 'ewallet', 'gift_card', 'loyalty', 'next_order_coupons', 'promo_code', 'promotion'], hasdefault: default
-# DONE pre-migration: set = coupons if old value = coupon_program, else set = promotion if old value = promotion_program
+# DONE: pre-migration:
+# 1. if promo_code_usage = 'code_needed' then program_type = 'promo_code'
+# 2. if promo_applicability = 'on_next_order' then program_type = 'next_order_coupons'
+# 3. if reward_product_id is not null then program_type = 'buy_x_get_y'
 
 loyalty      / loyalty.program          / reward_ids (one2many)         : NEW relation: loyalty.reward, hasdefault: compute
 loyalty      / loyalty.program          / rule_ids (one2many)           : NEW relation: loyalty.rule, hasdefault: compute
-# NOTHING TO DO
+# DONE: pre-migration: convert many2one to one2many
 
 loyalty      / loyalty.program          / sequence (integer)            : NEW
 # NOTHING TO DO
 
 loyalty      / loyalty.program          / trigger (selection)           : NEW selection_keys: ['auto', 'with_code'], hasdefault: compute
-# DONE pre-migration: Create column & Set auto for promotion type & with_code for coupon type
+# DONE: pre-migration:
+# 1. if program_type IN ('coupons', 'promo_code') THEN 'with_code' ELSE 'auto'
 
 
 =============================================Loyalty.reward================================================================
@@ -146,14 +151,14 @@ loyalty      / loyalty.reward           / discount_product_domain (char): NEW ha
 # NOTHING TO DO
 
 loyalty      / loyalty.reward           / discount_product_ids (many2many): NEW relation: product.product
-# NOTHING TO DO
+# DONE: pre-migration: renamed from discount_specific_product_ids
 
 loyalty      / loyalty.reward           / discount_product_tag_id (many2one): NEW relation: product.tag
 # NOTHING TO DO
 
 loyalty      / loyalty.reward           / program_id (many2one)         : NEW relation: loyalty.program, required
 
-# DONE pre-migration: duplicate it, then set the program_id value for them to be equal to all the programs that they linked to this bounty on version 15.0
+# DONE pre-migration: fill value from loyalty.program
 
 loyalty      / loyalty.reward           / required_points (float)       : NEW hasdefault: default
 # NOTHING TO DO
@@ -168,7 +173,7 @@ loyalty      / loyalty.reward           / reward_product_tag_id (many2one): NEW 
 # NOTHING TO DO
 
 loyalty      / loyalty.reward           / reward_type (selection)       : NEW required, selection_keys: ['discount', 'product'], hasdefault: default
-# DONE pre-migration: SET value to discount IF NULL
+# NOTHING TO DO: renamed model but structure of field not change
 
 
 =============================================Loyalty.rule================================================================
@@ -177,7 +182,7 @@ loyalty      / loyalty.rule             / active (boolean)              : NEW ha
 # NOTHING TO DO
 
 loyalty      / loyalty.rule             / code (char)                   : NEW hasdefault: compute
-# DONE per-migration: create column & fill data to ''
+# DONE per-migration: set code = loyalty_program.promo_code
 
 loyalty      / loyalty.rule             / company_id (many2one)         : NEW relation: res.company, isrelated: related, stored
 # DONE pre-migration: create column & fill data => program_id.company_id
@@ -193,7 +198,7 @@ loyalty      / loyalty.rule             / minimum_qty (integer)         : NEW ha
 # DONE pre-migration: renamed from rule_min_quantity
 
 loyalty      / loyalty.rule             / mode (selection)              : NEW selection_keys: ['auto', 'with_code'], hasdefault: compute
-# DONE pre-migration: Create column & fill data to `auto`
+# DONE pre-migration: if loyalty_program.promo_code IS NOT NULL THEN 'with_code' ELSE 'auto'
 
 loyalty      / loyalty.rule             / product_category_id (many2one): NEW relation: product.category
 # NOTHING TO DO
@@ -208,7 +213,7 @@ loyalty      / loyalty.rule             / product_tag_id (many2one)     : NEW re
 # NOTHING TO DO
 
 loyalty      / loyalty.rule             / program_id (many2one)         : NEW relation: loyalty.program, required
-# DONE pre-migration: duplicate it, then set the program_id value for them to be equal to all the programs that they linked to this bounty on version 15.0
+# DONE pre-migration: fill value from loyalty.program
 
 loyalty      / loyalty.rule             / reward_point_amount (float)   : NEW hasdefault: default
 # NOTHING TO DO
@@ -239,19 +244,11 @@ NEW ir.model.access: loyalty.access_loyalty_reward
 NEW ir.model.access: loyalty.access_loyalty_rule
 NEW ir.model.constraint: loyalty.constraint_loyalty_card_card_code_unique
 NEW ir.model.constraint: loyalty.constraint_loyalty_program_check_max_usage
-# NOTHING TO DO
-
 NEW ir.model.constraint: loyalty.constraint_loyalty_reward_discount_positive
-# DONE: pre-migration:
-# SET discount_percentage = 10 if value = 0. at version 15 allow value = 0
-
 NEW ir.model.constraint: loyalty.constraint_loyalty_reward_product_qty_positive
-# DONE: pre-migration:
-# SET reward_product_quantity = 1 if reward_product_quantity <= 0 and reward_type = 'product' before renamed field
-
 NEW ir.model.constraint: loyalty.constraint_loyalty_reward_required_points_positive
 NEW ir.model.constraint: loyalty.constraint_loyalty_rule_reward_point_amount_positive
-# NOTHING TO DO: new field
+# NOTHING TO DO
 
 NEW ir.rule: loyalty.sale_loyalty_card_company_rule (noupdate)
 NEW ir.rule: loyalty.sale_loyalty_program_company_rule (noupdate)
@@ -288,4 +285,4 @@ NEW product.product: loyalty.ewallet_product_50
 # NOTHING TO DO
 
 NEW product.product: loyalty.gift_card_product_50 [renamed from gift_card module] (noupdate switched)
-# DONE pre-migration: rename_xmlids
+# DONE pre-migration: rename_xmlids and noupdate switched
