@@ -213,7 +213,7 @@ def _fill_loyalty_program_trigger(env):
                WHEN program_type IN ('coupons', 'promo_code') THEN 'with_code'
                ELSE 'auto'
            END
-        WHERE applies_on in (
+        WHERE program_type in (
             'coupons', 'promotion', 'gift_card', 'loyalty', 'ewallet', 'promo_code',
             'buy_x_get_y', 'next_order_coupons'
         )
