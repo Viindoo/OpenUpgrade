@@ -101,6 +101,7 @@ merged_modules = {
     "viin_website_patch1": "viin_website",
     "viin_website_helpdesk_patch1": "viin_website_helpdesk",
     # Viindoo/saas-infrastructure
+    "viin_odoo_module_sale_subscription": "viin_odoo_module_subscription",
     "viin_saas_sale_subscription_free_product": "viin_saas_sale_subscription_loyalty",
     # Viindoo/odoo-tvtma
     "viin_saas_membership": "viin_saas_reseller",
