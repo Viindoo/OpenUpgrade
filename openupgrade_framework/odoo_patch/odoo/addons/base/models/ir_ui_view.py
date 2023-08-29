@@ -17,6 +17,23 @@ def _check_xml(self):
         return View._check_xml._original_method(self)
 
 
+def _check_field_paths(self, node, field_paths, model_name, use):
+    """Because we captured the exception in _raise_view_error and archived that view,
+    so field has not been assigned, but it is called to field._description_searchable
+    in View._check_field_paths, which will raise an exception UnboundLocalError,
+    so we need to override to not raise an exception
+    """
+    try:
+        return View._check_field_paths._original_method(
+            self, node, field_paths, model_name, use
+        )
+    except UnboundLocalError as e:
+        if e.args[0] == "local variable 'field' referenced before assignment":
+            pass
+        else:
+            raise
+
+
 def check(self, view):
     """Because we captured the exception in _raise_view_error and archived that view,
     so info is None, but it is called to info.get('select') in NameManager.check,
@@ -63,6 +80,8 @@ def _raise_view_error(
 
 _check_xml._original_method = View._check_xml
 View._check_xml = _check_xml
+_check_field_paths._original_method = View._check_field_paths
+View._check_field_paths = _check_field_paths
 check._original_method = NameManager.check
 NameManager.check = check
 _raise_view_error._original_method = View._raise_view_error
