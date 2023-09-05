@@ -1,11 +1,5 @@
 from openupgradelib import openupgrade
 
-_translations_to_delete = [
-    "email_template_edi_credit_note",
-    "email_template_edi_invoice",
-    "mail_template_data_payment_receipt",
-]
-
 
 _deleted_xml_records = [
     "account.data_account_off_sheet",
@@ -34,7 +28,6 @@ _deleted_xml_records = [
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.load_data(env.cr, "account", "16.0.1.2/noupdate_changes.xml")
-    openupgrade.delete_record_translations(env.cr, "account", _translations_to_delete)
     openupgrade.delete_records_safely_by_xml_id(
         env,
         _deleted_xml_records,
