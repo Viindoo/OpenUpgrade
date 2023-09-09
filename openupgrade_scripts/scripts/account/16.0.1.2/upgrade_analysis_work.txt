@@ -236,7 +236,7 @@ account      / account.partial.reconcile / exchange_move_id (many2one)   : NEW r
 # NOTHING TO DO
 
 account      / account.payment          / amount_company_currency_signed (float): is now stored
-# DONE pre-migration: create column
+# NOTHING TO DO: Handled by ORM
 
 account      / account.payment          / auto_post (boolean)           : now required
 account      / account.payment          / auto_post (boolean)           : selection_keys is now 'function' ('False')

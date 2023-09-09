@@ -221,25 +221,6 @@ def _account_bank_statement_line_fast_fill_internal_index(env):
     )
 
 
-def _account_payment_fast_fill_amount_company_currency_signed(env):
-    if not openupgrade.column_exists(
-        env.cr, "account_payment", "amount_company_currency_signed"
-    ):
-        openupgrade.add_fields(
-            env,
-            [
-                (
-                    "amount_company_currency_signed",
-                    "account.payment",
-                    "account_payment",
-                    "monetary",
-                    False,
-                    "account",
-                )
-            ],
-        )
-
-
 def _account_move_fast_fill_display_type(env):
     """
     Respectively Fill display type is Null AND
@@ -558,7 +539,6 @@ def migrate(env, version):
     _account_bank_statement_line_fast_fill_internal_index(env)
     _account_move_fast_fill_display_type(env)
     _account_move_auto_post_boolean_to_selection(env)
-    _account_payment_fast_fill_amount_company_currency_signed(env)
     _account_analytic_distribution_model_generate(env)
     _aml_fast_fill_analytic_distribution(env)
     _arml_fast_fill_analytic_distribution(env)
