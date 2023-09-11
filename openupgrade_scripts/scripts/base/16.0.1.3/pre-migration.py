@@ -7,6 +7,7 @@ from openupgradelib import openupgrade
 
 from odoo import tools
 
+from odoo.addons.openupgrade_scripts import apriori
 from odoo.addons.openupgrade_scripts.apriori import merged_modules, renamed_modules
 
 _logger = logging.getLogger(__name__)
@@ -72,4 +73,23 @@ def migrate(cr, version):
         WHERE src IS NULL OR src = '' OR value IS NULL OR value = ''
         """,
     )
+    openupgrade.logged_query(
+        cr,
+        """
+        UPDATE ir_translation
+            SET state = 'translated'
+        WHERE state != 'translated'
+        """,
+    )
+    # Renamed model in ir_translation
+    changed_models = apriori.renamed_models | apriori.merged_models
+    for old_model, new_model in changed_models.items():
+        openupgrade.logged_query(
+            cr,
+            f"""
+            UPDATE ir_translation
+                SET name = REPLACE(name, '{old_model},', '{new_model},')
+            WHERE name ilike '{old_model},%'
+            """,
+        )
     openupgrade.rename_tables(cr, [("ir_translation", "_ir_translation")])
