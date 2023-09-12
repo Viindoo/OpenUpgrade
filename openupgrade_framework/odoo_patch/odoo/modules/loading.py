@@ -169,12 +169,15 @@ def load_modules(registry, force_demo=False, status=None, update_module=False):
                         "",
                         "User has been deleted",
                     )
+                    continue
                 removed_grps = list(set(old_data["gids"]) - set(new_data[0]["gids"]))
-                if removed_grps:
-                    msg_all += msg(str(old_data["uid"]), str(removed_grps), "", "")
                 added_grps = list(set(new_data[0]["gids"]) - set(old_data["gids"]))
-                if added_grps:
-                    msg_all += msg(str(old_data["uid"]), "", str(added_grps), "")
+                msg_all += msg(
+                    str(old_data["uid"]),
+                    str(removed_grps),
+                    str(added_grps),
+                    "",
+                )
             old_users = {d["uid"] for d in old_groups}
             new_users = {d["uid"] for d in new_groups}
             for u in list(old_users - new_users):
