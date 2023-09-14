@@ -176,6 +176,15 @@ def _map_loyalty_program_program_type(env):
         WHERE promo_code_usage = 'code_needed'
         """,
     )
+    # 4. if program_type = 'coupon_program' then program_type = 'coupons'
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE loyalty_program
+           SET program_type = 'coupons'
+        WHERE program_type = 'coupon_program'
+        """,
+    )
 
 
 def _fill_loyalty_program_applies_on(env):
