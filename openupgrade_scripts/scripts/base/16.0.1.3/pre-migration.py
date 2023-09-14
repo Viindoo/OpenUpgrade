@@ -115,3 +115,14 @@ def migrate(cr, version):
                 WHERE {column} = '{old_model}'
                 """,
             )
+    # TODO: move to OCA/openupgradelib repo
+    # Update key in ir_ui_view
+    for old_model, new_model in changed_models.items():
+        openupgrade.logged_query(
+            cr,
+            f"""
+            UPDATE ir_ui_view
+                SET key = REPLACE(key, '{old_model}.', '{new_model}.')
+            WHERE key ilike '{old_model}.%'
+            """,
+        )
