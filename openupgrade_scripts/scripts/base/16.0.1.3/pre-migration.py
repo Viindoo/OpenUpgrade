@@ -88,35 +88,6 @@ def migrate(cr, version):
         "USING ir_ui_view v "
         "WHERE r.view_id=v.id AND v.inherit_id IS NOT NULL AND v.mode != 'primary'"
     )
-    # In Odoo 16, translated fields no longer use the model ir.translation.
-    # Instead they store all their values into jsonb columns
-    # in the model's table.
-    # See https://github.com/odoo/odoo/pull/97692 for more details.
-    # Odoo provides a method _get_translation_upgrade_queries returning queries
-    # to execute to migrate all the translations of a particular field.
-    openupgrade.logged_query(
-        cr,
-        """
-        DELETE FROM ir_translation
-        WHERE (src IS NULL OR src = '') AND (value IS NULL OR value = '')
-        """,
-    )
-    openupgrade.logged_query(
-        cr,
-        """
-        UPDATE ir_translation
-            SET value = src
-        WHERE value IS NULL OR value = ''
-        """,
-    )
-    openupgrade.logged_query(
-        cr,
-        """
-        UPDATE ir_translation
-            SET state = 'translated'
-        WHERE state != 'translated'
-        """,
-    )
     # Renamed model in ir_translation
     changed_models = apriori.renamed_models | apriori.merged_models
     for old_model, new_model in changed_models.items():
@@ -128,7 +99,6 @@ def migrate(cr, version):
             WHERE name ilike '{old_model},%'
             """,
         )
-    openupgrade.rename_tables(cr, [("ir_translation", "_ir_translation")])
     # Rename field's content of a model's name which has been changed
     # Ex: parent_res_model of rating_rating table store model's name
     for table, column in _RENAMED_CHANGED_MODELS_NAME:

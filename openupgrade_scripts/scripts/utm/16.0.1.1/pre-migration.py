@@ -18,7 +18,7 @@ def migrate(env, version):
                 SELECT it.res_id as res_id,
                     jsonb_object_agg(it.lang, it.value) AS value,
                     bool_or(imd.noupdate) AS noupdate
-                  FROM _ir_translation it
+                  FROM ir_translation it
              LEFT JOIN ir_model_data imd
                     ON imd.model = 'utm_campaign' AND imd.res_id = it.res_id
                  WHERE it.type = 'model' AND it.name = 'utm.campaign,name'
