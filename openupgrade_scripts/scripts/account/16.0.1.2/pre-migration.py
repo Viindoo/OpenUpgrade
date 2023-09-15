@@ -523,6 +523,14 @@ def _arml_fast_fill_analytic_distribution(env):
     )
 
 
+def _force_install_viin_analytic_tag_module(env):
+    viin_analytic_tag_module = env["ir.module.module"].search(
+        [("name", "=", "viin_analytic_tag")]
+    )
+    if viin_analytic_tag_module:
+        viin_analytic_tag_module.button_install()
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.rename_xmlids(env.cr, _xmlids_renames)
@@ -542,3 +550,4 @@ def migrate(env, version):
     _account_analytic_distribution_model_generate(env)
     _aml_fast_fill_analytic_distribution(env)
     _arml_fast_fill_analytic_distribution(env)
+    _force_install_viin_analytic_tag_module(env)
