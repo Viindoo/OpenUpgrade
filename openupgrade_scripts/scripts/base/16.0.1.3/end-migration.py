@@ -17,7 +17,8 @@ def _migrate_translations_to_jsonb(env):
         env.cr,
         """
         DELETE FROM ir_translation
-        WHERE (lang IS NULL OR lang = '') OR ((src IS NULL OR src = '') AND (value IS NULL OR value = ''))
+        WHERE (lang IS NULL OR lang = '')
+            OR ((src IS NULL OR src = '') AND (value IS NULL OR value = ''))
         """,
     )
     openupgrade.logged_query(
