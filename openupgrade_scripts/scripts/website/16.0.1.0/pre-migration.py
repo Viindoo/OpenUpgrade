@@ -1,8 +1,5 @@
-from itertools import chain
-
 from lxml import etree
 from openupgradelib import openupgrade
-from openupgradelib.openupgrade_160 import convert_string_bootstrap_4to5
 
 _xmlids_renames = [
     (
@@ -80,23 +77,6 @@ def _fill_homepage_url(env):
     )
 
 
-def boostrap_5_migration(env):
-    """Convert customized website views to Bootstrap 5."""
-    # Find views to convert
-    env.cr.execute(
-        """
-        SELECT iuv.id FROM ir_ui_view iuv
-        WHERE iuv.type = 'qweb'
-    """
-    )
-    view_ids = list(chain.from_iterable(env.cr.fetchall()))
-    all_view_need_bs5_migration = env["ir.ui.view"].browse(view_ids)
-    for view in all_view_need_bs5_migration:
-        new_arch = convert_string_bootstrap_4to5(view.arch_db)
-        if new_arch != view.arch_db:
-            view.arch_db = new_arch
-
-
 def _mig_s_progress_steps_contents(env):
     views = (
         env["ir.ui.view"]
@@ -150,6 +130,5 @@ def migrate(env, version):
     openupgrade.rename_xmlids(env.cr, _xmlids_renames)
     openupgrade.delete_records_safely_by_xml_id(env, _xmlids_delete)
     delete_constraint_website_visitor_partner_uniq(env)
-    boostrap_5_migration(env)
     _fill_homepage_url(env)
     _mig_s_progress_steps_contents(env)

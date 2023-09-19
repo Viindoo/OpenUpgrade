@@ -42,5 +42,5 @@ def migrate(env, version):
         SET state = 'to install'
         WHERE name IN %s AND state = 'uninstalled'
         """,
-        (tuple(_modules_to_install),)
+        (tuple(_modules_to_install),),
     )
