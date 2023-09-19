@@ -15,5 +15,4 @@
     "images": ["static/description/banner.jpg"],
     "external_dependencies": {"python": ["openupgradelib"]},
     "installable": True,
-    "post_load": "post_load",
 }
