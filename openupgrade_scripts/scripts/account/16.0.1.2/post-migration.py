@@ -23,6 +23,10 @@ _deleted_xml_records = [
     "account.analytic_default_comp_rule",
 ]
 
+_modules_to_install = [
+    "account_sequence",
+]
+
 
 @openupgrade.migrate()
 def migrate(env, version):
@@ -30,4 +34,13 @@ def migrate(env, version):
     openupgrade.delete_records_safely_by_xml_id(
         env,
         _deleted_xml_records,
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE ir_module_module
+        SET state = 'to install'
+        WHERE name IN %s AND state = 'uninstalled'
+        """,
+        (tuple(_modules_to_install),)
     )
