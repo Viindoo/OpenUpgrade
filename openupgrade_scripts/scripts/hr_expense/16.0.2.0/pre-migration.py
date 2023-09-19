@@ -57,6 +57,14 @@ def _fill_analytic_distribution(env):
         )
 
 
+def _force_install_viin_analytic_tag_expense_module(env):
+    viin_analytic_tag_expense_module = env["ir.module.module"].search(
+        [("name", "=", "viin_analytic_tag_expense")]
+    )
+    if viin_analytic_tag_expense_module:
+        viin_analytic_tag_expense_module.button_install()
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     _fill_analytic_distribution(env)
@@ -83,3 +91,4 @@ def migrate(env, version):
             "hr_expense.product_product_fixed_cost",
         ],
     )
+    _force_install_viin_analytic_tag_expense_module(env)

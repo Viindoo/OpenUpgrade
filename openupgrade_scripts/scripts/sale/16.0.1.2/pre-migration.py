@@ -132,6 +132,14 @@ def _create_ir_model_data_sale_default_invoice_email_template(env):
     )
 
 
+def _force_install_viin_analytic_tag_sale_module(env):
+    viin_analytic_tag_sale_module = env["ir.module.module"].search(
+        [("name", "=", "viin_analytic_tag_sale")]
+    )
+    if viin_analytic_tag_sale_module:
+        viin_analytic_tag_sale_module.button_install()
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.rename_models(env.cr, _models_renames)
@@ -142,3 +150,4 @@ def migrate(env, version):
     _remove_table_constraints(env)
     _fast_fill_analytic_distribution_on_sale_order_line(env)
     _create_ir_model_data_sale_default_invoice_email_template(env)
+    _force_install_viin_analytic_tag_sale_module(env)

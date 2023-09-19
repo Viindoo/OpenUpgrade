@@ -61,6 +61,15 @@ def _fill_analytic_distribution_on_purchase_order_line(env):
     )
 
 
+def _force_install_viin_analytic_tag_purchase_module(env):
+    viin_analytic_tag_purchase_module = env["ir.module.module"].search(
+        [("name", "=", "viin_analytic_tag_purchase")]
+    )
+    if viin_analytic_tag_purchase_module:
+        viin_analytic_tag_purchase_module.button_install()
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     _fill_analytic_distribution_on_purchase_order_line(env)
+    _force_install_viin_analytic_tag_purchase_module(env)

@@ -47,6 +47,15 @@ def _compute_purchase_order_receipt_status(env):
     )
 
 
+def _force_install_viin_analytic_tag_purchase_stock_module(env):
+    viin_analytic_tag_purchase_stock_module = env["ir.module.module"].search(
+        [("name", "=", "viin_analytic_tag_purchase_stock")]
+    )
+    if viin_analytic_tag_purchase_stock_module:
+        viin_analytic_tag_purchase_stock_module.button_install()
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     _compute_purchase_order_receipt_status(env)
+    _force_install_viin_analytic_tag_purchase_stock_module(env)
