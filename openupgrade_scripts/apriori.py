@@ -116,8 +116,6 @@ merged_modules = {
     "viin_hr_holidays_patch1": "viin_hr_holidays",
     "viin_social_facebook_page_setting": "viin_social_facebook",
     "viin_social_facebook_page_setting_patch1": "viin_social_facebook",
-    "to_account_balance_carry_forward": "viin_account_auto_transfer",
-    "l10n_vn_viin_account_balance_carry_forward": "l10n_vn_viin_account_auto_transfer",
     # Viindoo/enterprise
     "to_account_asset_patch1": "to_account_asset",
     "viin_hide_ent_modules_account": "to_hide_ent_modules",
