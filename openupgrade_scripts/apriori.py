@@ -49,7 +49,6 @@ renamed_modules = {
     "viin_webp": "viin_web_editor",
     "viin_user_assignment_log_project": "test_viin_user_assignment_log_project",
     # Viindoo/enterprise
-    "viin_mrp_split_merge": "mrp",  # Feature available in odoo v16.0
     # Viindoo/odoo-tvtma
     "viin_saas_membership_white_label": "viin_saas_reseller_white_label",
     "viin_viindoo_membership": "viin_viindoo_saas_reseller",
@@ -139,6 +138,7 @@ merged_modules = {
     "viin_website_seo_advisor_patch1": "viin_website_seo_advisor",
     "viin_website_patch1": "viin_website",
     "viin_website_helpdesk_patch1": "viin_website_helpdesk",
+    "viin_mrp_split_merge": "mrp",  # Feature available in odoo v16.0
     # Viindoo/saas-infrastructure
     "viin_odoo_module_sale_subscription": "viin_odoo_module_subscription",
     "viin_saas_sale_subscription_free_product": "viin_saas_sale_subscription_loyalty",
