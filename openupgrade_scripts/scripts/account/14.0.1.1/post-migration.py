@@ -398,6 +398,18 @@ def pass_payment_to_journal_entry_narration(env):
     )
 
 
+def fill_ref_of_payment_move(env):
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE account_move am
+        SET ref = ap.communication
+        FROM account_payment ap
+        WHERE ap.move_id = am.id AND char_length(COALESCE(ap.communication, '')) > 0
+        """,
+    )
+
+
 def fill_company_account_cash_basis_base_account_id(env):
     openupgrade.logged_query(
         env.cr,
@@ -882,3 +894,4 @@ def migrate(env, version):
     _migrate_currency_exchange_account_company(env)
     _create_ir_config_parameter_constraint_start_date(env)
     _switch_default_account_and_outstanding_account(env)
+    fill_ref_of_payment_move(env)
