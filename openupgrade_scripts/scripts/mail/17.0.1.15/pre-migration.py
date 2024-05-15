@@ -1,14 +1,6 @@
 # Copyright 2024 Viindoo Technology Joint Stock Company (Viindoo)
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
-import logging
-
 from openupgradelib import openupgrade
-
-from odoo import tools
-
-from odoo.addons.openupgrade_scripts.apriori import merged_modules, renamed_modules
-
-_logger = logging.getLogger(__name__)
 
 _models_renames = [
     ("mail.channel", "discuss.channel"),
