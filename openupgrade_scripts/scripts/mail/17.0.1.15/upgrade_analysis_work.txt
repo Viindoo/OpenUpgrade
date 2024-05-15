@@ -32,7 +32,11 @@ new model mail.thread.main.attachment [abstract]
 new model mail.tracking.duration.mixin [abstract]
 ---Fields in module 'mail'---
 mail         / discuss.channel          / active (boolean)              : NEW hasdefault: default
+# NOTHING TO DO: renamed model
+
 mail         / discuss.channel          / allow_public_upload (boolean) : NEW hasdefault: default
+# TODO
+
 mail         / discuss.channel          / channel_member_ids (one2many) : NEW relation: discuss.channel.member
 mail         / discuss.channel          / channel_type (selection)      : NEW required, selection_keys: ['channel', 'chat', 'group']
 mail         / discuss.channel          / default_display_mode (selection): NEW selection_keys: ['video_full_screen']
@@ -43,14 +47,28 @@ mail         / discuss.channel          / image_128 (binary)            : NEW at
 mail         / discuss.channel          / message_follower_ids (one2many): NEW relation: mail.followers
 mail         / discuss.channel          / message_ids (one2many)        : NEW relation: mail.message
 mail         / discuss.channel          / name (char)                   : NEW required
+# NOTHING TO DO: renamed model
+
 mail         / discuss.channel          / pinned_message_ids (one2many) : NEW relation: mail.message
+# TODO
+
 mail         / discuss.channel          / rtc_session_ids (one2many)    : NEW relation: discuss.channel.rtc.session
+# NOTHING TO DO: renamed model
+
 mail         / discuss.channel          / sfu_channel_uuid (char)       : NEW
 mail         / discuss.channel          / sfu_server_url (char)         : NEW
+# TODO
+
 mail         / discuss.channel          / uuid (char)                   : NEW hasdefault: default
+# NOTHING TO DO: renamed model
+
 mail         / discuss.channel.member   / channel_id (many2one)         : NEW relation: discuss.channel, required
 mail         / discuss.channel.member   / custom_channel_name (char)    : NEW
+# NOTHING TO DO: renamed model
+
 mail         / discuss.channel.member   / custom_notifications (selection): NEW selection_keys: ['mentions', 'no_notif']
+# TODO
+
 mail         / discuss.channel.member   / fetched_message_id (many2one) : NEW relation: mail.message
 mail         / discuss.channel.member   / fold_state (selection)        : NEW selection_keys: ['closed', 'folded', 'open'], hasdefault: default
 mail         / discuss.channel.member   / guest_id (many2one)           : NEW relation: mail.guest
@@ -58,17 +76,25 @@ mail         / discuss.channel.member   / is_minimized (boolean)        : NEW
 mail         / discuss.channel.member   / is_pinned (boolean)           : NEW hasdefault: default
 mail         / discuss.channel.member   / last_interest_dt (datetime)   : NEW hasdefault: default
 mail         / discuss.channel.member   / last_seen_dt (datetime)       : NEW
+# NOTHING TO DO: renamed model
+
 mail         / discuss.channel.member   / mute_until_dt (datetime)      : NEW
+# TODO
+
 mail         / discuss.channel.member   / partner_id (many2one)         : NEW relation: res.partner
 mail         / discuss.channel.member   / rtc_inviting_session_id (many2one): NEW relation: discuss.channel.rtc.session
 mail         / discuss.channel.member   / rtc_session_ids (one2many)    : NEW relation: discuss.channel.rtc.session
 mail         / discuss.channel.member   / seen_message_id (many2one)    : NEW relation: mail.message
+# NOTHING TO DO: renamed model
+
 mail         / discuss.channel.rtc.session / channel_id (many2one)         : NEW relation: discuss.channel, isrelated: related, stored
 mail         / discuss.channel.rtc.session / channel_member_id (many2one)  : NEW relation: discuss.channel.member, required
 mail         / discuss.channel.rtc.session / is_camera_on (boolean)        : NEW
 mail         / discuss.channel.rtc.session / is_deaf (boolean)             : NEW
 mail         / discuss.channel.rtc.session / is_muted (boolean)            : NEW
 mail         / discuss.channel.rtc.session / is_screen_sharing_on (boolean): NEW
+# NOTHING TO DO: renamed model
+
 mail         / discuss.gif.favorite     / tenor_gif_id (char)           : NEW required
 mail         / discuss.voice.metadata   / attachment_id (many2one)      : NEW relation: ir.attachment
 mail         / ir.actions.act_window.view / view_mode (False)             : selection_keys is now '['activity', 'calendar', 'form', 'gantt', 'graph', 'hierarchy', 'kanban', 'pivot', 'tree']' ('['activity', 'calendar', 'form', 'gantt', 'graph', 'kanban', 'pivot', 'qweb', 'tree']')
@@ -100,13 +126,19 @@ mail         / mail.alias               / alias_full_name (char)        : NEW is
 mail         / mail.alias               / alias_incoming_local (boolean): NEW hasdefault: default
 mail         / mail.alias               / alias_status (selection)      : NEW selection_keys: ['invalid', 'not_tested', 'valid'], isfunction: function, stored
 mail         / mail.alias               / alias_user_id (many2one)      : DEL relation: res.users
+# TODO
+
 mail         / mail.alias.domain        / bounce_alias (char)           : NEW required, hasdefault: default
 mail         / mail.alias.domain        / catchall_alias (char)         : NEW required, hasdefault: default
 mail         / mail.alias.domain        / company_ids (one2many)        : NEW relation: res.company
 mail         / mail.alias.domain        / default_from (char)           : NEW hasdefault: default
 mail         / mail.alias.domain        / name (char)                   : NEW required
 mail         / mail.alias.domain        / sequence (integer)            : NEW hasdefault: default
+# NOTHING TO DO: new model
+
 mail         / mail.blacklist           / message_main_attachment_id (many2one): DEL relation: ir.attachment
+# NOTHING TO DO
+
 mail         / mail.channel             / active (boolean)              : DEL
 mail         / mail.channel             / channel_member_ids (one2many) : DEL relation: mail.channel.member
 mail         / mail.channel             / channel_type (selection)      : DEL required, selection_keys: ['channel', 'chat', 'group']
@@ -140,6 +172,8 @@ mail         / mail.channel.rtc.session / is_camera_on (boolean)        : DEL
 mail         / mail.channel.rtc.session / is_deaf (boolean)             : DEL
 mail         / mail.channel.rtc.session / is_muted (boolean)            : DEL
 mail         / mail.channel.rtc.session / is_screen_sharing_on (boolean): DEL
+# NOTHING TO DO: renamed model
+
 mail         / mail.gateway.allowed     / email (char)                  : now required
 mail         / mail.guest               / channel_ids (many2many)       : relation is now 'discuss.channel' ('mail.channel') [nothing to do]
 mail         / mail.guest               / channel_ids (many2many)       : table is now 'discuss_channel_member' ('mail_channel_member')
@@ -180,8 +214,12 @@ mail         / mail.tracking.value      / field_type (char)             : DEL
 mail         / mail.tracking.value      / new_value_monetary (float)    : DEL
 mail         / mail.tracking.value      / old_value_monetary (float)    : DEL
 mail         / mail.tracking.value      / tracking_sequence (integer)   : DEL
+# TODO
+
 mail         / res.company              / alias_domain_id (many2one)    : NEW relation: mail.alias.domain, hasdefault: default
 mail         / res.company              / alias_domain_name (char)      : NEW isrelated: related, stored
+# DONE: create new record from ir.config_parameter and fill in post-migration
+
 mail         / res.company              / email_primary_color (char)    : NEW hasdefault: compute
 mail         / res.company              / email_secondary_color (char)  : NEW hasdefault: compute
 mail         / res.partner              / activity_user_id (many2one)   : not related anymore
@@ -192,11 +230,15 @@ mail         / res.partner              / message_main_attachment_id (many2one):
 mail         / res.partner              / starred_message_ids (many2many): NEW relation: mail.message
 mail         / res.users                / channel_ids (many2many)       : relation is now 'discuss.channel' ('mail.channel') [nothing to do]
 mail         / res.users                / notification_type (selection) : now a function
+# TODO
+
 mail         / res.users                / res_users_settings_id (many2one): module is now 'base' ('mail')
 mail         / res.users                / res_users_settings_ids (one2many): module is now 'base' ('mail')
 mail         / res.users.settings       / _order                        : module is now 'base' ('mail')
 mail         / res.users.settings       / display_name (char)           : module is now 'base' ('mail')
 mail         / res.users.settings       / user_id (many2one)            : module is now 'base' ('mail')
+# NOTHING TODO
+
 ---XML records in module 'mail'---
 NEW discuss.channel: mail.channel_all_employees (noupdate)
 NEW discuss.channel.member: mail.channel_member_general_channel_for_admin (noupdate)

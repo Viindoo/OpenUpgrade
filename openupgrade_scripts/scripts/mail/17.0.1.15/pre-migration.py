@@ -18,3 +18,12 @@ _tables_renames = [
 def migrate(env, version):
     openupgrade.rename_models(env.cr, _models_renames)
     openupgrade.rename_tables(env.cr, _tables_renames)
+
+    # create column to avoid model mail.alias is loaded before model res.company
+    openupgrade.logged_query(
+        env.cr,
+        """
+        ALTER TABLE res_company
+        ADD COLUMN IF NOT EXISTS alias_domain_id INTEGER;
+        """,
+    )

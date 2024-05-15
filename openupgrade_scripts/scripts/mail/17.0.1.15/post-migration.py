@@ -13,6 +13,23 @@ _deleted_xml_records = [
 ]
 
 
+def _fill_res_company_alias_domain_id(env):
+    icp = env["ir.config_parameter"]
+
+    domain = icp.get_param("mail.catchall.domain")
+    if domain:
+        alias_domain = env["mail.alias.domain"].create(
+            {
+                "bounce_alias": icp.get_param("mail.bounce.alias"),
+                "catchall_alias": icp.get_param("mail.catchall.alias"),
+                "default_from": icp.get_param("mail.default.from"),
+                "name": domain,
+            }
+        )
+        companies = env["res.company"].with_context(active_test=False).search([])
+        companies.write({"alias_domain_id": alias_domain.id})
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.load_data(env, "mail", "17.0.1.15/noupdate_changes.xml")
@@ -20,3 +37,4 @@ def migrate(env, version):
         env,
         _deleted_xml_records,
     )
+    _fill_res_company_alias_domain_id(env)

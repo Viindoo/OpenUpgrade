@@ -84,7 +84,7 @@ DEL ir.actions.server: base.action_server_module_immediate_install
 DEL ir.config_parameter: base.icp_mail_bounce_alias (noupdate)
 DEL ir.config_parameter: base.icp_mail_catchall_alias (noupdate)
 DEL ir.config_parameter: base.icp_mail_default_from (noupdate)
-# DONE: removed in post-migration
+# DONE: removed in end-migration, to create new alias domain record in mail module
 
 NEW ir.cron: base.ir_cron_res_users_deletion
 NEW ir.model.access: base.access_ir_model_inherit
