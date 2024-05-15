@@ -87,6 +87,7 @@ jobs:
         run: |
           pip install -q -r odoo/requirements.txt
           pip install -r ./openupgrade/requirements.txt
+          pip install --ignore-installed git+https://github.com/OCA/openupgradelib.git@master
           # this is for v16 l10n_eg_edi_eta which crashes without it
           pip install asn1crypto
       #- name: Test data
