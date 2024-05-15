@@ -19,7 +19,7 @@ jobs:
       DB_PASSWORD: "odoo"
       DB_PORT: 5432
       DB_USERNAME: "odoo"
-      DOWNLOADS: https://github.com/OCA/OpenUpgrade/releases/download/databases
+      DOWNLOADS: https://github.com/Viindoo/OpenUpgrade/releases/download/databases
       ODOO: "./odoo/odoo-bin"
       PGHOST: "localhost"
       PGPASSWORD: "odoo"
@@ -48,14 +48,14 @@ jobs:
       - name: Check out Odoo
         uses: actions/checkout@v2
         with:
-          repository: odoo/odoo
+          repository: Viindoo/odoo
           ref: "17.0"
           fetch-depth: 1
           path: odoo
       - name: Check out previous Odoo
         uses: actions/checkout@v2
         with:
-          repository: odoo/odoo
+          repository: Viindoo/odoo
           ref: "16.0"
           fetch-depth: 1
           path: odoo-old
