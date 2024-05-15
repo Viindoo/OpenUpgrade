@@ -30,7 +30,7 @@ _deleted_xml_records = [
 
 @openupgrade.migrate()
 def migrate(env, version):
-    openupgrade.load_data(env.cr, "base", "17.0.1.3/noupdate_changes.xml")
+    openupgrade.load_data(env, "base", "17.0.1.3/noupdate_changes.xml")
     openupgrade.delete_records_safely_by_xml_id(
         env,
         _deleted_xml_records,
