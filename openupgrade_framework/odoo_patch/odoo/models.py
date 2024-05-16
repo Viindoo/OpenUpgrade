@@ -24,7 +24,8 @@ def unlink(self):
         self.env.cr.execute(  # pylint: disable=sql-injection
             'SAVEPOINT "%s"' % savepoint
         )
-        return BaseModel.unlink._original_method(self)
+        res = BaseModel.unlink._original_method(self)
+        return res
     except Exception as e:
         self.env.cr.execute(  # pylint: disable=sql-injection
             'ROLLBACK TO SAVEPOINT "%s"' % savepoint
