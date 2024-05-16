@@ -6,4 +6,4 @@ NEW ir.ui.view: auth_signup.reset_password_email
 # NOTHING TO DO
 
 DEL mail.template: auth_signup.reset_password_email (noupdate)
-# DONE: removed in pre-migration
+# DONE: renamed in pre-migration and removed in post-migration
