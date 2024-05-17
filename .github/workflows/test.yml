@@ -119,7 +119,7 @@ jobs:
              exit
           fi
           REQUEST="update ir_module_module set state='uninstalled' \
-              where name not in ('$(echo $MODULES_OLD | sed -e "s/,/','/g")')"
+              where name !~ '\ml10n_' and name not in ('$(echo $MODULES_OLD | sed -e "s/,/','/g")')"
           echo Set the modules as not installable if they are not in the following list : $MODULES_OLD
           echo Running $REQUEST
           psql $DB -c "$REQUEST"
