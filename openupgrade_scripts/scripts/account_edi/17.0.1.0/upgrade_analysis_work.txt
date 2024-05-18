@@ -3,3 +3,4 @@
 ---XML records in module 'account_edi'---
 DEL ir.actions.act_window: account_edi.action_open_payment_edi_documents
 DEL ir.ui.view: account_edi.view_payment_form_inherit
+# NOTHING TO DO
