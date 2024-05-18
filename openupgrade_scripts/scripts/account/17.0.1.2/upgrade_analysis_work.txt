@@ -177,8 +177,12 @@ account      / account.reconcile.model.template / sequence (integer)            
 account      / account.reconcile.model.template / to_check (boolean)            : DEL
 account      / account.report           / _order                        : _order is now 'sequence, id' ('id')
 account      / account.report           / active (boolean)              : NEW hasdefault: default
+# TODO
+
 account      / account.report           / chart_template (selection)    : NEW selection_keys: function
 account      / account.report           / chart_template_id (many2one)  : DEL relation: account.chart.template
+# DONE: map chart_template_id > chart_template in pre-migration
+
 account      / account.report           / default_opening_date_filter (selection): selection_keys is now '['last_month', 'last_quarter', 'last_tax_period', 'last_year', 'this_month', 'this_quarter', 'this_tax_period', 'this_year', 'today']' ('['last_month', 'last_quarter', 'last_year', 'this_month', 'this_quarter', 'this_year', 'today']')
 # TODO
 
@@ -262,8 +266,12 @@ account      / res.company              / account_setup_bill_state (selection): 
 account      / res.company              / account_setup_coa_state (selection): DEL selection_keys: ['done', 'just_done', 'not_done']
 account      / res.company              / account_setup_fy_data_state (selection): DEL selection_keys: ['done', 'just_done', 'not_done']
 account      / res.company              / account_setup_taxes_state (selection): DEL selection_keys: ['done', 'just_done', 'not_done']
+# TODO
+
 account      / res.company              / chart_template (selection)    : NEW selection_keys: function
 account      / res.company              / chart_template_id (many2one)  : DEL relation: account.chart.template
+# DONE: map chart_template_id > chart_template in pre-migration
+
 account      / res.company              / display_invoice_amount_total_words (boolean): NEW
 account      / res.company              / early_pay_discount_computation (selection): DEL selection_keys: ['excluded', 'included', 'mixed']
 account      / res.company              / invoice_is_download (boolean) : NEW hasdefault: default
