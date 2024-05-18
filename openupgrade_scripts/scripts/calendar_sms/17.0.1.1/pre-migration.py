@@ -6,7 +6,7 @@ from openupgradelib import openupgrade
 def _fill_calendar_alarm_sms_notify_responsible(env):
     openupgrade.logged_query(
         env.cr,
-        f"""
+        """
         ALTER TABLE calendar_alarm
         ADD COLUMN sms_notify_responsible bool;
         """,
