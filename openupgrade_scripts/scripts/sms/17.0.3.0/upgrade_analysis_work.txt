@@ -11,6 +11,7 @@ sms          / hr.leave.allocation      / message_has_sms_error (boolean): modul
 
 sms          / ir.actions.server        / state (False)                 : selection_keys is now '['code', 'followers', 'mail_post', 'multi', 'next_activity', 'object_create', 'object_write', 'remove_followers', 'sms', 'webhook']' ('['code', 'followers', 'mail_post', 'multi', 'next_activity', 'object_create', 'object_write', 'sms']')
 # NOTHING TO DO: no change
+
 sms          / mail.message             / message_type (False)          : selection_keys is now '['auto_comment', 'comment', 'email', 'email_outgoing', 'notification', 'sms', 'user_notification']' ('['comment', 'email', 'notification', 'sms', 'user_notification']')sms          / mail.message             / message_type (False)          : selection_keys is now '['auto_comment', 'comment', 'email', 'email_outgoing', 'notification', 'sms', 'user_notification']' ('['comment', 'email', 'notification', 'sms', 'user_notification']')
 # NOTHING TO DO: no change
 
