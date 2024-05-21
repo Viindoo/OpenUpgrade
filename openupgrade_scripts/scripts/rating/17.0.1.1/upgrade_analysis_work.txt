@@ -21,5 +21,3 @@ rating       / res.partner              / rating_ids (one2many)         : NEW re
 # NOTHING TO DO: handled by ORM
 
 ---XML records in module 'rating'---
-DEL ir.model.constraint: rating.constraint_rating_rating_rating_range
-# DONE: delete constraint safely in pre-migration
