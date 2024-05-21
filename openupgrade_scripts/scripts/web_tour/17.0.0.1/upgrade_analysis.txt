@@ -2,4 +2,3 @@
 ---Fields in module 'web_tour'---
 ---XML records in module 'web_tour'---
 NEW ir.ui.view: web_tour.edit_tour_form
-# NOTHING TO DO
