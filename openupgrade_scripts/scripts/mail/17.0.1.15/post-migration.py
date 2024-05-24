@@ -18,16 +18,36 @@ def _fill_res_company_alias_domain_id(env):
 
     domain = icp.get_param("mail.catchall.domain")
     if domain:
-        alias_domain = env["mail.alias.domain"].create(
-            {
-                "bounce_alias": icp.get_param("mail.bounce.alias") or "bounce",
-                "catchall_alias": icp.get_param("mail.catchall.alias") or "catchall",
-                "default_from": icp.get_param("mail.default.from") or "notifications",
-                "name": domain,
-            }
+        alias_domain_id = openupgrade.logged_query(
+            env.cr,
+            f"""
+            INSERT INTO mail_alias_domain (
+                name, bounce_alias, catchall_alias, default_from)
+            VALUES (
+                '{domain}',
+                '{icp.get_param("mail.bounce.alias") or "bounce"}',
+                '{icp.get_param("mail.catchall.alias") or "catchall"}',
+                '{icp.get_param("mail.default.from") or "notifications"}'
+                )
+            RETURNING id;
+            """,
         )
-        companies = env["res.company"].with_context(active_test=False).search([])
-        companies.write({"alias_domain_id": alias_domain.id})
+        openupgrade.logged_query(
+            env.cr,
+            f"""
+            UPDATE res_company
+                SET alias_domain_id = {alias_domain_id}
+            WHERE alias_domain_id IS NULL;
+            """,
+        )
+        openupgrade.logged_query(
+            env.cr,
+            f"""
+            UPDATE mail_alias
+                SET alias_domain_id = {alias_domain_id}
+            WHERE alias_domain_id IS NULL;
+            """,
+        )
 
 
 def _mail_alias_fill_alias_full_name(env):
