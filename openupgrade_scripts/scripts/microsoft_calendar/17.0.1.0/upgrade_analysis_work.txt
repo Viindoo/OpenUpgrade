@@ -14,7 +14,7 @@ microsoft_calendar / res.users                / microsoft_calendar_sync_token (c
 microsoft_calendar / res.users                / microsoft_calendar_sync_token (char): now related
 microsoft_calendar / res.users                / microsoft_synchronization_stopped (boolean): not stored anymore
 microsoft_calendar / res.users                / microsoft_synchronization_stopped (boolean): now related
-# NOTHING TO DO: autofill by odoo
+# DONE: create new record microsoft.calendar.credentials in post-migration
 
 ---XML records in module 'microsoft_calendar'---
 NEW ir.model.access: microsoft_calendar.access_microsoft_calendar_credentials
