@@ -16,9 +16,9 @@ def _fill_res_users_microsoft_calendar_account_id(env):
     for row in env.cr.fetchall():
         vals_list.append(
             {
-                'calendar_sync_token': row[1],
-                'synchronization_stopped': row[2],
-                'user_ids': [(6, 0, [row[0]])],
+                "calendar_sync_token": row[1],
+                "synchronization_stopped": row[2],
+                "user_ids": [(6, 0, [row[0]])],
             }
         )
     if vals_list:
