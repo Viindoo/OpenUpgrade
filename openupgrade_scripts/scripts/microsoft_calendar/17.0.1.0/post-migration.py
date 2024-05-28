@@ -22,7 +22,7 @@ def _fill_res_users_microsoft_calendar_account_id(env):
             }
         )
     if vals_list:
-        env['microsoft.calendar.credentials'].create(vals_list)
+        env["microsoft.calendar.credentials"].create(vals_list)
 
 
 @openupgrade.migrate()
