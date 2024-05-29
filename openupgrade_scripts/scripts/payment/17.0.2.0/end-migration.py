@@ -5,5 +5,5 @@ from openupgradelib import openupgrade
 
 @openupgrade.migrate()
 def migrate(env, version):
-    activated_providers = env['payment.provider'].search([('state', '!=', 'disabled')])
+    activated_providers = env["payment.provider"].search([("state", "!=", "disabled")])
     activated_providers._activate_default_pms()
