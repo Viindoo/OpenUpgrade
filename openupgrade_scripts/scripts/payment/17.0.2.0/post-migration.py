@@ -15,7 +15,7 @@ def _fill_payment_method(env):
             or payment_token.provider_id.payment_method_ids[:1]
         ).id
 
-    for transaction in PaymentTransaction.search([('payment_method_id', '=', False)]):
+    for transaction in PaymentTransaction.search([("payment_method_id", "=", False)]):
         transaction.payment_method_id = (
             PaymentMethod._get_from_code(transaction.provider_id.code)
             or transaction.provider_id.payment_method_ids[:1]
