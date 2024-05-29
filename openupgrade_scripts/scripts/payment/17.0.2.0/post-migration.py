@@ -9,7 +9,7 @@ def _fill_payment_method(env):
     PaymentTransaction = env["payment.transaction"].with_context(active_test=False)
     PaymentMethod = env["payment.method"].with_context(active_test=False)
 
-    for payment_token in PaymentToken.search([('payment_method_id', '=', False)]):
+    for payment_token in PaymentToken.search([("payment_method_id", "=", False)]):
         payment_token.payment_method_id = (
             PaymentMethod._get_from_code(payment_token.provider_id.code)
             or payment_token.provider_id.payment_method_ids[:1]
