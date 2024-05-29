@@ -5,19 +5,21 @@ from openupgradelib import openupgrade
 
 
 def _fill_payment_method(env):
-    payment_tokens = env["payment.token"].with_context(active_test=False).search([])
-    for payment_token in payment_tokens:
-        payment_token.payment_method_id = payment_token.provider_id.payment_method_ids[
-            :1
-        ].id
+    PaymentToken = env["payment.token"].with_context(active_test=False)
+    PaymentTransaction = env["payment.transaction"].with_context(active_test=False)
+    PaymentMethod = env["payment.method"].with_context(active_test=False)
 
-    payment_transactions = (
-        env["payment.transaction"].with_context(active_test=False).search([])
-    )
-    for transaction in payment_transactions:
-        transaction.payment_method_id = transaction.provider_id.payment_method_ids[
-            :1
-        ].id
+    for payment_token in PaymentToken.search([('payment_method_id', '=', False)]):
+        payment_token.payment_method_id = (
+            PaymentMethod._get_from_code(payment_token.provider_id.code)
+            or payment_token.provider_id.payment_method_ids[:1]
+        ).id
+
+    for transaction in PaymentTransaction.search([('payment_method_id', '=', False)]):
+        transaction.payment_method_id = (
+            PaymentMethod._get_from_code(transaction.provider_id.code)
+            or transaction.provider_id.payment_method_ids[:1]
+        ).id
 
 
 @openupgrade.migrate()
