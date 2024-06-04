@@ -5,9 +5,6 @@
 from openupgradelib import openupgrade
 
 _deleted_xml_records = [
-    "base.icp_mail_bounce_alias",
-    "base.icp_mail_catchall_alias",
-    "base.icp_mail_default_from",
     "base.res_partner_rule_private_employee",
     "base.res_partner_rule_private_group",
     "account.data_account_type_direct_costs",
