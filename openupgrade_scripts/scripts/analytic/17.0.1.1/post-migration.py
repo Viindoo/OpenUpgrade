@@ -22,6 +22,8 @@ def _analytic_line_create_x_plan_column(env):
     plans_to_create_fields = env["account.analytic.plan"].search([])
     (plans_to_create_fields - project_plan)._sync_plan_column()
     for plan in plans_to_create_fields - project_plan:
+        if plan.parent_id:
+            continue
         column = plan._strict_column_name()
         openupgrade.logged_query(
             env.cr,

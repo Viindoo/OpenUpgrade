@@ -3,6 +3,10 @@
 from openupgradelib import openupgrade
 
 
+def _fill_config_parameter_analytic_project_plan(env):
+    env["ir.config_parameter"].set_param("analytic.project_plan", "1")
+
+
 def _analytic_applicability_fill_company_id(env):
     openupgrade.logged_query(
         env.cr,
@@ -24,6 +28,7 @@ def _analytic_applicability_fill_company_id(env):
 
 @openupgrade.migrate()
 def migrate(env, version):
+    _fill_config_parameter_analytic_project_plan(env)
     _analytic_applicability_fill_company_id(env)
     # Drop triagram index on name column of account.analytic.account
     # to avoid error when loading registry, it will be recreated
