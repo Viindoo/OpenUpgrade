@@ -42,3 +42,17 @@ def _vn_coa_rename_xml_id(env):
 @openupgrade.migrate()
 def migrate(env, version):
     _vn_coa_rename_xml_id(env)
+    # https://github.com/odoo/odoo/commit/f639de48eaee991b37bbaf8c62aecc4f425ea5e2
+    openupgrade.rename_xmlids(
+        env.cr,
+        [
+            (
+                "l10n_vn_viin.account_tax_report_line_purchase_val_exemption",
+                "l10n_vn.account_tax_report_line_04_02_01_vn",
+            ),
+            (
+                "l10n_vn_viin.account_tax_report_line_sale_val_exemption",
+                "l10n_vn.account_tax_report_line_04_02_02_vn",
+            ),
+        ],
+    )

@@ -1,12 +1,6 @@
 # Copyright 2024 Viindoo Technology Joint Stock Company (Viindoo)
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
-import logging
-
 from openupgradelib import openupgrade
-
-from odoo import api, models
-
-_logger = logging.getLogger(__name__)
 
 _fields_renames = [
     (
@@ -122,35 +116,6 @@ _l10n_generic_coa_tax_xmlid = [
     "l10n_generic_coa.sale_tax_template",
     "l10n_generic_coa.purchase_tax_template",
 ]
-
-
-@api.model_create_multi
-def create(self, vals_list):
-    """Remove delete account.report.expression record that violates constraints
-    account_report_expression_line_label_uniq.
-    """
-    if self._name != "account.report.expression":
-        return models.BaseModel.create._original_method(self, vals_list)
-
-    for vals in vals_list:
-        expression = self.search(
-            [
-                ("report_line_id", "=", vals["report_line_id"]),
-                ("label", "=", vals["label"]),
-            ],
-        )
-        if expression:
-            _logger.warning(
-                "Delete obsolete account.report.expression record: %s",
-                str(expression.read([])),
-            )
-
-            expression.unlink()
-    return models.BaseModel.create._original_method(self, vals_list)
-
-
-create._original_method = models.BaseModel.create
-models.BaseModel.create = create
 
 
 def _map_account_report_filter_account_type(env):
