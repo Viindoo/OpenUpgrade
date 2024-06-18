@@ -1,0 +1,16 @@
+---Models in module 'microsoft_outlook'---
+---Fields in module 'microsoft_outlook'---
+fetchmail_outlook / fetchmail.server         / use_microsoft_outlook_service (boolean): DEL
+# DONE: convert to server_type in post-migration
+
+microsoft_outlook / fetchmail.server         / server_type (False)           : NEW selection_keys: ['gmail', 'imap', 'local', 'outlook', 'pop'], mode: modify
+# DONE: convert from use_microsoft_outlook_service in post-migration
+
+microsoft_outlook / ir.mail_server           / smtp_authentication (False)   : NEW selection_keys: ['certificate', 'gmail', 'login', 'outlook'], mode: modify
+microsoft_outlook / ir.mail_server           / use_microsoft_outlook_service (boolean): DEL
+# DONE: convert use_microsoft_outlook_service to smtp_authentication in post-migration
+
+---XML records in module 'microsoft_outlook'---
+NEW ir.ui.view: microsoft_outlook.fetchmail_server_view_form
+DEL ir.ui.view: fetchmail_outlook.fetchmail_server_view_form
+# NOTHING TO DO: move view from fetchmail_outlook -> microsoft_outlook
