@@ -25,6 +25,7 @@ _deleted_xml_records = [
 
 _modules_to_install = [
     "account_sequence",
+    "account_payment"
 ]
 
 
