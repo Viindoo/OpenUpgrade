@@ -123,9 +123,13 @@ def _update_partner_private_type(cr):
     openupgrade.logged_query(
         cr,
         """
-        UPDATE res_partner
-        SET type = 'contact'
-        WHERE type = 'private'
+            UPDATE res_partner
+            SET type = CASE
+                WHEN name IS NOT NULL THEN 'contact'
+                WHEN name IS NULL THEN 'other'
+                ELSE type
+            END
+            WHERE type = 'private';
         """,
     )
 
