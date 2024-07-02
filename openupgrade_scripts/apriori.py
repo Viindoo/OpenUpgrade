@@ -56,6 +56,7 @@ renamed_modules = {
     "to_affiliate_sale": "viin_affiliate_sale",
     "to_website_affiliate": "viin_affiliate_website",
     "to_hr_skills_recruitment": "viin_hr_recruitment_skills_resume",
+    "to_mrp_account": "viin_mrp_account",
     "to_orderpoint_mail_thread": "viin_mail_thread_stock",
     "to_partner_tax_code": "viin_partner_tax_code",
     "to_project_access": "viin_project",
@@ -148,9 +149,11 @@ merged_modules = {
     "to_project_stages": "viin_project",
     "to_sale_purchase_multi_comp": "sale_purchase",
     "to_tax_is_vat": "viin_account",
+    "viin_account_balance_carry_forward_advanced": "viin_account_auto_transfer",
     "viin_google_drive_support_oauth2": "viin_google_drive",
     "viin_hr_holidays_accrual_plan": "viin_hr_holidays",
     "viin_hr_employee_resource_calendar": "viin_hr_contract",
+    "viin_mrp_packaging": "viin_mrp",
     "viin_project_access_advance": "viin_project",
     "viin_project_kanban_state_notification": "viin_project",
     "viin_project_update": "viin_project",
@@ -163,6 +166,7 @@ merged_modules = {
     "viin_social_facebook_page_setting_patch1": "viin_social_facebook",
     # Viindoo/enterprise
     "to_account_asset_patch1": "to_account_asset",
+    "to_mrp_account_patch1": "viin_mrp_account",
     "viin_hide_ent_modules_account": "to_hide_ent_modules",
     "viin_hide_ent_modules_crm": "to_hide_ent_modules",
     "viin_hide_ent_modules_event": "to_hide_ent_modules",
@@ -188,7 +192,10 @@ merged_modules = {
     "viin_website_seo_advisor_patch1": "viin_website_seo_advisor",
     "viin_website_patch1": "viin_website",
     "viin_website_helpdesk_patch1": "viin_website_helpdesk",
+    "viin_mrp_account_carry_forward": "viin_account_auto_transfer",
+    "viin_mrp_gantt": "viin_mrp",
     "viin_mrp_split_merge": "mrp",  # Feature available in odoo v16.0
+    "viin_mrp_standard_consumption": "viin_mrp",
     # Viindoo/saas-infrastructure
     "viin_odoo_module_sale_subscription": "viin_odoo_module_subscription",
     "viin_saas_sale_subscription_free_product": "viin_saas_sale_subscription_loyalty",
