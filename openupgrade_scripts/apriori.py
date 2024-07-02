@@ -12,6 +12,9 @@ renamed_modules = {
     # Viindoo/tvtmaaddons
     "to_website_recaptcha_signup": "viin_recaptcha_signup",
     "viin_mail_channel_privacy": "viin_discuss_channel_privacy",
+    # Viindoo/customer-pecc3
+    "viin_pecc3_project_template_document": "viin_pecc3_project_document",
+    "viin_project_role_progress": "viin_pecc3_project_role_progress",
 }
 
 # Merged modules contain a mapping from old module names to other,
@@ -45,6 +48,7 @@ merged_modules = {
     # OCA/...
     # Viindoo/tvtmaaddons
     "to_location_warehouse": "viin_stock",
+    "to_mail_notif_and_email": "mail",
     "to_sale_loyalty_patch_1": "viin_loyalty_sale",
     "to_stock_report_common": "viin_stock",
     "viin_account_auto_transfer_patch_1": "viin_account_auto_transfer",
@@ -53,11 +57,26 @@ merged_modules = {
     "viin_helpdesk_ticket_properties": "viin_helpdesk",
     "viin_hr_overtime_timeoff": "viin_hr_overtime",
     "viin_resource_calendar_rate": "viin_hr_work_entry",
+    "viin_spreadsheet_dashboard": "spreadsheet_dashboard",
     "viin_wallet_affiliate": "to_wallet",
     "viin_website_form_helpdesk": "viin_website_helpdesk",
     "viin_website_helpdesk_ticket_properties": "viin_website_helpdesk",
     # Viindoo/erponline-enterprise
     "viin_stock_patch1": "viin_stock",
+    # Viindoo/customer-pecc3
+    "viin_pecc3_project_budget": "viin_pecc3_project_info",
+    "viin_pecc3_project_hr_expense_budget": "viin_pecc3_project_info",
+    "viin_pecc3_project_role_budget": "viin_pecc3_project_info",
+    "viin_pecc3_project_template_approval": "viin_pecc3_project_approval",
+    "viin_pecc3_project_template_info": "viin_pecc3_project_info",
+    "viin_pecc3_project_template_quatity": "viin_pecc3_quality_project",
+    "viin_pecc3_project_template_quality_checklist": "viin_pecc3_project_quality_checklist",  # noqa: E501
+    "viin_pecc3_project_template_task_noti": "viin_pecc3_project_task_noti",
+    "viin_project_template": "project",
+    "viin_project_template_quality": "viin_quality_project",
+    "viin_project_template_role": "viin_project_role",
+    "viin_project_view_all_tasks": "project",
+    "viin_searchpanel_horizontal_scrollbar": "web",
 }
 
 # only used here for upgrade_analysis
