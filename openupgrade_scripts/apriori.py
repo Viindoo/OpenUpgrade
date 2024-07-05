@@ -44,6 +44,7 @@ merged_modules = {
     "website_sale_stock_product_configurator": "website_sale_product_configurator",
     # OCA/web
     "web_advanced_search": "web",
+    "web_chatter_position": "web",
     "web_listview_range_select": "web",
     # OCA/...
     # Viindoo/tvtmaaddons

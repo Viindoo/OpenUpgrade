@@ -8,6 +8,11 @@ def _res_partner_bank_computation(env):
     partner_banks._compute_display_account_warning()
 
 
+def _remove_tables_fks(env):
+    openupgrade.remove_tables_fks(env.cr, ("account_tax_template",))
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     _res_partner_bank_computation(env)
+    _remove_tables_fks(env)
