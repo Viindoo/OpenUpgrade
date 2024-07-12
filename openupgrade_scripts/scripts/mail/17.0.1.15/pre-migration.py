@@ -19,6 +19,7 @@ _fields_renames = [
         "field",
         "field_id",
     ),
+    ("mail.tracking.value", "mail_tracking_value", "field", "field_id"),
 ]
 
 
