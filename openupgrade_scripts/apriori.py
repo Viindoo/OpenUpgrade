@@ -65,6 +65,8 @@ merged_modules = {
     # Viindoo/erponline-enterprise
     "viin_stock_patch1": "viin_stock",
     # Viindoo/customer-pecc3
+    "viin_analytic_category": "analytic",
+    "viin_hr_timesheet_analytic_category": "hr_timesheet",
     "viin_pecc3_project_budget": "viin_pecc3_project_info",
     "viin_pecc3_project_hr_expense_budget": "viin_pecc3_project_info",
     "viin_pecc3_project_role_budget": "viin_pecc3_project_info",
