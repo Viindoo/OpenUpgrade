@@ -4,7 +4,6 @@
 from openupgradelib import openupgrade
 
 _deleted_xml_records = [
-    "hr.dep_sales",
     "hr.openupgrade_legacy_17_0_offboarding_plan",
     "hr.openupgrade_legacy_17_0_onboarding_plan",
     "hr.openupgrade_legacy_17_0_offboarding_setup_compute_out_delais",
