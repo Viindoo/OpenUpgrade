@@ -67,6 +67,7 @@ merged_modules = {
     # Viindoo/customer-pecc3
     "viin_analytic_category": "analytic",
     "viin_hr_timesheet_analytic_category": "hr_timesheet",
+    "viin_pecc3_project_approval": "viin_pecc3_project_task_assignment_report",
     "viin_pecc3_project_budget": "viin_pecc3_project_info",
     "viin_pecc3_project_hr_expense_budget": "viin_pecc3_project_info",
     "viin_pecc3_project_role_budget": "viin_pecc3_project_info",
