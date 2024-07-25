@@ -70,7 +70,8 @@ merged_modules = {
     "viin_pecc3_project_budget": "viin_pecc3_project_info",
     "viin_pecc3_project_hr_expense_budget": "viin_pecc3_project_info",
     "viin_pecc3_project_role_budget": "viin_pecc3_project_info",
-    "viin_pecc3_project_template_approval": "viin_pecc3_project_approval",
+    "viin_pecc3_project_template_approval": "viin_pecc3_project_task_assignment_report",
+    "viin_pecc3_project_approval": "viin_pecc3_project_task_assignment_report",
     "viin_pecc3_project_template_info": "viin_pecc3_project_info",
     "viin_pecc3_project_template_quatity": "viin_pecc3_quality_project",
     "viin_pecc3_project_template_quality_checklist": "viin_pecc3_project_quality_checklist",  # noqa: E501
