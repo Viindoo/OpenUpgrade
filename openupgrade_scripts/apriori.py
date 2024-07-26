@@ -62,6 +62,7 @@ merged_modules = {
     "viin_wallet_affiliate": "to_wallet",
     "viin_website_form_helpdesk": "viin_website_helpdesk",
     "viin_website_helpdesk_ticket_properties": "viin_website_helpdesk",
+    "viin_analytic_tag": "viin_account",
     # Viindoo/erponline-enterprise
     "viin_stock_patch1": "viin_stock",
     # Viindoo/customer-pecc3
