@@ -54,6 +54,7 @@ merged_modules = {
     "to_stock_report_common": "viin_stock",
     "viin_account_auto_transfer_patch_1": "viin_account_auto_transfer",
     "viin_affiliate_website_patch": "viin_affiliate_website",
+    "viin_analytic_tag": "viin_account",
     "viin_helpdesk_team_ticket_type": "viin_helpdesk",
     "viin_helpdesk_ticket_properties": "viin_helpdesk",
     "viin_hr_overtime_timeoff": "viin_hr_overtime",
