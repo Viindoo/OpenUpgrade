@@ -3,7 +3,11 @@ obsolete model pos.cache
 obsolete model pos.session.check_product_wizard [transient]
 new model pos.combo
 new model pos.combo.line
+# NOTHING TO DO
+
 new model pos.printer
+# DONE: rename in pre-migration
+
 ---Fields in module 'point_of_sale'---
 point_of_sale / account.move             / pos_refunded_invoice_ids (many2many): NEW relation: account.move
 point_of_sale / pos.combo                / combo_line_ids (one2many)     : NEW relation: pos.combo.line
@@ -84,8 +88,12 @@ DEL ir.model.access: point_of_sale.access_pos_session_check_product_wizard
 DEL ir.model.access: pos_cache.access_pos_cache
 DEL ir.model.access: pos_daily_sales_reports.access_pos_daily_sales_reports_wizard [renamed to point_of_sale module]
 DEL ir.model.constraint: point_of_sale.constraint_pos_session_uniq_name
+# NOTHING TO DO
+
 DEL ir.rule: point_of_sale.rule_pos_account_move (noupdate)
 DEL ir.rule: point_of_sale.rule_pos_account_move_line (noupdate)
+# DONE: removed in post-migration
+
 NEW ir.ui.menu: point_of_sale.menu_point_of_sale_list
 NEW ir.ui.menu: point_of_sale.menu_pos_combo
 NEW ir.ui.menu: point_of_sale.menu_pos_preparation_printer
@@ -105,3 +113,4 @@ DEL ir.ui.view: pos_cache.view_pos_config_kanban
 DEL ir.ui.view: pos_daily_sales_reports.pos_daily_report
 DEL ir.ui.view: pos_daily_sales_reports.view_pos_daily_sales_reports_wizard
 DEL ir.ui.view: pos_epson_printer_restaurant.view_restaurant_printer_iot_form
+# NOTHING TO DO
