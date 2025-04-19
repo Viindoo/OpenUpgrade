@@ -282,6 +282,7 @@ def _account_move_fast_fill_display_type(env):
                     WHEN aml.tax_line_id IS NOT NULL THEN 'tax'
                     WHEN aa.account_type IN
                     ('asset_receivable', 'liability_payable') THEN 'payment_term'
+                    WHEN aml.cogs_origin_id IS NOT NULL THEN 'cogs'
                     ELSE 'product'
                 END AS display_type
             FROM account_move_line AS aml
