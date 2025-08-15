@@ -13,7 +13,10 @@ renamed_modules = {
     # OCA/social
     "mail_activity_unlink_log": "mail_activity_cancel_tracking",
     # Viindoo/tvtmaaddons
+    "to_org_chart": "web_hierarchy",
     "viin_mail_channel_privacy": "viin_discuss_channel_privacy",
+    # Viindoo/erponline-enterprise
+    "viin_account_subscription": "viin_account_recurring",
     # Viindoo/customer-pecc3
     "viin_pecc3_project_template_document": "viin_pecc3_project_document",
     "viin_project_role_progress": "viin_pecc3_project_role_progress",
@@ -88,23 +91,59 @@ merged_modules = {
     "web_pwa_oca": "web",
     # OCA/...
     # Viindoo/tvtmaaddons
+    "l10n_vn_viin_account_qr_code_emv": "l10n_vn",
+    "l10n_vn_viin_accounting_sinvoice_patch1": "l10n_vn_viin_accounting_sinvoice",
+    "l10n_vn_viin_edi_patch2": "l10n_vn_viin_edi",
+    "l10n_vn_viin_edi_patch3": "l10n_vn_viin_edi",
+    "to_hr_payroll_patch1": "to_hr_payroll",
+    "to_hr_timesheet_payroll_patch1": "to_hr_timesheet_payroll",
     "to_location_warehouse": "viin_stock",
     "to_mail_notif_and_email": "mail",
-    "to_sale_loyalty_patch_1": "viin_loyalty_sale",
+    "to_sale_loyalty_patch_1": "viin_loyalty",
     "to_stock_report_common": "viin_stock",
+    "to_website_recaptcha": "google_recaptcha",
     "to_website_recaptcha_signup": "auth_signup",
     "viin_account_auto_transfer_patch_1": "viin_account_auto_transfer",
+    "viin_account_qr_code_emv": "account_qr_code_emv",
     "viin_affiliate_website_patch": "viin_affiliate_website",
+    "viin_event_barcodes": "event",
+    "viin_event_checkin": "event",
+    "viin_event_checkin_crm": "event_crm",
+    "viin_google_spreadsheet": "spreadsheet_oca",
     "viin_helpdesk_team_ticket_type": "viin_helpdesk",
     "viin_helpdesk_ticket_properties": "viin_helpdesk",
+    "viin_hr_assignment_log": "viin_mail_tracking",
     "viin_hr_overtime_timeoff": "viin_hr_overtime",
+    "viin_mail_search": "mail",
     "viin_resource_calendar_rate": "viin_hr_work_entry",
+    "viin_sale_crm_follower_access_right": "viin_sales_team_collaboration",
     "viin_spreadsheet_dashboard": "spreadsheet_dashboard",
+    "viin_user_assignment_log": "viin_mail_tracking",
     "viin_wallet_affiliate": "to_wallet",
+    "viin_web_editor": "web_editor",
     "viin_website_form_helpdesk": "viin_website_helpdesk",
     "viin_website_helpdesk_ticket_properties": "viin_website_helpdesk",
     # Viindoo/erponline-enterprise
+    "to_account_asset_patch1": "to_account_asset",
+    "to_account_asset_patch2": "to_account_asset",
+    "to_account_asset_patch3": "to_account_asset",
+    "to_account_budget_hr_timesheet_patch1": "to_account_budget_hr_timesheet",
+    "to_account_budget_hr_timesheet_patch2": "to_account_budget_hr_timesheet",
+    "to_account_budget_hr_timesheet_patch3": "to_account_budget_hr_timesheet",
+    "to_account_budget_patch1": "to_account_budget",
+    "viin_features_activate_account_patch_1": "viin_features_activate_account",
+    "viin_mail_ice_server_data": "web_editor",
+    "viin_product_recurring": "viin_sale_recurring",
     "viin_stock_patch1": "viin_stock",
+    # Viindoo/branding
+    "viin_brand_iap": "iap",
+    "viin_brand_note": "project_todo",
+    "viin_brand_purchase_stock": "purchase_stock",
+    "viin_brand_sale_stock": "sale_stock",
+    "viin_brand_stock_account": "stock_account",
+    "viin_brand_website_livechat": "website_livechat",
+    # Viindoo/odoo-tvtma
+    "l10n_vn_viin_viindoo_edi": "l10n_vn_viin_edi",
     # Viindoo/customer-pecc3
     "viin_analytic_category": "analytic",
     "viin_hr_timesheet_analytic_category": "hr_timesheet",
@@ -135,6 +174,10 @@ renamed_models = {
     "payment.icon": "payment.method",
     "restaurant.printer": "pos.printer",
     # OCA/...
+    # Viindoo/erponline-enterprise
+    "product.recurrence": "product.period.discount",
+    "product.temporal.recurrence": "sale.period",
+    "subscription.closing.reason": "subscription.close.reason",
 }
 
 # only used here for upgrade_analysis
