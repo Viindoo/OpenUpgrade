@@ -14,6 +14,7 @@ renamed_modules = {
     "mail_activity_unlink_log": "mail_activity_cancel_tracking",
     # Viindoo/tvtmaaddons
     "to_org_chart": "web_hierarchy",
+    "viin_loan_management_patch_1": "viin_loan_management_bank_currency_rate",
     "viin_mail_channel_privacy": "viin_discuss_channel_privacy",
     # Viindoo/erponline-enterprise
     "viin_account_subscription": "viin_account_recurring",
