@@ -233,7 +233,7 @@ def _vn_coa_rename_xml_id(env):
                 .ref(xmlid, raise_if_not_found=False)
             ):
                 continue
-            old_xmlid = f"l10n_vn.{xmlid}"
+            old_xmlid = f"l10n_vn.{company_id}_{xmlid}"
             new_xmlid = f"account.{company_id}_{xmlid}"
             xmlids_renames.append((old_xmlid, new_xmlid))
     openupgrade.rename_xmlids(env.cr, xmlids_renames)
