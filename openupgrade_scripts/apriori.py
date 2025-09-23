@@ -124,6 +124,7 @@ merged_modules = {
     "viin_web_editor": "web_editor",
     "viin_website_form_helpdesk": "viin_website_helpdesk",
     "viin_website_helpdesk_ticket_properties": "viin_website_helpdesk",
+    "viin_analytic_tag": "viin_account",
     # Viindoo/erponline-enterprise
     "to_account_asset_patch1": "to_account_asset",
     "to_account_asset_patch2": "to_account_asset",
