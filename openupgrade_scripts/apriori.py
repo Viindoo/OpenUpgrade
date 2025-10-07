@@ -16,6 +16,7 @@ renamed_modules = {
     "to_org_chart": "web_hierarchy",
     "viin_loan_management_patch_1": "viin_loan_management_bank_currency_rate",
     "viin_mail_channel_privacy": "viin_discuss_channel_privacy",
+    "viin_website_event_checkin": "viin_event_checkin_website",
     # Viindoo/erponline-enterprise
     "viin_account_subscription": "viin_account_recurring",
     # Viindoo/customer-pecc3
