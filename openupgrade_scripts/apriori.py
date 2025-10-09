@@ -181,6 +181,7 @@ renamed_models = {
     "product.recurrence": "product.period.discount",
     "product.temporal.recurrence": "sale.period",
     "subscription.closing.reason": "subscription.close.reason",
+    "appointment.type": "viin.appointment.type",
 }
 
 # only used here for upgrade_analysis
