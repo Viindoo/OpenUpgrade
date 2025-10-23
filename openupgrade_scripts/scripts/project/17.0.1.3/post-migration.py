@@ -158,7 +158,15 @@ def _convert_project_task_repeat_type_after(env):
             repeat_until = repeat_until.replace(
                 day=int(row["repeat_day"]), month=MONTH_MAPPING[row["repeat_month"]]
             )
-        ptr.write({"repeat_type": "until", "repeat_until": repeat_until})
+        openupgrade.logged_query(
+            env.cr,
+            """
+            UPDATE project_task_recurrence
+            SET repeat_type = %s, repeat_until = %s
+            WHERE id = %s
+            """,
+            ("until", repeat_until, row["id"]),
+        )
 
 
 def _fill_project_update_task_count(env):
