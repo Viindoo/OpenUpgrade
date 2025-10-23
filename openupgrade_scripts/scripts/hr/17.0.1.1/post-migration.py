@@ -5,10 +5,8 @@
 from openupgradelib import openupgrade
 
 _deleted_xml_records = [
-    "hr.dep_sales",
     "hr.hr_plan_activity_type_company_rule",
     "hr.hr_plan_company_rule",
-    "hr.res_partner_admin_private_address",
 ]
 
 
