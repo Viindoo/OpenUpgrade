@@ -16,26 +16,88 @@ def _transfer_employee_private_data(env):
     information to the dedicated employee fields from the copy containing private
     data if it exists, and from res.partner otherwise
     """
-    openupgrade.logged_query(
-        env.cr,
+    cr = env.cr
+
+    partner_fields = [
+        "city",
+        "street",
+        "street2",
+        "email",
+        "phone",
+        "zip",
+        "country_id",
+        "state_id",
+    ]
+
+    # Check which fields are translated
+    cr.execute(
         """
+        SELECT name FROM ir_model_fields
+        WHERE model = 'res.partner'
+        AND name IN %s
+        AND translate = TRUE
+        """,
+        (tuple(partner_fields),),
+    )
+    translated_fields = {field[0] for field in cr.fetchall()}
+
+    # Build query parts dynamically
+    set_parts = ["lang = rp.lang"]
+
+    field_mapping = {
+        "private_city": "city",
+        "private_street": "street",
+        "private_street2": "street2",
+        "private_email": "email",
+        "private_phone": "phone",
+        "private_zip": "zip",
+        "private_country_id": "country_id",
+        "private_state_id": "state_id",
+    }
+
+    for emp_field, partner_field in field_mapping.items():
+        if partner_field in translated_fields:
+            # For translated fields, extract value from JSONB
+            # Try en_US first, then fallback to first available key
+            # Handle NULL fields safely
+            set_parts.append(
+                f"""{emp_field} = COALESCE(
+                he.{emp_field},
+                CASE WHEN rpp.{partner_field} IS NOT NULL
+                     THEN rpp.{partner_field}->>'en_US' END,
+                CASE WHEN rpp.{partner_field} IS NOT NULL
+                     THEN (SELECT rpp.{partner_field}->>k
+                            FROM jsonb_object_keys(rpp.{partner_field}) k
+                            LIMIT 1) END,
+                CASE WHEN rp.{partner_field} IS NOT NULL
+                     THEN rp.{partner_field}->>'en_US' END,
+                CASE WHEN rp.{partner_field} IS NOT NULL
+                     THEN (SELECT rp.{partner_field}->>k
+                            FROM jsonb_object_keys(rp.{partner_field}) k
+                            LIMIT 1) END
+            )"""
+            )
+        else:
+            # For non-translated fields, use direct value
+            set_parts.append(
+                f"""{emp_field} = COALESCE(
+                he.{emp_field},
+                rpp.{partner_field},
+                rp.{partner_field}
+            )"""
+            )
+
+    set_parts_str = ",\n            ".join(set_parts)
+    query = f"""
         UPDATE hr_employee he
-        SET lang = rp.lang,
-            private_city = COALESCE(he.private_city, rpp.city, rp.city),
-            private_country_id = COALESCE(
-                he.private_country_id, rpp.country_id, rp.country_id
-            ),
-            private_email = COALESCE(he.private_email, rpp.email, rp.email),
-            private_phone = COALESCE(he.private_phone, rpp.phone, rp.phone),
-            private_state_id = COALESCE(he.private_state_id, rpp.state_id, rp.state_id),
-            private_street = COALESCE(he.private_street, rpp.street, rp.street),
-            private_street2 = COALESCE(he.private_street2, rpp.street2, rp.street2),
-            private_zip = COALESCE(he.private_zip, rpp.zip, rp.zip)
+        SET {set_parts_str}
         FROM res_partner rp
         LEFT JOIN ou_res_partner_private rpp
-        ON rp.id=rpp.id
-        WHERE he.address_home_id = rp.id""",
-    )
+        ON rp.id = rpp.id
+        WHERE he.address_home_id = rp.id
+    """
+
+    openupgrade.logged_query(cr, query)
 
 
 @openupgrade.migrate()

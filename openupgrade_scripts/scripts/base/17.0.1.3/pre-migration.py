@@ -191,12 +191,10 @@ def _handle_partner_private_type(cr):
         WHERE type = 'private'
         """,
     )
-    # Copy column for preserving the old type values
-    _column_copies = {"res_partner": [("type", None, None)]}
-    openupgrade.copy_columns(cr, _column_copies)
     # Change contact type and erase sensitive information
     query = "type = 'contact'"
-    for field in [
+
+    private_fields = [
         "street",
         "street2",
         "city",
@@ -208,8 +206,38 @@ def _handle_partner_private_type(cr):
         "email",
         "website",
         "comment",
-    ]:
-        query += f", {field} = CASE WHEN {field} IS NULL THEN NULL ELSE '*****' END"
+    ]
+    cr.execute(
+        """
+        SELECT name FROM ir_model_fields
+        WHERE model = 'res.partner'
+        AND name IN %s
+        AND translate = TRUE
+        """,
+        (tuple(private_fields),),
+    )
+    translated_fields = [field[0] for field in cr.fetchall()]
+
+    for field in private_fields:
+        # For non-translated fields, replace all values with '*****'
+        if field not in translated_fields:
+            query += f""",
+            {field} = CASE WHEN {field} IS NULL THEN NULL ELSE '*****' END"""
+        # For translated fields, keep JSON structure and replace all values with '*****'
+        else:
+            query += f""",
+            {field} = CASE
+                WHEN {field} IS NULL THEN NULL
+                ELSE (
+                    SELECT jsonb_object_agg(
+                        key,
+                        CASE WHEN jsonb_typeof(value) = 'null' THEN NULL
+                            ELSE '*****' END
+                    )
+                    FROM jsonb_each({field})
+                )
+            END"""
+
     openupgrade.logged_query(
         cr,
         f"""
