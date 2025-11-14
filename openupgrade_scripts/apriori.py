@@ -6,6 +6,7 @@ to help the matching process
 renamed_modules = {
     # odoo
     "note": "project_todo",
+    "sale_quotation_builder": "sale_pdf_quote_builder",
     "website_sale_delivery_mondialrelay": "website_sale_mondialrelay",
     # odoo/enterprise
     # OCA/delivery-carrier
@@ -48,6 +49,7 @@ merged_modules = {
     "web_kanban_gauge": "web",
     "website_event_crm_questions": "website_event_crm",
     "website_event_questions": "website_event",
+    "website_payment_paypal": "website_payment",
     "website_sale_delivery": "website_sale",
     "website_sale_digital": "website_sale",
     "website_sale_loyalty_delivery": "website_sale_loyalty",
@@ -97,12 +99,15 @@ merged_modules = {
     "l10n_vn_viin_accounting_sinvoice_patch1": "l10n_vn_viin_accounting_sinvoice",
     "l10n_vn_viin_edi_patch2": "l10n_vn_viin_edi",
     "l10n_vn_viin_edi_patch3": "l10n_vn_viin_edi",
+    "to_company_hotline": "base",
     "to_hr_payroll_patch1": "to_hr_payroll",
     "to_hr_timesheet_payroll_patch1": "to_hr_timesheet_payroll",
     "to_location_warehouse": "viin_stock",
     "to_mail_notif_and_email": "mail",
     "to_sale_loyalty_patch_1": "viin_loyalty",
     "to_stock_report_common": "viin_stock",
+    "to_vietnam_bank_icons": "payment",
+    "to_vietnamese_number2words": "base",
     "to_website_recaptcha": "google_recaptcha",
     "to_website_recaptcha_signup": "auth_signup",
     "viin_account_auto_transfer_patch_1": "viin_account_auto_transfer",
@@ -121,11 +126,13 @@ merged_modules = {
     "viin_resource_calendar_rate": "viin_hr_work_entry",
     "viin_sale_crm_follower_access_right": "viin_sales_team_collaboration",
     "viin_spreadsheet_dashboard": "spreadsheet_dashboard",
+    "viin_unicode_slugify": "http_routing",
     "viin_user_assignment_log": "viin_mail_tracking",
     "viin_wallet_affiliate": "to_wallet",
     "viin_web_editor": "web_editor",
     "viin_website_form_helpdesk": "viin_website_helpdesk",
     "viin_website_helpdesk_ticket_properties": "viin_website_helpdesk",
+    "viin_website_livechat": "website_livechat",
     # Viindoo/erponline-enterprise
     "to_account_asset_patch1": "to_account_asset",
     "to_account_asset_patch2": "to_account_asset",
@@ -137,15 +144,21 @@ merged_modules = {
     "viin_features_activate_account_patch_1": "viin_features_activate_account",
     "viin_mail_ice_server_data": "web_editor",
     "viin_product_recurring": "viin_sale_recurring",
+    "viin_sem_website_blog": "viin_website_seo_advisor",
+    "viin_sem_website_forum": "viin_website_seo_advisor",
     "viin_stock_patch1": "viin_stock",
     "viin_subscription": "viin_sale_subscription",
     # Viindoo/branding
     "viin_brand_iap": "iap",
     "viin_brand_note": "project_todo",
     "viin_brand_purchase_stock": "purchase_stock",
+    "viin_brand_sale_quotation_builder": "sale_pdf_quote_builder",
     "viin_brand_sale_stock": "sale_stock",
     "viin_brand_stock_account": "stock_account",
     "viin_brand_website_livechat": "website_livechat",
+    # Viindoo/saas-infrastructure
+    "l10n_vn_viin_einvoice_saas_subscription": "l10n_vn_viin_einvoice_sale",
+    "l10n_vn_viin_einvoice_saas_subscription_marketplace": "l10n_vn_viin_einvoice_sale",
     # Viindoo/odoo-tvtma
     "l10n_vn_viin_viindoo_edi": "l10n_vn_viin_edi",
     # Viindoo/customer-pecc3
