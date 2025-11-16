@@ -105,3 +105,4 @@ def migrate(env, version):
     openupgrade.delete_records_safely_by_xml_id(env, _deleted_xml_records)
     fill_hr_attendance_overtime_hours(env)
     hr_attendance_menus(env)
+    openupgrade.load_data(env, "hr_attendance", "17.0.2.0/noupdate_changes.xml")
