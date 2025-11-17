@@ -188,10 +188,34 @@ def _fill_project_update_task_count(env):
         )
 
 
+def _convert_ir_ui_view_customs(env):
+    """
+    Adapt custom views of project.task to the new model structure.
+
+    Odoo 16.0 use the field `display_project_id` to show tasks in projects
+    Odoo 17.0 use the new field `display_in_project`
+        and `project_id` to show tasks in projects
+    """
+    regex = r"""$$\[(['"])display_project_id\1$$"""
+    openupgrade.logged_query(
+        env.cr,
+        f"""
+            UPDATE ir_ui_view_custom
+            SET arch = REGEXP_REPLACE(
+                    arch,
+                    {regex},
+                    $$'&amp;', ['display_in_project', '=', True], ['project_id'$$,
+                    'g')
+            WHERE arch LIKE '%display_project_id%'
+        """,
+    )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     _fill_project_task_display_in_project(env)
     _convert_project_task_repeat_type_after(env)
+    _convert_ir_ui_view_customs(env)
     openupgrade.load_data(env, "project", "17.0.1.3/noupdate_changes.xml")
     openupgrade.delete_record_translations(
         env.cr,
