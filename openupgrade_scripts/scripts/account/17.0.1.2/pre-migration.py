@@ -70,10 +70,16 @@ def _generic_coa_rename_xml_id(env):
 
 
 def _convert_account_tax_description(env):
-    openupgrade.rename_columns(
-        env.cr, {"account_tax": [("description", "invoice_label")]}
+    openupgrade.add_columns(
+        env, [(False, "invoice_label", "char", None, "account_tax")]
     )
     convert_column_translatable(env.cr, "account_tax", "invoice_label", "jsonb")
+    openupgrade.logged_query(
+        env.cr,
+        """UPDATE account_tax
+        SET invoice_label = description
+        WHERE description IS NOT NULL;""",
+    )
 
 
 def _am_create_delivery_date_column(env):
