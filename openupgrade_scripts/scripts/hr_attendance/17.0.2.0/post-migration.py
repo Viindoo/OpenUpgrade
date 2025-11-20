@@ -97,6 +97,21 @@ def hr_attendance_menus(env):
     )
 
 
+def add_attendance_own_reader_to_base_user(env):
+    """
+    Add hr_attendance.group_hr_attendance_own_reader to base.group_user's implied_ids.
+    This ensures all users have access to read their own attendance records.
+    """
+    group_user = env.ref("base.group_user")
+    group_attendance_own_reader = env.ref("hr_attendance.group_hr_attendance_own_reader")
+    if group_attendance_own_reader not in group_user.implied_ids:
+        group_user.write(
+            {
+                "implied_ids": [Command.link(group_attendance_own_reader.id)],
+            }
+        )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     fill_res_company_hr_attendance_display_overtime(env)
@@ -105,4 +120,4 @@ def migrate(env, version):
     openupgrade.delete_records_safely_by_xml_id(env, _deleted_xml_records)
     fill_hr_attendance_overtime_hours(env)
     hr_attendance_menus(env)
-    openupgrade.load_data(env, "hr_attendance", "17.0.2.0/noupdate_changes.xml")
+    add_attendance_own_reader_to_base_user(env)
