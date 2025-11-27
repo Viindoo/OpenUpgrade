@@ -43,21 +43,22 @@ def _convert_note_note_to_project_task(env):
     )
 
 
-def _fill_project_tags(env):
+def _migrate_task_tags(env):
     openupgrade.logged_query(
         env.cr,
         """
         INSERT INTO project_tags_project_task_rel (project_task_id, project_tags_id)
-        SELECT project_task.id, project_tags.id
+        SELECT pt.id, ptag.id
         FROM note_tags_rel rel
-        JOIN project_task ON project_task.old_note_id = rel.note_id
-        JOIN note_tag ON rel.tag_id = note_tag.id
-        JOIN project_tags ON project_tags.name = note_tag.name;
+        JOIN project_task pt ON pt.old_note_id = rel.note_id
+        JOIN note_tag nt ON rel.tag_id = nt.id
+        JOIN project_tags ptag ON ptag.name = nt.name
+        ON CONFLICT (project_task_id, project_tags_id) DO NOTHING;
         """,
     )
 
 
-def _fill_stage_for_todo_task(env):
+def _convert_note_stage_to_project_task_type(env):
     openupgrade.logged_query(
         env.cr, "ALTER TABLE project_task_type ADD COLUMN old_note_stage_id INTEGER"
     )
@@ -74,19 +75,49 @@ def _fill_stage_for_todo_task(env):
         FROM note_stage
         """,
     )
+
+
+def _migrate_user_ids(env):
+    # Migrate user_ids from note_note.user_id (directly assigned users)
     openupgrade.logged_query(
         env.cr,
         """
-        INSERT INTO project_task_user_rel(
-            task_id, user_id, stage_id
-        )
-        SELECT
-            project_task.id task_id,
-            project_task_type.user_id,
-            project_task_type.id stage_id
-        FROM note_stage_rel rel
-        JOIN project_task ON project_task.old_note_id = rel.note_id
-        JOIN project_task_type ON project_task_type.old_note_stage_id = rel.stage_id
+        INSERT INTO project_task_user_rel (task_id, user_id)
+        SELECT pt.id, nn.user_id
+        FROM note_note nn
+        JOIN project_task pt ON pt.old_note_id = nn.id
+        WHERE nn.user_id IS NOT NULL
+        ON CONFLICT (task_id, user_id) DO NOTHING
+        """,
+    )
+    # Migrate user_ids from mail_followers
+    openupgrade.logged_query(
+        env.cr,
+        """
+        INSERT INTO project_task_user_rel (task_id, user_id)
+        SELECT DISTINCT pt.id, ru.id
+        FROM mail_followers mf
+        JOIN project_task pt ON pt.old_note_id = mf.res_id
+        JOIN res_partner rp ON rp.id = mf.partner_id
+        JOIN res_users ru ON ru.partner_id = rp.id
+        WHERE mf.res_model = 'note.note'
+            AND ru.id IS NOT NULL
+        ON CONFLICT (task_id, user_id) DO NOTHING
+        """,
+    )
+
+
+def _migrate_stage_ids(env):
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE project_task_user_rel rel
+        SET stage_id = ptt.id
+        FROM note_stage_rel nsr
+        JOIN project_task pt ON pt.old_note_id = nsr.note_id
+        JOIN project_task_type ptt ON ptt.old_note_stage_id = nsr.stage_id
+        WHERE rel.task_id = pt.id
+            AND rel.stage_id IS NULL
         """,
     )
 
@@ -95,6 +126,8 @@ def _fill_stage_for_todo_task(env):
 def migrate(env, version):
     _convert_note_tag_to_project_tags(env)
     _convert_note_note_to_project_task(env)
-    _fill_project_tags(env)
-    _fill_stage_for_todo_task(env)
+    _convert_note_stage_to_project_task_type(env)
+    _migrate_task_tags(env)
+    _migrate_user_ids(env)
+    _migrate_stage_ids(env)
     openupgrade.merge_models(env.cr, "note.note", "project.task", "old_note_id")
