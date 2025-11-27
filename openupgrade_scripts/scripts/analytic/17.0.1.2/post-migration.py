@@ -40,9 +40,9 @@ def _analytic_line_create_x_plan_column(env):
     )
     plans_to_create_fields._sync_plan_column()
     for plan in plans_to_create_fields:
-        if plan.parent_id:
+        column = plan._column_name()
+        if column == "account_id":
             continue
-        column = plan._strict_column_name()
         openupgrade.logged_query(
             env.cr,
             f"""
