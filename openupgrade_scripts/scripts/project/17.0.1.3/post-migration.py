@@ -196,19 +196,35 @@ def _convert_ir_ui_view_customs(env):
     Odoo 17.0 use the new field `display_in_project`
         and `project_id` to show tasks in projects
     """
-    regex = r"""$$\[(['"])display_project_id\1$$"""
-    openupgrade.logged_query(
-        env.cr,
-        f"""
-            UPDATE ir_ui_view_custom
-            SET arch = REGEXP_REPLACE(
-                    arch,
-                    {regex},
-                    $$'&amp;', ['display_in_project', '=', True], ['project_id'$$,
-                    'g')
-            WHERE arch LIKE '%display_project_id%'
-        """,
-    )
+    open_close_marks = [
+        ("[", "]"),
+        ("(", ")"),
+    ]
+    quote_marks = [
+        "'",
+        '"',
+        "&#x27;",
+    ]
+    for o, c in open_close_marks:
+        for q in quote_marks:
+            from_str = f"{o}{q}display_project_id{q}"
+            to_str = (
+                f"{q}&amp;{q}, "
+                f"{o}{q}display_in_project{q}, {q}={q}, True{c}, "
+                f"{o}{q}project_id{q}"
+            )
+            openupgrade.logged_query(
+                env.cr,
+                f"""
+                    UPDATE ir_ui_view_custom
+                    SET arch = REPLACE(
+                        arch,
+                        $${from_str}$$,
+                        $${to_str}$$
+                    )
+                    WHERE arch LIKE '%display_project_id%'
+                """,
+            )
 
 
 @openupgrade.migrate()
