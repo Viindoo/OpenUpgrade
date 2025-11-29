@@ -136,6 +136,39 @@ def _mail_activity_plan(env):
     )
 
 
+def _mail_notification_remove_duplicates(env):
+    """
+    Remove duplicate notifications before creating unique constraint.
+    Keep the notification with notification_type='inbox' if exists,
+    otherwise keep the one with the smallest id.
+    This is for the module to_mail_notif_and_email, which has been
+    deleted in 17.0.
+    """
+    if not openupgrade.table_exists(env.cr, "mail_notification"):
+        return
+    openupgrade.logged_query(
+        env.cr,
+        """
+        WITH ranked_notifications AS (
+            SELECT id,
+                mail_message_id,
+                res_partner_id,
+                ROW_NUMBER() OVER (
+                    PARTITION BY mail_message_id, res_partner_id
+                    ORDER BY
+                        CASE WHEN notification_type = 'inbox' THEN 0 ELSE 1 END,
+                        id
+                ) AS rn
+            FROM mail_notification
+            WHERE res_partner_id IS NOT NULL
+        )
+        DELETE FROM mail_notification noti
+        USING ranked_notifications rank
+        WHERE noti.id = rank.id AND rank.rn > 1;
+        """,
+    )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.rename_models(env.cr, _models_renames)
@@ -148,6 +181,7 @@ def migrate(env, version):
     _company_update_email_colors(env)
     _mail_gateway_allowed(env)
     _mail_activity_plan(env)
+    _mail_notification_remove_duplicates(env)
     # create column to avoid model mail.alias is loaded before model res.company
     openupgrade.logged_query(
         env.cr,
