@@ -78,6 +78,32 @@ def set_picking_type_return_location(env):
     )
 
 
+def fill_stock_move_line_quantity_product_uom(env):
+    """
+    Set default_location_return_id on picking types from the destination location
+    of the warehouse's return picking type
+    """
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE stock_move_line sml
+        SET quantity_product_uom = sml.quantity;
+        """,
+    )
+    env.cr.execute(
+        """
+        SELECT array_agg(sml.id)
+        FROM stock_move_line sml
+        JOIN product_product pp ON sml.product_id = pp.id
+        JOIN product_template pt ON pt.id = pp.product_tmpl_id
+        WHERE sml.product_uom_id != pt.uom_id;
+        """
+    )
+    sml_ids = env.cr.fetchone()[0]
+    if sml_ids:
+        env["stock.move.line"].browse(sml_ids)._compute_quantity_product_uom()
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.load_data(env, "stock", "17.0.1.1/noupdate_changes.xml")
@@ -88,3 +114,4 @@ def migrate(env, version):
     fix_move_quantity(env)
     link_returned_pickings(env)
     set_picking_type_return_location(env)
+    fill_stock_move_line_quantity_product_uom(env)

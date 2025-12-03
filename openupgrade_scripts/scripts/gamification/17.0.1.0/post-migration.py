@@ -24,7 +24,7 @@ def update_tracking_date(env):
 
 @openupgrade.migrate()
 def migrate(env, version):
-    update_tracking_date(env)
+    #update_tracking_date(env)
     openupgrade.load_data(env, "gamification", "17.0.1.0/noupdate_changes.xml")
     openupgrade.delete_record_translations(
         env.cr,

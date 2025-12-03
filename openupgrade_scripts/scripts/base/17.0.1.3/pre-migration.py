@@ -39,6 +39,10 @@ _xmlids_renames = [
         "mail.constraint_res_users_settings_unique_user_id",
         "base.constraint_res_users_settings_unique_user_id",
     ),
+    (
+        "to_sales_team_advanced.group_sale_regional_manager",
+        "to_sales_team_advanced.group_sale_regional_admin",
+    ),
 ]
 
 # Keep a copy of the display_name column, for any extra module that needs it.

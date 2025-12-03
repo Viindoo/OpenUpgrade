@@ -24,6 +24,17 @@ def _pre_stock_picking_picking_properties(env):
     )
 
 
+def _pre_stock_move_line_quantity_product_uom(env):
+    """Avoid triggering the computed method"""
+    openupgrade.logged_query(
+        env.cr,
+        """
+        ALTER TABLE stock_move_line
+            ADD COLUMN IF NOT EXISTS quantity_product_uom numeric;
+        """,
+    )
+
+
 def _pre_stock_move_line_picked(env):
     """Avoid triggering the computed method"""
     openupgrade.logged_query(
@@ -72,4 +83,5 @@ def migrate(env, version):
     openupgrade.copy_columns(env.cr, _column_copies)
     _pre_stock_picking_picking_properties(env)
     _pre_stock_move_line_picked(env)
+    _pre_stock_move_line_quantity_product_uom(env)
     fix_move_line_quantity(env)

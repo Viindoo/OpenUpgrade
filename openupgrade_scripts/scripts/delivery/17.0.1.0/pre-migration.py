@@ -196,7 +196,7 @@ def _fill_stock_move_line_carrier_id(env):
         UPDATE stock_move_line sml
         SET carrier_id = sp.carrier_id
         FROM stock_picking sp
-        WHERE sml.picking_id = sp.id;
+        WHERE sp.carrier_id IS NOT NULL AND sml.picking_id = sp.id;
         """,
     )
 

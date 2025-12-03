@@ -17,6 +17,15 @@ _l10n_generic_coa_tax_group_xmlid = "account.tax_group_15"
 
 
 def _map_account_report_filter_account_type(env):
+    openupgrade.logged_query(
+        env.cr,
+        """
+        ALTER TABLE account_report_line
+        ADD COLUMN user_groupby character varying;
+        UPDATE account_report_line
+        SET user_groupby = groupby;
+        """,
+    )
     openupgrade.rename_columns(
         env.cr, {"account_report": [("filter_account_type", None)]}
     )
