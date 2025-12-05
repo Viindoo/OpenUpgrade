@@ -13,6 +13,36 @@ _column_copies = {
 }
 
 
+def _pre_stock_picking_picking_properties(env):
+    """Avoid triggering the computed method"""
+    openupgrade.logged_query(
+        env.cr,
+        """
+        ALTER TABLE stock_picking
+            ADD COLUMN IF NOT EXISTS picking_properties jsonb
+        """,
+    )
+
+
+def _pre_stock_move_line_picked(env):
+    """Avoid triggering the computed method"""
+    openupgrade.logged_query(
+        env.cr,
+        """
+        ALTER TABLE stock_move_line
+            ADD COLUMN IF NOT EXISTS picked boolean
+        """,
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE stock_move_line
+        SET picked = True
+        WHERE state = 'done';
+        """,
+    )
+
+
 def fix_move_line_quantity(env):
     """
     v17 combines what used to be reserved_qty and qty_done.
@@ -40,4 +70,6 @@ def fix_move_line_quantity(env):
 def migrate(env, version):
     openupgrade.rename_fields(env, _field_renames)
     openupgrade.copy_columns(env.cr, _column_copies)
+    _pre_stock_picking_picking_properties(env)
+    _pre_stock_move_line_picked(env)
     fix_move_line_quantity(env)

@@ -45,6 +45,8 @@ stock        / stock.move.line          / quantity (float)              : NEW ha
 # DONE: pre-migration
 
 stock        / stock.move.line          / picked (boolean)              : NEW hasdefault: compute
+# DONE: pre-migration: Pre-create the column for avoiding triggering the compute.
+
 stock        / stock.move.line          / quant_id (many2one)           : NEW relation: stock.quant
 stock        / stock.move.line          / quantity_product_uom (float)  : NEW isfunction: function, stored
 # NOTHING TO DO
@@ -66,7 +68,11 @@ stock        / stock.picking            / message_main_attachment_id (many2one):
 stock        / stock.picking            / move_ids_without_package (one2many): is now stored
 stock        / stock.picking            / move_ids_without_package (one2many): not a function anymore
 stock        / stock.picking            / move_line_nosuggest_ids (one2many): DEL relation: stock.move.line
+# NOTHING TO DO
+
 stock        / stock.picking            / picking_properties (properties): NEW hasdefault: compute
+# DONE: pre-migration: Pre-create the column for avoiding triggering the compute.
+
 stock        / stock.picking            / rating_ids (one2many)         : NEW relation: rating.rating
 stock        / stock.picking            / show_operations (boolean)     : not a function anymore
 stock        / stock.picking            / show_operations (boolean)     : now related
