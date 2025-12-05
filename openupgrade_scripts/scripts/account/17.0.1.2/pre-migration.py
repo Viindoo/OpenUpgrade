@@ -204,6 +204,26 @@ def _pre_create_early_pay_discount_computation(env):
     )
 
 
+def _pre_account_move_line_invoice_date_computation(env):
+    """Avoid triggering the computed method"""
+    openupgrade.logged_query(
+        env.cr,
+        """
+        ALTER TABLE account_move_line
+        ADD COLUMN IF NOT EXISTS invoice_date DATE;
+        """,
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE account_move_line aml
+        SET invoice_date = am.invoice_date
+        FROM account_move am
+        WHERE am.invoice_date IS NOT NULL AND aml.move_id = am.id;
+        """,
+    )
+
+
 def _decouple_obsolete_tables(env):
     """
     Remove all foreign keys held by and pointed to template tables
