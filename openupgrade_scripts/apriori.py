@@ -141,6 +141,7 @@ merged_modules = {
     "to_account_budget_hr_timesheet_patch2": "to_account_budget_hr_timesheet",
     "to_account_budget_hr_timesheet_patch3": "to_account_budget_hr_timesheet",
     "to_account_budget_patch1": "to_account_budget",
+    "to_mrp_multi_warehouse_access_control": "to_multi_warehouse_access_control_mrp",
     "viin_features_activate_account_patch_1": "viin_features_activate_account",
     "viin_mail_ice_server_data": "web_editor",
     "viin_product_recurring": "viin_sale_recurring",
