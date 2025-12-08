@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+  <record id="timesheet_analysis_report_approver" model="ir.rule">
+    <field name="domain_force">[
+                '|', '|',
+                    ('project_id.privacy_visibility', '!=', 'followers'),
+                    ('project_id.message_partner_ids', 'in', [user.partner_id.id]),
+                    ('task_id.message_partner_ids', 'in', [user.partner_id.id])
+            ]</field>
+  </record>
+  <record id="timesheet_line_rule_approver" model="ir.rule">
+    <field name="domain_force">[
+                ('project_id', '!=', False),
+                '|', '|',
+                    ('project_id.privacy_visibility', '!=', 'followers'),
+                    ('project_id.message_partner_ids', 'in', [user.partner_id.id]),
+                    ('task_id.message_partner_ids', 'in', [user.partner_id.id])
+            ]</field>
+  </record>
+</odoo>

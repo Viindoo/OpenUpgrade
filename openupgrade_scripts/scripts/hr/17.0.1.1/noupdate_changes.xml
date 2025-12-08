@@ -9,9 +9,9 @@
   <record id="departure_retired" model="hr.departure.reason">
     <field name="reason_code">340</field>
   </record>
-  <record id="employee_admin" model="hr.employee">
+  <!-- <record id="employee_admin" model="hr.employee" forcecreate="0">
     <field name="private_email">admin@example.com</field>
-  </record>
+  </record> -->
   <record id="ir_cron_data_check_work_permit_validity" model="ir.cron">
     <field name="type"/>
   </record>

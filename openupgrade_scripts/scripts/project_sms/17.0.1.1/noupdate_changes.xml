@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+  <record id="ir_rule_sms_template_project_manager" model="ir.rule">
+    <field name="domain_force">[('model', 'in', ('project.task', 'project.project'))]</field>
+  </record>
+</odoo>
