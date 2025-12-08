@@ -21,10 +21,15 @@ def _assign_journal_xmlids(env):
         for xmlid, journal_data in list(
             template_data.get("account.journal", {}).items()
         ):
-            if not env.ref(xmlid, raise_if_not_found=False) and "type" in journal_data:
+            if (
+                not env.ref(xmlid, raise_if_not_found=False)
+                and "type" in journal_data
+                and "code" in journal_data
+            ):
                 journal = existing_journals.filtered(
                     lambda j: j.type == journal_data["type"]  # noqa: B023
-                )[:1]
+                    and j.code == journal_data["code"]  # noqa: B023
+                )
                 if journal:
                     existing_journals -= journal
                     env["ir.model.data"]._update_xmlids(
