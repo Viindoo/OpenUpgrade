@@ -111,13 +111,30 @@ def _migrate_stage_ids(env):
     openupgrade.logged_query(
         env.cr,
         """
+        WITH current_stage AS (
+            SELECT nsr.note_id, ns.user_id, ptt.id FROM note_stage_rel nsr
+            JOIN note_stage ns ON nsr.stage_id = ns.id
+            JOIN project_task_type ptt ON ptt.old_note_stage_id = ns.id
+        )
         UPDATE project_task_user_rel rel
-        SET stage_id = ptt.id
-        FROM note_stage_rel nsr
-        JOIN project_task pt ON pt.old_note_id = nsr.note_id
-        JOIN project_task_type ptt ON ptt.old_note_stage_id = nsr.stage_id
-        WHERE rel.task_id = pt.id
-            AND rel.stage_id IS NULL
+        SET stage_id = cs.id
+        FROM current_stage cs
+        JOIN project_task pt ON cs.note_id = pt.old_note_id
+        WHERE rel.user_id = cs.user_id AND rel.task_id = pt.id AND rel.stage_id IS NULL
+        """,
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        WITH default_stage AS (
+            SELECT DISTINCT ON (user_id) user_id, id FROM project_task_type
+            WHERE old_note_stage_id IS NOT NULL
+            ORDER BY user_id, sequence, old_note_stage_id
+        )
+        UPDATE project_task_user_rel rel
+        SET stage_id = ds.id
+        FROM default_stage ds
+        WHERE rel.user_id = ds.user_id AND rel.stage_id IS NULL
         """,
     )
 
