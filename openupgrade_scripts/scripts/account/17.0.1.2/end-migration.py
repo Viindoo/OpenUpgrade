@@ -43,6 +43,20 @@ def _assign_journal_xmlids(env):
                     )
 
 
+def _get_tax_invoice_description(old, lang_code, record):
+    return record.with_context(lang=lang_code)["description"]
+
+
+def _translate_tax_invoice_label(env):
+    records = env["account.tax"].search([("invoice_label", "=", False)])
+    openupgrade.update_field_multilang(
+        records,
+        "invoice_label",
+        lambda old, a, k: _get_tax_invoice_description(old, a, k),
+    )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     _assign_journal_xmlids(env)
+    _translate_tax_invoice_label(env)
