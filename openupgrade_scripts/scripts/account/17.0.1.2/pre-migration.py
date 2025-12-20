@@ -73,14 +73,20 @@ def _convert_account_tax_description(env):
     openupgrade.add_columns(
         env, [(False, "invoice_label", "char", None, "account_tax")]
     )
-    openupgrade.logged_query(
-        env.cr,
-        """UPDATE account_tax
-        SET invoice_label = description
-        WHERE description IS NOT NULL;""",
-    )
-    convert_column_translatable(env.cr, "account_tax", "description", "jsonb")
     convert_column_translatable(env.cr, "account_tax", "invoice_label", "jsonb")
+
+    env.cr.execute(
+        """
+        SELECT name FROM ir_model_fields
+        WHERE model = 'account.tax'
+        AND name = 'description'
+        AND translate = TRUE
+        """,
+    )
+    description_translated_field = [field[0] for field in env.cr.fetchall()]
+
+    if not description_translated_field:
+        convert_column_translatable(env.cr, "account_tax", "description", "jsonb")
 
 
 def _am_create_delivery_date_column(env):
