@@ -17,3 +17,7 @@ def migrate(env, version):
         env,
         _deleted_xml_records,
     )
+    openupgrade.drop_columns(
+        env.cr,
+        [("res_partner", openupgrade.get_legacy_name("display_name"))],
+    )

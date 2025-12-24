@@ -40,6 +40,12 @@ _xmlids_renames = [
         "base.constraint_res_users_settings_unique_user_id",
     ),
 ]
+
+# Keep a copy of the display_name column, for any extra module that needs it.
+_column_copies = {
+    "res_partner": [("display_name", None, None)],
+}
+
 _column_renames = {
     "res_partner": [("display_name", "complete_name")],
 }
@@ -267,6 +273,7 @@ def migrate(cr, version):
     openupgrade.update_module_names(cr, merged_modules.items(), merge_modules=True)
     openupgrade.clean_transient_models(cr)
     openupgrade.rename_xmlids(cr, _xmlids_renames)
+    openupgrade.copy_columns(cr, _column_copies)
     openupgrade.rename_columns(cr, _column_renames)
     _fill_ir_server_object_lines_into_action_server(cr)
     _fill_empty_country_codes(cr)
