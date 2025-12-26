@@ -15,6 +15,8 @@ renamed_modules = {
     "mail_activity_unlink_log": "mail_activity_cancel_tracking",
     # Viindoo/tvtmaaddons
     "to_org_chart": "web_hierarchy",
+    "to_fleet_accounting": "viin_fleet_account",
+    "viin_fleet_accounting_purchase": "viin_fleet_purchase",
     "viin_loan_management_patch_1": "viin_loan_management_bank_currency_rate",
     "viin_mail_channel_privacy": "viin_discuss_channel_privacy",
     "viin_website_event_checkin": "viin_event_checkin_website",
