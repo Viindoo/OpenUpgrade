@@ -1,6 +1,10 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 from openupgradelib import openupgrade
 
+_field_renames = [
+    ('chatbot.message', 'chatbot_message', 'mail_channel_id', 'discuss_channel_id'),
+]
+
 
 def _discuss_channel_create_column(env):
     openupgrade.logged_query(
@@ -15,6 +19,7 @@ def _discuss_channel_create_column(env):
 @openupgrade.migrate()
 def migrate(env, version):
     _discuss_channel_create_column(env)
+    openupgrade.rename_fields(env, _field_renames)
     # cannot use openupgrade.delete_sql_constraint_safely
     openupgrade.logged_query(
         env.cr,
