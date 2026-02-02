@@ -4,6 +4,8 @@
 ---Fields in module 'im_livechat'---
 im_livechat  / chatbot.message          / discuss_channel_id (many2one) : NEW relation: discuss.channel, required
 im_livechat  / chatbot.message          / mail_channel_id (many2one)    : DEL relation: mail.channel, required
+# DONE rename column mail_channel_id to discuss_channel_id in pre-migration
+
 im_livechat  / discuss.channel          / anonymous_name (char)         : NEW
 im_livechat  / discuss.channel          / channel_type (False)          : NEW selection_keys: ['channel', 'chat', 'group', 'livechat'], mode: modify
 im_livechat  / discuss.channel          / chatbot_current_step_id (many2one): NEW relation: chatbot.script.step
