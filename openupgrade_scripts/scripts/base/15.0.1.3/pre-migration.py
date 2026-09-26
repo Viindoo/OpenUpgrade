@@ -1,6 +1,7 @@
 # Copyright 2020 Odoo Community Association (OCA)
 # Copyright 2020 Opener B.V. <stefan@opener.am>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+import csv
 import logging
 
 from openupgradelib import openupgrade
@@ -70,6 +71,49 @@ def update_uninstallable_modules_state(cr):
         )
 
 
+def adopt_manual_country_states(cr):
+    """Give the xml ids of base/data/res.country.state.csv to the states that
+    users created by hand with the same country and code.
+
+    Those rows have no xml id, so loading the csv inserts a second state and
+    dies on res_country_state_name_code_uniq, e.g. a German state entered in
+    2019 as DE-NW before 15.0 shipped the German states:
+      Key (country_id, code)=(58, DE-NW) already exists.
+    Only rows without any xml id are adopted, and only when the xml id is free.
+    """
+    path = modules.get_module_resource("base", "data", "res.country.state.csv")
+    with open(path, encoding="utf-8") as csv_file:
+        rows = [
+            (row["id"], row["country_id:id"].split(".")[-1], row["code"])
+            for row in csv.DictReader(csv_file)
+        ]
+    cr.execute(
+        """CREATE TEMPORARY TABLE openupgrade_csv_state
+        (name varchar, country varchar, code varchar) ON COMMIT DROP"""
+    )
+    cr.executemany("INSERT INTO openupgrade_csv_state VALUES (%s, %s, %s)", rows)
+    openupgrade.logged_query(
+        cr,
+        """
+        INSERT INTO ir_model_data (module, name, model, res_id, noupdate)
+        SELECT DISTINCT ON (csv.name) 'base', csv.name, 'res.country.state', s.id,
+            false
+        FROM openupgrade_csv_state csv
+        JOIN ir_model_data c ON c.module = 'base' AND c.name = csv.country
+            AND c.model = 'res.country'
+        JOIN res_country_state s ON s.country_id = c.res_id AND s.code = csv.code
+        WHERE NOT EXISTS (
+            SELECT 1 FROM ir_model_data d
+            WHERE d.model = 'res.country.state' AND d.res_id = s.id)
+        AND NOT EXISTS (
+            SELECT 1 FROM ir_model_data d
+            WHERE d.module = 'base' AND d.name = csv.name)
+        ORDER BY csv.name, s.id
+        """,
+    )
+    cr.execute("DROP TABLE openupgrade_csv_state")
+
+
 @openupgrade.migrate(use_env=False)
 def migrate(cr, version):
     """
@@ -90,6 +134,7 @@ def migrate(cr, version):
 
     openupgrade.rename_xmlids(cr, rename_xmlids_l10n_ec)
     openupgrade.rename_xmlids(cr, rename_xmlids_mail)
+    adopt_manual_country_states(cr)
 
     openupgrade.clean_transient_models(cr)
     openupgrade.convert_field_to_html(
