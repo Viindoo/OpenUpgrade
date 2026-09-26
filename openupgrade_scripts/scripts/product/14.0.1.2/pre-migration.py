@@ -26,7 +26,27 @@ def copy_date_end_date_start_columns(env):
     )
 
 
+def delete_orphan_attribute_line_value_rels(env):
+    # Databases upgraded from older versions have no foreign key from this relation
+    # to product_template_attribute_line (only the value side has one), so rows of
+    # deleted attribute lines stayed behind. 14.0 adds that foreign key and dies on
+    # them:
+    #   Key (product_template_attribute_line_id)=(450) is not present in table
+    #   "product_template_attribute_line".
+    # The lines are gone: the rows point at nothing.
+    openupgrade.logged_query(
+        env.cr,
+        """
+        DELETE FROM product_attribute_value_product_template_attribute_line_rel rel
+        WHERE NOT EXISTS (
+            SELECT 1 FROM product_template_attribute_line ptal
+            WHERE ptal.id = rel.product_template_attribute_line_id)
+        """,
+    )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     fill_empty_discount_policy(env)
     copy_date_end_date_start_columns(env)
+    delete_orphan_attribute_line_value_rels(env)
