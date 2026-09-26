@@ -11,13 +11,27 @@ def migrate_module(self, pkg, stage):
     during the migration.
     We trick Odoo into running the scripts by temporarily changing the module
     state.
+
+    Only the upgrade path scripts are run for a module being installed: the
+    scripts a module ships in its own migrations/ or upgrades/ folder are
+    written for a database that already has the module's data (Odoo never runs
+    them on installation) and fail on a fresh install, e.g. to_approvals
+    14.0.1.0.1 altering a table that does not exist yet.
     """
     to_install = pkg.state == "to install"
+    module_scripts = {}
     if to_install:
         pkg.state = "to upgrade"
-    MigrationManager.migrate_module._original_method(self, pkg, stage)
-    if to_install:
-        pkg.state = "to install"
+        for key in ("module", "module_upgrades"):
+            if key in self.migrations[pkg.name]:
+                module_scripts[key] = self.migrations[pkg.name][key]
+                self.migrations[pkg.name][key] = {}
+    try:
+        MigrationManager.migrate_module._original_method(self, pkg, stage)
+    finally:
+        if to_install:
+            pkg.state = "to install"
+            self.migrations[pkg.name].update(module_scripts)
 
 
 migrate_module._original_method = MigrationManager.migrate_module
