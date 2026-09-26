@@ -19,7 +19,7 @@ def change_type_purchase_order_date_approve(env):
         UPDATE purchase_order po
         SET date_approve = mm.date
         FROM mail_message mm
-        WHERE mm.subtype_id in %s
+        WHERE mm.subtype_id = %s
             AND mm.model = 'purchase.order'
             AND mm.res_id = po.id
             AND date_approve IS NULL"""
