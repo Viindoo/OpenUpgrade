@@ -9,6 +9,8 @@ renamed_modules = {
     'payment_ogone': 'payment_ingenico',
     # OCA/delivery-carrier
     'delivery_carrier_label_ups': 'delivery_ups_oca',
+    # OCA/edi
+    'edi_oca': 'edi',
     # OCA/event
     'website_event_filter_selector': 'website_event_filter_city',
     # OCA/hr
@@ -23,6 +25,11 @@ renamed_modules = {
     'quality_control': 'quality_control_oca',
     'quality_control_mrp': 'quality_control_mrp_oca',
     'quality_control_stock': 'quality_control_stock_oca',
+    'quality_control_team': 'quality_control_team_oca',
+    # OCA/margin-analysis
+    'product_pricelist_margin': 'product_pricelist_simulation',
+    # OCA/pos
+    'pos_journal_image': 'pos_payment_method_image',
     # OCA/product-attribute
     'product_pricelist_print_website_sale': 'product_pricelist_direct_print_website_sale',
     'sale_product_classification': 'product_abc_classification_sale',
@@ -35,6 +42,8 @@ renamed_modules = {
     'to_stock_picking_validate_manual_time': 'to_stock_picking_backdate',
     # Viindoo/odoo-web_gantt
     'project_gantt': 'viin_project_gantt',
+    # OCA/l10n-netherlands -> OCA/account-financial-reporting
+    'l10n_nl_mis_reports': 'mis_template_financial_report',
 }
 
 merged_modules = {
@@ -59,23 +68,38 @@ merged_modules = {
     'website_crm_phone_validation': 'website_crm',
     'website_sale_link_tracker': 'website_sale',
     'website_survey': 'survey',
+    # OCA/account-analytic
+    'account_analytic_default_account': 'account_analytic_default',
     # OCA/account-financial-tools
     'account_coa_menu': 'account_menu',
     'account_group_menu': 'account_menu',
     'account_move_chatter': 'account',
     'account_tag_menu': 'account_menu',
     'account_type_menu': 'account_menu',
+    # OCA/account-invoicing
+    'account_invoice_repair_link': 'repair',
     # OCA/account-reconcile
     'account_set_reconcilable': 'account',
     'bank_statement_foreign_currency': 'account',
+    'account_reconciliation_widget_partial': 'account',
     # OCA/e-commerce
     'website_sale_category_description': 'website_sale',
     # OCA/event
     'event_activity': 'event',
     'website_event_share': 'website_event',
+    # OCA/geospatial
+    'base_geolocalize_openstreetmap': 'base_geolocalize',
     # OCA/l10n-spain
     'l10n_es_account_invoice_sequence': 'l10n_es',
+    'l10n_es_aeat_mod303_extra_data': 'l10n_es_aeat_mod303',
     'l10n_es_aeat_sii': 'l10n_es_aeat_sii_oca',
+    'l10n_es_aeat_sii_extra_data': 'l10n_es_aeat_sii_oca',
+    'l10n_es_extra_data': 'l10n_es',
+    'l10n_es_ticketbai_batuz_extra_data': 'l10n_es_ticketbai_batuz',
+    'l10n_es_ticketbai_extra_data': 'l10n_es_ticketbai',
+    'l10n_es_vat_book_extra_data': 'l10n_es_vat_book',
+    # OCA/manufacture
+    'repair_calendar_view': 'base_repair',
     # OCA/multi-company
     'stock_production_lot_multi_company': 'stock',
     # OCA/partner-contact
@@ -83,10 +107,13 @@ merged_modules = {
     'partner_group': 'partner_company_group',
     # OCA/product-attribute
     'product_pricelist_show_product_ref': 'product',
+    'product_active_propagate': 'product',
     # OCA/product-variant
     'sale_order_variant_mgmt': 'sale_product_matrix',
     # OCA/purchase-reporting
     'purchase_report_extension': 'purchase',
+    # OCA/sale-workflow
+    'sale_disable_inventory_check': 'sale_stock',
     # OCA/server-backend
     'base_suspend_security': 'base',
     # OCA/social
@@ -97,13 +124,17 @@ merged_modules = {
     'stock_picking_report_custom_description': 'stock',
     # OCA/stock-logistics-warehouse
     'sale_stock_info_popup': 'sale_stock',
+    # OCA/stock-logistics-workflow
+    'stock_picking_responsible': 'stock',
     # OCA/timesheet
     'sale_timesheet_existing_project': 'sale_timesheet',
     # OCA/web
     'web_export_view': 'web',
     'web_favicon': 'base',
+    'web_tree_resize_column': 'web',
     'web_view_searchpanel': 'web',
     'web_widget_color': 'web',
+    'web_widget_float_formula': 'web',
     'web_widget_many2many_tags_multi_selection': 'web',
     'web_widget_one2many_product_picker_sale_stock_available_info_popup': (
         'web_widget_one2many_product_picker_sale_stock'
@@ -139,9 +170,6 @@ merged_modules = {
     'muk_dms_mail': 'dms',
     'muk_dms_thumbnails': 'dms',
     'muk_dms_view': 'dms',
-    # OCA/payroll
-    'hr_payroll': 'payroll',
-    'hr_payroll_account': 'payroll_account',
     # Viindoo/tvtmaaddons
     'to_equipment_archive': 'maintenance',
     'to_hr_advanced': 'to_hr_payroll',

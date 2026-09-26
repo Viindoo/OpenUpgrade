@@ -13,12 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.7
-      - uses: actions/checkout@v2
+          python-version: 3.8
+      - uses: actions/checkout@v4
       - name: Configuration
-        run: pip install flake8==3.4.1
+        run: pip install flake8==4.0.1
       - name: Flake8 Script
         run: |
           flake8 odoo/openupgrade --max-line-length=120
@@ -27,4 +27,7 @@ jobs:
           # only flake8 migration scripts from the openupgrade project, presumably
           # identifiable by using the openupgrade helpers
           flake8 --max-line-length=120 scripts $(find . \( -name 'pre-*.py' -or -name 'post-*.py' -or -name 'end-*.py' \) -exec grep -q openupgrade {} \; -print)
-          flake8 addons/*/migrations/*/tests/ --max-line-length=120
+          if ls addons/*/migrations/*/tests/ > /dev/null 2>&1; then
+            flake8 addons/*/migrations/*/tests/ --max-line-length=120 --filename=__init__.py --ignore=F401
+            flake8 addons/*/migrations/*/tests/ --max-line-length=120 --exclude=__init__.py
+          fi

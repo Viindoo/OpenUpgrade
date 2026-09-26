@@ -177,7 +177,7 @@ account      / account.move             / invoice_date_due (date)       : NEW
 account      / account.move             / invoice_incoterm_id (many2one): NEW relation: account.incoterms, hasdefault
 account      / account.move             / invoice_line_ids (one2many)   : NEW relation: account.move.line
 account      / account.move             / invoice_origin (char)         : NEW
-account      / account.move             / invoice_partner_bank_id (many2one): NEW relation: res.partner.bank
+account      / account.move             / invoice_partner_bank_id (many2one): NEW relation: res.partner.bank, isfunction: function, stored
 account      / account.move             / invoice_partner_display_name (char): NEW isfunction: function, stored
 account      / account.move             / invoice_payment_ref (char)    : NEW
 account      / account.move             / invoice_payment_state (selection): NEW selection_keys: ['in_payment', 'not_paid', 'paid'], isfunction: function, stored

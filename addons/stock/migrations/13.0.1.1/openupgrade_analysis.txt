@@ -60,6 +60,7 @@ stock        / stock.picking            / move_line_nosuggest_ids (one2many): NE
 stock        / stock.picking            / user_id (many2one)            : NEW relation: res.users, hasdefault
 stock        / stock.picking.type       / company_id (many2one)         : NEW relation: res.company, required, req_default: function, hasdefault
 stock        / stock.picking.type       / sequence_code (char)          : NEW required
+stock        / stock.production.lot     / _order                        : _order is now 'name, id' ('id')
 stock        / stock.production.lot     / company_id (many2one)         : NEW relation: res.company, required
 stock        / stock.production.lot     / note (html)                   : NEW
 stock        / stock.putaway.rule       / company_id (many2one)         : NEW relation: res.company, required, req_default: function, hasdefault

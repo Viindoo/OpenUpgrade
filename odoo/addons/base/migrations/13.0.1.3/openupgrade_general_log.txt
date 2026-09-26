@@ -13,21 +13,25 @@ obsolete model account.voucher.line (renamed to account.move.line) [module accou
 obsolete model cash.box.in [module account]
 obsolete model crm.lead.convert2task [module crm_project]
 obsolete model decimal.precision.test [module base]
-obsolete model employee.upload.line.wizard [module to_attendance_device]
-obsolete model fleet.driver [module to_fleet_driver]
-obsolete model hr.contract.advantage.template [module to_hr_payroll]
+obsolete model hr.contract.advantage.template [module payroll]
 obsolete model hr.contract.type [module hr_contract]
-obsolete model hr.contribution.register.category [module to_hr_payroll]
+obsolete model hr.contribution.register [module payroll]
 obsolete model hr.holidays.summary.dept [module hr_holidays]
-obsolete model hr.overtime.line [module viin_hr_overtime_payroll]
-obsolete model hr.overtime.report [module viin_hr_overtime_payroll]
-obsolete model hr.overtime.request_single [module viin_hr_overtime_payroll]
-obsolete model hr.payroll_contribution.register [module to_hr_payroll]
-obsolete model hr.payroll_contribution.register.history [module to_hr_payroll]
-obsolete model hr.payroll_contribution.type [module to_hr_payroll]
-obsolete model hr.payslip.attendance [module to_hr_payroll_attendance]
-obsolete model hr.payslip.contrib.history.line [module to_hr_payroll]
-obsolete model hr.payslip.overtime.line [module viin_hr_overtime_payroll]
+obsolete model hr.payroll.advice [module l10n_in_hr_payroll]
+obsolete model hr.payroll.advice.line [module l10n_in_hr_payroll]
+obsolete model hr.payroll.structure [module payroll]
+obsolete model hr.payslip [module payroll]
+obsolete model hr.payslip.employees [module payroll]
+obsolete model hr.payslip.input [module payroll]
+obsolete model hr.payslip.line [module payroll]
+obsolete model hr.payslip.run [module payroll]
+obsolete model hr.payslip.worked_days [module payroll]
+obsolete model hr.rule.input [module payroll]
+obsolete model hr.salary.employee.month [module l10n_in_hr_payroll]
+obsolete model hr.salary.rule [module payroll]
+obsolete model hr.salary.rule.category [module payroll]
+obsolete model lunch.order.line (renamed to lunch.order) [module lunch]
+obsolete model lunch.order.line.lucky [module lunch]
 obsolete model mail.blacklist.mixin (renamed to mail.thread.blacklist) [module mail]
 obsolete model mail.mail.statistics (renamed to mailing.trace) [module mass_mailing]
 obsolete model mail.mass_mailing (renamed to mailing.mailing) [module mass_mailing]
@@ -43,15 +47,19 @@ obsolete model mass.mailing.list.merge (renamed to mailing.list.merge) [module m
 obsolete model mass.mailing.schedule.date (renamed to mailing.mailing.schedule.date) [module mass_mailing]
 obsolete model mrp.mps.report [module to_mrp_mps]
 obsolete model mrp.subproduct (renamed to mrp.bom.byproduct) [module mrp]
-obsolete model product.landed.cost [module to_purchase_landed_cost]
+obsolete model payment.advice.report [module l10n_in_hr_payroll]
+obsolete model payslip.lines.contribution.register [module payroll]
+obsolete model payslip.report [module l10n_in_hr_payroll]
+obsolete model pos.open.statement [module point_of_sale]
 obsolete model product.price.history [module product]
 obsolete model product.putaway [module stock]
 obsolete model project.task.assign.sale [module sale_timesheet]
-obsolete model purchase.landed.cost [module to_purchase_landed_cost]
-obsolete model replenishment.request [module to_procurement_requests]
-obsolete model replenishment.request.line [module to_procurement_requests]
-obsolete model report.hr_payroll.report_contributionregister [module to_hr_payroll]
-obsolete model report.hr_payroll.report_payslipdetails [module to_hr_payroll]
+obsolete model report.hr_payroll.report_contributionregister [module payroll]
+obsolete model report.hr_payroll.report_payslipdetails [module payroll]
+obsolete model report.l10n_in_hr_payroll.report_hrsalarybymonth [module l10n_in_hr_payroll]
+obsolete model report.l10n_in_hr_payroll.report_hryearlysalary [module l10n_in_hr_payroll]
+obsolete model report.l10n_in_hr_payroll.report_payrolladvice [module l10n_in_hr_payroll]
+obsolete model report.l10n_in_hr_payroll.report_payslipdetails [module l10n_in_hr_payroll]
 obsolete model report.stock.forecast (renamed to report.stock.quantity) [module stock]
 obsolete model report.to_stock_age_report.report_stock_age [module to_stock_age_report]
 obsolete model sale.forecast [module to_mrp_mps]
@@ -126,8 +134,15 @@ new model hr.skill.type [module hr_skills]
 new model image.mixin [module base]
 new model ir.model.fields.selection [module base]
 new model mail.address.mixin [module mail]
-new model mail.bot [module mail_bot]
-new model mail.message.emoji [module viin_message_emoji]
+new model mail.test.cc [module test_mail]
+new model mail.test.gateway [module test_mail]
+new model mail.test.gateway.groups [module test_mail]
+new model mail.test.multi.company [module test_mail]
+new model mail.test.portal [module test_mail_full]
+new model mail.test.sms [module test_mail_full]
+new model mail.test.sms.bl [module test_mail_full]
+new model mail.test.sms.partner [module test_mail_full]
+new model mail.test.track.selection [module test_mail]
 new model mail.thread.blacklist (renamed from mail.blacklist.mixin) [module mail]
 new model mail.thread.cc [module mail]
 new model mail.thread.phone [module phone_validation]
@@ -138,6 +153,8 @@ new model mailing.list.merge (renamed from mass.mailing.list.merge) [module mass
 new model mailing.mailing (renamed from mail.mass_mailing) [module mass_mailing]
 new model mailing.mailing.schedule.date (renamed from mass.mailing.schedule.date) [module mass_mailing]
 new model mailing.mailing.test (renamed from mail.mass_mailing.test) [module mass_mailing]
+new model mailing.sms.test [module mass_mailing_sms]
+new model mailing.test.partner.unstored [module test_mass_mailing]
 new model mailing.trace (renamed from mail.mail.statistics) [module mass_mailing]
 new model mailing.trace.report (renamed from mail.statistics.report) [module mass_mailing]
 new model mobile.device.token [module viin_mobile_notification]
@@ -199,13 +216,13 @@ new model website.route [module website]
 new model website.track [module website]
 new model website.visitor [module website]
 ---Fields in module 'general'---
-# 8629 fields matched,
-# Direct match: 8482
-# Found in other module: 146
-# Found with different type: 1
-# In obsolete models: 392
-# New columns: 2580
-# Not matched: 1126
+# 7992 fields matched,
+# Direct match: 7886
+# Found in other module: 106
+# Found with different type: 0
+# In obsolete models: 235
+# New columns: 2555
+# Not matched: 1005
 ---XML records in module 'general'---
 ERROR: module not in list of installed modules:
 ---Models in module 'crm_project'---
@@ -219,35 +236,15 @@ DEL ir.model.access: crm_project.access_project_task_type_sale_user
 DEL ir.ui.view: crm_project.crm_lead_convert2task_view_form
 DEL ir.ui.view: crm_project.crm_lead_view_form
 ERROR: module not in list of installed modules:
----Models in module 'to_account_journal_entry_chatter'---
----Fields in module 'to_account_journal_entry_chatter'---
-to_account_journal_entry_chatter / account.move             / activity_date_deadline (date) : module is now 'account' ('to_account_journal_entry_chatter')
-to_account_journal_entry_chatter / account.move             / activity_ids (one2many)       : module is now 'account' ('to_account_journal_entry_chatter')
-to_account_journal_entry_chatter / account.move             / activity_state (selection)    : module is now 'account' ('to_account_journal_entry_chatter')
-to_account_journal_entry_chatter / account.move             / activity_summary (char)       : module is now 'account' ('to_account_journal_entry_chatter')
-to_account_journal_entry_chatter / account.move             / activity_type_id (many2one)   : module is now 'account' ('to_account_journal_entry_chatter')
-to_account_journal_entry_chatter / account.move             / activity_user_id (many2one)   : module is now 'account' ('to_account_journal_entry_chatter')
-to_account_journal_entry_chatter / account.move             / message_attachment_count (integer): module is now 'account' ('to_account_journal_entry_chatter')
-to_account_journal_entry_chatter / account.move             / message_channel_ids (many2many): module is now 'account' ('to_account_journal_entry_chatter')
-to_account_journal_entry_chatter / account.move             / message_follower_ids (one2many): module is now 'account' ('to_account_journal_entry_chatter')
-to_account_journal_entry_chatter / account.move             / message_has_error (boolean)   : module is now 'account' ('to_account_journal_entry_chatter')
-to_account_journal_entry_chatter / account.move             / message_has_error_counter (integer): module is now 'account' ('to_account_journal_entry_chatter')
-to_account_journal_entry_chatter / account.move             / message_ids (one2many)        : module is now 'account' ('to_account_journal_entry_chatter')
-to_account_journal_entry_chatter / account.move             / message_is_follower (boolean) : module is now 'account' ('to_account_journal_entry_chatter')
-to_account_journal_entry_chatter / account.move             / message_main_attachment_id (many2one): module is now 'account' ('to_account_journal_entry_chatter')
-to_account_journal_entry_chatter / account.move             / message_needaction (boolean)  : module is now 'account' ('to_account_journal_entry_chatter')
-to_account_journal_entry_chatter / account.move             / message_needaction_counter (integer): module is now 'account' ('to_account_journal_entry_chatter')
-to_account_journal_entry_chatter / account.move             / message_partner_ids (many2many): module is now 'account' ('to_account_journal_entry_chatter')
-to_account_journal_entry_chatter / account.move             / message_unread (boolean)      : module is now 'account' ('to_account_journal_entry_chatter')
-to_account_journal_entry_chatter / account.move             / message_unread_counter (integer): module is now 'account' ('to_account_journal_entry_chatter')
-to_account_journal_entry_chatter / account.move             / website_message_ids (one2many): module is now 'account' ('to_account_journal_entry_chatter')
----XML records in module 'to_account_journal_entry_chatter'---
-DEL ir.ui.view: to_account_journal_entry_chatter.view_move_form
+---Models in module 'hr_payroll'---
+---Fields in module 'hr_payroll'---
+---XML records in module 'hr_payroll'---
+---nothing has changed in this module--
 ERROR: module not in list of installed modules:
----Models in module 'to_enterprise_marks_hr_payroll'---
----Fields in module 'to_enterprise_marks_hr_payroll'---
----XML records in module 'to_enterprise_marks_hr_payroll'---
-DEL ir.ui.view: to_enterprise_marks_hr_payroll.res_config_settings_view_form
+---Models in module 'hr_payroll_account'---
+---Fields in module 'hr_payroll_account'---
+---XML records in module 'hr_payroll_account'---
+---nothing has changed in this module--
 ERROR: module not in list of installed modules:
 ---Models in module 'to_hr_scheduled_working_days'---
 model hr.working.month.calendar (moved to to_hr_payroll)

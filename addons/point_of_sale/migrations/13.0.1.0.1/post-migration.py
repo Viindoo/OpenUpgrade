@@ -86,6 +86,55 @@ def delete_pos_order_line_with_empty_order_id(env):
     )
 
 
+def create_pos_picking_types(env):
+    """Create picking types according to former pos.config locations
+    """
+    openupgrade.logged_query(
+        env.cr, """
+        SELECT pc.id, stock_location_id
+        FROM pos_config pc
+        JOIN stock_picking_type spt ON pc.picking_type_id = spt.id
+        WHERE stock_location_id != spt.default_location_src_id
+        OR spt.default_location_src_id IS NULL
+        """
+    )
+    # Unzip and zip again so we browse all the configs at once
+    try:
+        config_ids, location_ids = zip(*env.cr.fetchall())
+    except ValueError:
+        # No values to unpack so no results were fetched
+        return
+    for config, location_id in zip(
+        env["pos.config"].browse(config_ids),
+        location_ids
+    ):
+        vals = {
+            "name": f"[OU] {config.picking_type_id.name} - {config.name}",
+            "company_id": config.company_id.id,
+            "default_location_src_id": location_id,
+        }
+        if (
+            config.picking_type_id.sequence_id
+            and config.picking_type_id.sequence_id.company_id != config.company_id
+        ):
+            picking_type_seq = config.picking_type_id.sequence_id.copy(
+                {
+                    "company_id": config.company_id.id
+                }
+            )
+            vals["sequence_id"] = picking_type_seq.id
+        picking_type = config.picking_type_id.copy(vals)
+        # Update via SQL to avoid possible open sessions errors. They shouldn't be open
+        # but if only is they'd spoil the whole migration
+        env.cr.execute(
+            """
+            UPDATE pos_config
+            SET picking_type_id = %s WHERE id = %s
+            """,
+            (picking_type.id, config.id),
+        )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     fill_pos_config_default_cashbox_id(env)
@@ -97,3 +146,4 @@ def migrate(env, version):
     delete_pos_order_line_with_empty_order_id(env)
     openupgrade.delete_records_safely_by_xml_id(env, _unlink_by_xmlid)
     openupgrade.load_data(env.cr, 'point_of_sale', 'migrations/13.0.1.0.1/noupdate_changes.xml')
+    create_pos_picking_types(env)

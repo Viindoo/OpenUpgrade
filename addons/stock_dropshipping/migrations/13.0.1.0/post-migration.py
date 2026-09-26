@@ -43,10 +43,20 @@ def run_dropshipping_functions(env):
             }
             if picking_type.default_location_dest_id.usage != "customer":
                 vals["default_location_dest_id"] = env.ref('stock.stock_location_customers').id
+                if i == 0:
+                    picking_type.default_location_dest_id = vals["default_location_dest_id"]
             if picking_type.default_location_src_id.usage != "supplier":
                 vals["default_location_src_id"] = env.ref('stock.stock_location_suppliers').id
+                if i == 0:
+                    picking_type.default_location_src_id = vals["default_location_src_id"]
             if i == 0:
-                picking_type.write(vals)
+                env.cr.execute(
+                    """UPDATE stock_picking_type
+                    SET company_id = %s, sequence_id = %s, warehouse_id = NULL
+                    WHERE id = %s""",
+                    (vals["company_id"], vals["sequence_id"], picking_type.id),
+                )
+                picking_type.invalidate_cache()
                 new_picking_type = picking_type
             else:
                 new_picking_type = picking_type.copy(vals)

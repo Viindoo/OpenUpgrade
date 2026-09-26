@@ -43,6 +43,7 @@ def use_new_taxes_and_repartition_lines_on_move_lines(env):
         [('children_tax_ids', '!=', False), ('company_id', 'in', companies_ids)]
     ).filtered(lambda t: not t.invoice_repartition_line_ids
                and not t.refund_repartition_line_ids)
+    children_tax_ids = taxes_with_children.mapped('children_tax_ids').ids
     tax_ids = taxes_with_children.ids
     # create tax repartition lines
     if tax_ids:
@@ -72,9 +73,6 @@ def use_new_taxes_and_repartition_lines_on_move_lines(env):
                 FROM account_tax
                 WHERE id IN %%s""" % column, (tuple(tax_ids), ),
             )
-    domain = [('model', '=', 'account.tax'), ('res_id', 'in', taxes_with_children.ids), ('module', '!=', '__export__')]
-    taxes_with_children = env['account.tax'].browse(env['ir.model.data'].search(domain).mapped('res_id'))
-    children_tax_ids = taxes_with_children.mapped('children_tax_ids').ids
     if children_tax_ids:
         # assure children taxes are not parent taxes
         openupgrade.logged_query(
@@ -98,12 +96,17 @@ def use_new_taxes_and_repartition_lines_on_move_lines(env):
             WHERE at.id IN %s
             ON CONFLICT DO NOTHING""", (tuple(children_tax_ids), ),
         )
-        openupgrade.logged_query(
-            env.cr, """
-            DELETE FROM account_move_line_account_tax_rel
-            WHERE account_tax_id IN %s
-            """, (tuple(children_tax_ids), ),
-        )
+        other_parents = env["account.tax"].with_context(active_test=False).search(
+            [("children_tax_ids", "in", children_tax_ids)]).filtered(lambda t: t not in taxes_with_children)
+        obsolete_children = [x for x in children_tax_ids if x not in other_parents.mapped(
+            'children_tax_ids').filtered(lambda t: t.id in children_tax_ids).ids]
+        if obsolete_children:
+            openupgrade.logged_query(
+                env.cr, """
+                DELETE FROM account_move_line_account_tax_rel
+                WHERE account_tax_id IN %s
+                """, (tuple(obsolete_children), ),
+            )
         # update account move line tax_repartition_line_id
         for tax_column in ("invoice_tax_id", "refund_tax_id"):
             openupgrade.logged_query(

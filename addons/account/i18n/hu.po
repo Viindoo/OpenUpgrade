@@ -9,13 +9,14 @@
 # picibucor <picibucor@gmail.com>, 2019
 # Kovács Tibor <kovika@gmail.com>, 2019
 # Daniel Gerstenbrand <daniel.gerstenbrand@gmail.com>, 2019
-# krnkris, 2019
 # Istvan <leki69@gmail.com>, 2019
 # A . <tiboreu@protonmail.com>, 2020
 # gezza <geza.nagy@oregional.hu>, 2020
 # Martin Trigaux, 2020
 # Ákos Nagy <akos.nagy@oregional.hu>, 2020
 # Tamás Németh <ntomasz81@gmail.com>, 2022
+# Gergő Kertész <gergo.kertesz@maxflow.hu>, 2022
+# krnkris, 2022
 # 
 msgid ""
 msgstr ""
@@ -23,7 +24,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-01 12:20+0000\n"
 "PO-Revision-Date: 2019-08-26 09:06+0000\n"
-"Last-Translator: Tamás Németh <ntomasz81@gmail.com>, 2022\n"
+"Last-Translator: krnkris, 2022\n"
 "Language-Team: Hungarian (https://www.transifex.com/odoo/teams/41243/hu/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -647,6 +648,11 @@ msgstr "<strong>Vállalat:</strong>"
 
 #. module: account
 #: model_terms:ir.ui.view,arch_db:account.report_invoice_document
+msgid "<strong>Credit Note Date:</strong>"
+msgstr ""
+
+#. module: account
+#: model_terms:ir.ui.view,arch_db:account.report_invoice_document
 msgid "<strong>Customer Code:</strong>"
 msgstr "<strong>Vevő kód:</strong>"
 
@@ -654,6 +660,11 @@ msgstr "<strong>Vevő kód:</strong>"
 #: model_terms:ir.ui.view,arch_db:account.report_payment_receipt_document
 msgid "<strong>Customer: </strong>"
 msgstr "<strong>Vevő: </strong>"
+
+#. module: account
+#: model_terms:ir.ui.view,arch_db:account.report_invoice_document
+msgid "<strong>Date:</strong>"
+msgstr "<strong>Dátum:</strong>"
 
 #. module: account
 #: model_terms:ir.ui.view,arch_db:account.report_invoice_document
@@ -5911,6 +5922,14 @@ msgstr ""
 #: code:addons/account/models/account.py:0
 #, python-format
 msgid ""
+"Invoice and credit note repartition should have at least one tax repartition"
+" line."
+msgstr ""
+
+#. module: account
+#: code:addons/account/models/account.py:0
+#, python-format
+msgid ""
 "Invoice and credit note repartition should have the same number of lines."
 msgstr ""
 
@@ -5981,7 +6000,7 @@ msgstr "Számlák"
 #: model_terms:ir.ui.view,arch_db:account.portal_my_home_invoice
 #: model_terms:ir.ui.view,arch_db:account.portal_my_home_menu_invoice
 msgid "Invoices &amp; Bills"
-msgstr ""
+msgstr "Számlák"
 
 #. module: account
 #: model:ir.actions.act_window,name:account.action_account_invoice_report_all
@@ -8698,6 +8717,12 @@ msgid "Reconciliation on Bank Statements"
 msgstr "A banki kivonatok egyeztetése"
 
 #. module: account
+#: code:addons/account/models/partner.py:0
+#, python-format
+msgid "Record cannot be deleted. Partner used in Accounting"
+msgstr ""
+
+#. module: account
 #: model_terms:ir.ui.view,arch_db:account.res_config_settings_view_form
 msgid "Record transactions in foreign currencies"
 msgstr ""
@@ -11182,7 +11207,7 @@ msgstr ""
 #. module: account
 #: model_terms:ir.ui.view,arch_db:account.portal_my_invoices
 msgid "There are currently no invoices and payments for your account."
-msgstr ""
+msgstr "Nincsenek megjeleníthető számlák vagy tranzakciók."
 
 #. module: account
 #: code:addons/account/wizard/account_validate_account_move.py:0

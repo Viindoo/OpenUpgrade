@@ -71,7 +71,7 @@ NEW fleet.vehicle.model.brand: fleet.brand_tesla_motors
 DEL fleet.vehicle.model.brand: fleet.brand_corre la licorne
 DEL fleet.vehicle.model.brand: fleet.brand_land rover
 DEL fleet.vehicle.model.brand: fleet.brand_tesla motors
-NEW ir.actions.act_window: fleet.fleet_config_settings_action
+NEW ir.actions.act_window: fleet.fleet_config_settings_action [renamed from l10n_be_hr_payroll_fleet module]
 NEW ir.rule: fleet.ir_rule_fleet_cost (noupdate)
 NEW ir.rule: fleet.ir_rule_fleet_log_contract (noupdate)
 NEW ir.rule: fleet.ir_rule_fleet_log_fuel (noupdate)

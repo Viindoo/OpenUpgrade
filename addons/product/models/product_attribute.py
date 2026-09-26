@@ -39,7 +39,10 @@ class ProductAttribute(models.Model):
     @api.depends('attribute_line_ids.active', 'attribute_line_ids.product_tmpl_id')
     def _compute_products(self):
         for pa in self:
-            pa.product_tmpl_ids = pa.attribute_line_ids.product_tmpl_id
+            pa.with_context(active_test=False).product_tmpl_ids = pa.attribute_line_ids.product_tmpl_id
+        # avoid multi-company records in cache (that were an issue for subsequent read)
+        self.flush(fnames=['product_tmpl_ids'], records=self)
+        self.invalidate_cache(fnames=['product_tmpl_ids'], ids=self.ids)
 
     def _without_no_variant_attributes(self):
         return self.filtered(lambda pa: pa.create_variant != 'no_variant')
@@ -349,7 +352,8 @@ class ProductTemplateAttributeLine(models.Model):
             # re-use a value that was archived at a previous step.
             ptav_to_activate.write({'ptav_active': True})
             ptav_to_unlink.write({'ptav_active': False})
-        ptav_to_unlink.unlink()
+        if ptav_to_unlink:
+            ptav_to_unlink.unlink()
         ProductTemplateAttributeValue.create(ptav_to_create)
         self.product_tmpl_id._create_variant_ids()
 

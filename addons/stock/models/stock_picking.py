@@ -159,7 +159,12 @@ class PickingType(models.Model):
         args = args or []
         domain = []
         if name:
-            domain = ['|', ('name', operator, name), ('warehouse_id.name', operator, name)]
+            # Try to reverse the `name_get` structure
+            parts = name.split(': ')
+            if len(parts) == 2:
+                domain = [('warehouse_id.name', operator, parts[0]), ('name', operator, parts[1])]
+            else:
+                domain = ['|', ('name', operator, name), ('warehouse_id.name', operator, name)]
         picking_ids = self._search(expression.AND([domain, args]), limit=limit, access_rights_uid=name_get_uid)
         return models.lazy_name_get(self.browse(picking_ids).with_user(name_get_uid))
 
@@ -427,6 +432,8 @@ class Picking(models.Model):
                 'any_draft': picking_moves_state_map[picking_id.id].get('any_draft', False) or move_state == 'draft',
                 'all_cancel': picking_moves_state_map[picking_id.id].get('all_cancel', True) and move_state == 'cancel',
                 'all_cancel_done': picking_moves_state_map[picking_id.id].get('all_cancel_done', True) and move_state in ('cancel', 'done'),
+                'all_done_are_scrapped': picking_moves_state_map[picking_id.id].get('all_done_are_scrapped', True) and (move.scrapped if move_state == 'done' else True),
+                'any_cancel_and_not_scrapped': picking_moves_state_map[picking_id.id].get('any_cancel_and_not_scrapped', False) or (move_state == 'cancel' and not move.scrapped),
             })
             picking_move_lines[picking_id.id].add(move.id)
         for picking in self:
@@ -437,7 +444,10 @@ class Picking(models.Model):
             elif picking_moves_state_map[picking.id]['all_cancel']:
                 picking.state = 'cancel'
             elif picking_moves_state_map[picking.id]['all_cancel_done']:
-                picking.state = 'done'
+                if picking_moves_state_map[picking.id]['all_done_are_scrapped'] and picking_moves_state_map[picking.id]['any_cancel_and_not_scrapped']:
+                    picking.state = 'cancel'
+                else:
+                    picking.state = 'done'
             else:
                 relevant_move_state = self.env['stock.move'].browse(picking_move_lines[picking.id])._get_relevant_state_among_moves()
                 if picking.immediate_transfer and relevant_move_state not in ('draft', 'cancel', 'done'):
@@ -583,19 +593,22 @@ class Picking(models.Model):
         # As the on_change in one2many list is WIP, we will overwrite the locations on the stock moves here
         # As it is a create the format will be a list of (0, 0, dict)
         moves = vals.get('move_lines', []) + vals.get('move_ids_without_package', [])
-        if moves and vals.get('location_id') and vals.get('location_dest_id'):
+        if moves and ((vals.get('location_id') and vals.get('location_dest_id')) or vals.get('partner_id')):
             for move in moves:
                 if len(move) == 3 and move[0] == 0:
-                    move[2]['location_id'] = vals['location_id']
-                    move[2]['location_dest_id'] = vals['location_dest_id']
-                    # When creating a new picking, a move can have no `company_id` (create before
-                    # picking type was defined) or a different `company_id` (the picking type was
-                    # changed for an another company picking type after the move was created).
-                    # So, we define the `company_id` in one of these cases.
-                    picking_type = self.env['stock.picking.type'].browse(vals['picking_type_id'])
-                    if 'picking_type_id' not in move[2] or move[2]['picking_type_id'] != picking_type.id:
-                        move[2]['picking_type_id'] = picking_type.id
-                        move[2]['company_id'] = picking_type.company_id.id
+                    if vals.get('location_id') and vals.get('location_dest_id'):
+                        move[2]['location_id'] = vals['location_id']
+                        move[2]['location_dest_id'] = vals['location_dest_id']
+                        # When creating a new picking, a move can have no `company_id` (create before
+                        # picking type was defined) or a different `company_id` (the picking type was
+                        # changed for an another company picking type after the move was created).
+                        # So, we define the `company_id` in one of these cases.
+                        picking_type = self.env['stock.picking.type'].browse(vals['picking_type_id'])
+                        if 'picking_type_id' not in move[2] or move[2]['picking_type_id'] != picking_type.id:
+                            move[2]['picking_type_id'] = picking_type.id
+                            move[2]['company_id'] = picking_type.company_id.id
+                    if vals.get('partner_id'):
+                        move[2]['partner_id'] = vals.get('partner_id')
         # make sure to write `schedule_date` *after* the `stock.move` creation in
         # order to get a determinist execution of `_set_scheduled_date`
         scheduled_date = vals.pop('scheduled_date', False)
@@ -628,6 +641,8 @@ class Picking(models.Model):
             after_vals['location_id'] = vals['location_id']
         if vals.get('location_dest_id'):
             after_vals['location_dest_id'] = vals['location_dest_id']
+        if 'partner_id' in vals:
+            after_vals['partner_id'] = vals['partner_id']
         if after_vals:
             self.mapped('move_lines').filtered(lambda move: not move.scrapped).write(after_vals)
         if vals.get('move_lines'):
@@ -1126,7 +1141,7 @@ class Picking(models.Model):
         """
         for (parent, responsible), rendering_context in documents.items():
             note = render_method(rendering_context)
-            parent.activity_schedule(
+            parent.sudo().activity_schedule(
                 'mail.mail_activity_data_warning',
                 date.today(),
                 note=note,
