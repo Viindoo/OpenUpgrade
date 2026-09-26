@@ -34,7 +34,6 @@ _column_renames = {
 
 _field_renames = [
     ('account.move', 'account_move', 'amount', 'amount_total'),
-    ('account.move', 'account_move', 'reverse_entry_id', 'reversed_entry_id'),
 ]
 
 _field_sale_renames = [
@@ -57,6 +56,10 @@ _table_renames = [
 _field_adds = [
     ("account_root_id", "account.move.line", "account_move_line", "many2one", False, "account"),
     ("tax_group_id", "account.move.line", "account_move_line", "many2one", False, "account")
+]
+
+xmlid_renames_payment_terms = [
+    ("account.account_payment_term_net", "account.account_payment_term_30days"),
 ]
 
 
@@ -339,6 +342,7 @@ def migrate(env, version):
         )
     openupgrade.rename_models(cr, _model_renames)
     openupgrade.rename_tables(cr, _table_renames)
+    openupgrade.rename_xmlids(env.cr, xmlid_renames_payment_terms)
     openupgrade.add_fields(env, _field_adds)
     type_change_account_fiscal_position_zips(env)
     create_account_invoice_amount_tax_company_signed(env)
@@ -346,6 +350,7 @@ def migrate(env, version):
     fill_account_move_line(env)
     create_res_partner_ranks(env)
     delete_fk_constraints(env)
+    openupgrade.lift_constraints(env.cr, "account_move", "reverse_entry_id")
     fill_account_move_commercial_partner_id(env)
     set_account_move_currency_id_required(env)
     add_helper_invoice_move_rel(env)

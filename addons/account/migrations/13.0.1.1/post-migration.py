@@ -203,24 +203,37 @@ def migration_invoice_moves(env):
         FROM account_invoice ai
         WHERE ai.state in ('draft', 'cancel')""",
     )
-    _move_model_in_data(
-        env, 'account.invoice', 'account.move', 'old_invoice_id')
+    openupgrade.merge_models(env.cr, 'account.invoice', 'account.move', 'old_invoice_id')
     # Not Draft or Cancel Invoice Lines
     # 1st: update the ungrouped ones
     openupgrade.logged_query(env.cr, "ALTER TABLE account_invoice_line ADD aml_matched BOOLEAN")
     query = sql.SQL("""
-    WITH sub AS (
+    WITH matches AS (
+        SELECT unnest(amls) as aml_id, unnest(ails) as ail_id
+        FROM (
+            SELECT array_agg(aml_id ORDER BY aml_id) as amls, ails
+            FROM (
+                SELECT aml.id as aml_id, array_agg(ail.id ORDER BY ail.id) as ails
+                FROM account_invoice_line ail
+                JOIN account_invoice ai ON ail.invoice_id = ai.id AND ai.state NOT IN ('draft', 'cancel')
+                JOIN account_move am ON ail.invoice_id = am.old_invoice_id
+                JOIN res_company rc ON ai.company_id = rc.id
+                JOIN account_move_line aml ON am.id = aml.move_id
+                {where}
+                GROUP BY aml.id
+            ) group_by_aml
+            GROUP BY ails
+        ) group_by_ail
+    ), sub AS (
         UPDATE account_move_line aml
-        SET exclude_from_invoice_tab = FALSE, sequence = ail.sequence,
+        SET exclude_from_invoice_tab = FALSE, sequence = ail.sequence, name = ail.name,
         price_unit = ail.price_unit, discount = ail.discount, price_subtotal = ail.price_subtotal,
         price_total = ail.price_total, display_type = ail.display_type,
         is_rounding_line = ail.is_rounding_line, old_invoice_line_id = ail.id,
         create_uid = ail.create_uid, create_date = ail.create_date
-        FROM account_invoice_line ail
-            JOIN account_invoice ai ON ail.invoice_id = ai.id AND ai.state NOT IN ('draft', 'cancel')
-            JOIN account_move am ON ail.invoice_id = am.old_invoice_id
-            JOIN res_company rc ON ai.company_id = rc.id
-        {where}
+        FROM matches
+        JOIN account_invoice_line ail ON matches.ail_id = ail.id
+        WHERE matches.aml_id = aml.id
         RETURNING ail.id
     )
     UPDATE account_invoice_line ail_main
@@ -233,49 +246,31 @@ def migration_invoice_moves(env):
     # The move lines that have a receivable or payable account (the same as the one
     # from the invoice) are not associated to any invoice line.
     minimal_where = """
-        WHERE am.id = aml.move_id
-            AND ail.aml_matched IS NOT True
+        WHERE ail.aml_matched IS NOT True
             AND aml.tax_line_id IS NULL
             AND aml.account_id <> ai.account_id
             AND ail.quantity = aml.quantity
             AND ((ail.product_id IS NULL AND aml.product_id IS NULL) OR ail.product_id = aml.product_id)
-            AND ((ail.uom_id IS NULL AND aml.product_uom_id IS NULL) OR ail.uom_id = aml.product_uom_id)
-            AND aml.old_invoice_line_id IS NULL
-        """
-    # Loop while duplicated move line references found
-    while True:
-        # Try first with a stricter criteria for matching invoice lines with account move lines
-        openupgrade.logged_query(
-            env.cr,
-            query.format(
-                where=(sql.SQL(minimal_where + """
-                AND ail.account_id = aml.account_id
-                AND ai.commercial_partner_id = aml.partner_id
-                AND ((ail.account_analytic_id IS NULL AND aml.analytic_account_id IS NULL)
-                    OR ail.account_analytic_id = aml.analytic_account_id)"""))
-            ),
-        )
-        # Try now with a more relaxed criteria, as it's possible that users change some data on amls
-        openupgrade.logged_query(
-            env.cr,
-            query.format(where=sql.SQL(minimal_where + " AND rc.anglo_saxon_accounting IS DISTINCT FROM TRUE"))
-        )
-        # Remove duplicates
-        openupgrade.logged_query(
-            env.cr, """
-            UPDATE account_move_line aml
-            SET old_invoice_line_id = NULL
-            FROM (
-                SELECT id,
-                row_number() over (partition BY old_invoice_line_id ORDER BY id) AS rnum
-                FROM account_move_line
-                WHERE old_invoice_line_id IS NOT NULL
-            ) t
-            WHERE t.rnum > 1 AND t.id = aml.id
-            RETURNING aml.id"""
-        )
-        if not env.cr.fetchone():
-            break  # exit condition not having more duplicates
+            AND ((ail.uom_id IS NULL AND aml.product_uom_id IS NULL) OR ail.uom_id = aml.product_uom_id)"""
+    # Try first with a stricter criteria for matching invoice lines with account move lines
+    openupgrade.logged_query(
+        env.cr,
+        query.format(
+            where=(sql.SQL(minimal_where + """
+            AND ail.account_id = aml.account_id
+            AND ai.commercial_partner_id = aml.partner_id
+            AND ((ail.account_analytic_id IS NULL AND aml.analytic_account_id IS NULL)
+                OR ail.account_analytic_id = aml.analytic_account_id)"""))
+        ),
+    )
+    # Try now with a more relaxed criteria, as it's possible that users change some data on amls
+    openupgrade.logged_query(
+        env.cr,
+        query.format(
+            where=sql.SQL(minimal_where + """
+            AND rc.anglo_saxon_accounting IS DISTINCT FROM TRUE
+            AND aml.old_invoice_line_id IS NULL"""))
+    )
     # 2st: exclude from invoice_tab the grouped ones
     openupgrade.logged_query(
         env.cr, """
@@ -304,7 +299,11 @@ def migration_invoice_moves(env):
         env.cr, """
         UPDATE account_move_line
         SET exclude_from_invoice_tab = TRUE
-        WHERE old_invoice_line_id IS NULL""",
+        FROM account_move
+        WHERE old_invoice_line_id IS NULL
+        AND account_move_line.move_id=account_move.id
+        AND account_move.type <> 'entry'
+        """,
     )
     # 4th. Adding all the missing lines
     openupgrade.logged_query(
@@ -359,6 +358,7 @@ def migration_invoice_moves(env):
         JOIN account_account aa ON ai.account_id = aa.id
         WHERE aa.internal_type in ('receivable', 'payable')""",
     )
+    openupgrade.merge_models(env.cr, 'account.invoice.line', 'account.move.line', 'old_invoice_line_id')
     # Not Draft or Cancel Invoice Taxes
     openupgrade.logged_query(
         env.cr, """
@@ -392,6 +392,7 @@ def migration_invoice_moves(env):
         LEFT JOIN account_move am ON am.old_invoice_id = ai.id
         WHERE COALESCE(ai.move_id, am.id) IS NOT NULL""",
     )
+    openupgrade.merge_models(env.cr, 'account.invoice.tax', 'account.move.line', 'old_invoice_tax_id')
     openupgrade.logged_query(
         env.cr, """
         INSERT INTO account_invoice_payment_rel
@@ -474,6 +475,11 @@ def compute_balance_for_draft_invoice_lines(env):
 
 def migration_voucher_moves(env):
     openupgrade.logged_query(
+        env.cr,
+        "ALTER TABLE account_voucher ADD COLUMN "
+        "IF NOT EXISTS message_main_attachment_id int4"
+    )
+    openupgrade.logged_query(
         env.cr, """
         UPDATE account_move am
         SET (message_main_attachment_id, name, date, ref, narration, type,
@@ -511,8 +517,7 @@ def migration_voucher_moves(env):
         WHERE av.state in ('draft', 'cancel', 'proforma')
         """,
     )
-    _move_model_in_data(
-        env, 'account.voucher', 'account.move', 'old_voucher_id')
+    openupgrade.merge_models(env.cr, 'account.voucher', 'account.move', 'old_voucher_id')
     # Not draft, cancel, proforma voucher lines
     openupgrade.logged_query(
         env.cr, """
@@ -561,6 +566,7 @@ def migration_voucher_moves(env):
         LEFT JOIN account_move am ON am.old_voucher_id = av.id
         WHERE COALESCE(av.move_id, am.id) IS NOT NULL""",
     )
+    openupgrade.merge_models(env.cr, 'account.voucher.line', 'account.move.line', 'old_voucher_line_id')
     openupgrade.logged_query(
         env.cr, """
         INSERT INTO account_analytic_tag_account_move_line_rel (
@@ -583,56 +589,25 @@ def migration_voucher_moves(env):
     )
 
 
-def _move_model_in_data(env, old_model, new_model, field):
-    renames = [
-        ('mail_message', 'model', 'res_id'),
-        ('ir_attachment', 'res_model', 'res_id'),
-        ('mail_activity', 'res_model', 'res_id'),
-        ('ir_model_data', 'model', 'res_id'),
-    ]
-    for rename in renames:
-        query = """
-            UPDATE {table} t
-            SET {field1} = %(new_value1)s, {field2} = am.id
-            FROM account_move am
-            WHERE t.{field1} = %(old_value1)s AND am.{field} = t.{field2}"""
-        openupgrade.logged_query(env.cr, sql.SQL(query).format(
-            table=sql.Identifier(rename[0]),
-            field1=sql.Identifier(rename[1]),
-            field2=sql.Identifier(rename[2]),
-            field=sql.Identifier(field)
-        ), {
-            "old_value1": old_model,
-            "new_value1": new_model,
-        })
-    openupgrade.logged_query(env.cr, sql.SQL("""
-        UPDATE mail_followers mf
-            SET res_model = %(new_value1)s, res_id = am.id
-            FROM account_move am
-                JOIN mail_followers mf1
-                    ON (am.{field} = mf1.res_id AND mf1.res_model = %(old_value1)s)
-                LEFT JOIN mail_followers mf2
-                    ON (am.id = mf2.res_id
-                        AND mf2.res_model = 'account.move'
-                        AND mf2.partner_id = mf1.partner_id)
-            WHERE mf.id = mf1.id AND mf2.id IS NULL
-    """).format(
-            field=sql.Identifier(field)
-        ), {
-            "old_value1": old_model,
-            "new_value1": new_model,
-        })
-
-
 def fill_account_move_reversed_entry_id(env):
+    # copy refund_invoice_id to reverse_entry_id
+    openupgrade.logged_query(
+        env.cr, """
+        UPDATE account_move am
+        SET reverse_entry_id = am2.id
+        FROM account_invoice ai
+        JOIN account_invoice ai2 ON ai.refund_invoice_id = ai2.id
+        JOIN account_move am2 ON am2.old_invoice_id = ai2.id
+        WHERE am.reverse_entry_id IS NULL AND am.old_invoice_id = ai.id"""
+    )
+    # copy reverse_entry_id to reversed_entry_id (the relation is reversed in 13.0)
     openupgrade.logged_query(
         env.cr, """
         UPDATE account_move am
         SET reversed_entry_id = am2.id
-        FROM account_invoice ai
-        JOIN account_invoice ai2 ON ai.refund_invoice_id = ai2.id
-        JOIN account_move am2 ON am2.old_invoice_id = ai2.id
-        WHERE am.reversed_entry_id IS NULL AND am.old_invoice_id = ai.id"""
+        FROM account_move am2
+        WHERE am.reversed_entry_id IS NULL AND am2.reverse_entry_id = am.id
+        """
     )
 
 
@@ -895,13 +870,21 @@ def create_account_tax_repartition_lines(env):
 def move_tags_from_taxes_to_repartition_lines(env):
     openupgrade.logged_query(
         env.cr, """
+        WITH RECURSIVE tax2parent(tax_id, parent_id) AS (
+            SELECT id, id FROM account_tax
+            UNION ALL
+            SELECT rel.child_tax, rel.parent_tax
+            FROM account_tax_filiation_rel rel
+            JOIN tax2parent ON tax2parent.parent_id=rel.child_tax
+        )
         INSERT INTO account_account_tag_account_tax_repartition_line_rel (
             account_tax_repartition_line_id, account_account_tag_id)
         SELECT atrl.id, atat.account_account_tag_id
         FROM account_tax_account_tag atat
+        JOIN tax2parent ON atat.account_tax_id=tax2parent.parent_id
         JOIN account_tax_repartition_line atrl ON
-            (atat.account_tax_id = atrl.invoice_tax_id OR
-             atat.account_tax_id = atrl.refund_tax_id)
+            (tax2parent.tax_id = atrl.invoice_tax_id OR
+             tax2parent.tax_id = atrl.refund_tax_id)
         ON CONFLICT DO NOTHING"""
     )
     openupgrade.logged_query(
@@ -918,6 +901,32 @@ def move_tags_from_taxes_to_repartition_lines(env):
 
 
 def assign_tax_repartition_line_to_move_lines(env):
+    # Use tax_line_id to find repartition line by default
+    openupgrade.logged_query(
+        env.cr, """
+        UPDATE account_move_line aml
+        SET tax_repartition_line_id = atrl.id
+        FROM account_move_line aml2
+        JOIN account_move am ON aml2.move_id = am.id
+        JOIN account_tax_repartition_line atrl ON (
+            aml2.balance >= 0
+            AND atrl.invoice_tax_id = aml2.tax_line_id
+            AND atrl.repartition_type = 'tax')
+        WHERE aml.id = aml2.id"""
+    )
+    openupgrade.logged_query(
+        env.cr, """
+        UPDATE account_move_line aml
+        SET tax_repartition_line_id = atrl.id
+        FROM account_move_line aml2
+        JOIN account_move am ON aml2.move_id = am.id
+        JOIN account_tax_repartition_line atrl ON (
+            aml2.balance < 0
+            AND atrl.refund_tax_id = aml2.tax_line_id
+            AND atrl.repartition_type = 'tax')
+        WHERE aml.id = aml2.id"""
+    )
+    # Use old_invoice_tax_id on account.invoice.tax for invoices (and refunds)
     openupgrade.logged_query(
         env.cr, """
         UPDATE account_move_line aml
@@ -962,14 +971,22 @@ def assign_account_tags_to_move_lines(env):
     # move lines with taxes
     openupgrade.logged_query(
         env.cr, """
+        WITH RECURSIVE tax2child(tax_id, child_id) AS (
+            SELECT id, id FROM account_tax
+            UNION ALL
+            SELECT rel.parent_tax, rel.child_tax
+            FROM account_tax_filiation_rel rel
+            JOIN tax2child ON tax2child.child_id=rel.parent_tax
+        )
         INSERT INTO account_account_tag_account_move_line_rel (
             account_move_line_id, account_account_tag_id)
         SELECT aml.id, aat_atr_rel.account_account_tag_id
         FROM account_move_line aml
         JOIN account_move am ON aml.move_id = am.id
         JOIN account_move_line_account_tax_rel amlatr ON amlatr.account_move_line_id = aml.id
+        JOIN tax2child ON amlatr.account_tax_id=tax2child.child_id
         JOIN account_tax_repartition_line atrl ON (
-            atrl.invoice_tax_id = amlatr.account_tax_id AND atrl.repartition_type = 'base')
+            atrl.invoice_tax_id = tax2child.tax_id AND atrl.repartition_type = 'base')
         JOIN account_account_tag_account_tax_repartition_line_rel aat_atr_rel ON
             aat_atr_rel.account_tax_repartition_line_id = atrl.id
         WHERE aml.old_invoice_line_id IS NOT NULL AND am.type in ('out_invoice', 'in_invoice')
@@ -1025,6 +1042,22 @@ def fill_account_move_line_missing_fields(env):
     """)
 
 
+def _empty_move_partner_field(env):
+    """On pre-v13, account.move>partner_id was a related stored field that pointed to
+    the first partner found on lines, but now on v13, this field points only to the
+    partner of the invoices, being empty when you fill a regular entry.
+
+    For consistency, and also for avoiding problems like duplicating a journal entry,
+    change the parter on the lines, and get a different partner on header vs lines,
+    we should empty the partner in all the existing regular entries.
+    """
+    openupgrade.logged_query(
+        env.cr,
+        """UPDATE account_move SET partner_id=NULL
+        WHERE partner_id IS NOT NULL AND type = 'entry'"""
+    )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     fill_account_reconcile_model_second_analytic_tag_rel_table(env)
@@ -1049,6 +1082,7 @@ def migrate(env, version):
     assign_account_tags_to_move_lines(env)
     compute_balance_for_draft_invoice_lines(env)
     _recompute_move_entries_totals(env)
+    _empty_move_partner_field(env)
     openupgrade.load_data(
         env.cr, "account", "migrations/13.0.1.1/noupdate_changes.xml")
     openupgrade.delete_record_translations(
@@ -1065,7 +1099,6 @@ def migrate(env, version):
             "account.invoice_comp_rule",
             "account.voucher_comp_rule",
             "account.voucher_line_comp_rule",
-            "account.account_payment_term_net",
             "account.reconciliation_model_default_rule",
         ]
     )

@@ -9,6 +9,7 @@ _unlink_by_xmlid = [
     'survey.stage_draft',
     'survey.stage_in_progress',
     'survey.stage_permanent',
+    'survey.email_template_survey',
 ]
 
 
@@ -61,6 +62,7 @@ def move_survey_page_to_survey_question(env):
         WHERE sq1.{} = sp.id
         """.format(openupgrade.get_legacy_name('page_id')),
     )
+    openupgrade.merge_models(env.cr, 'survey.page', 'survey.question', 'old_page_id')
 
 
 def fill_survey_user_input_line_question_sequence(env):

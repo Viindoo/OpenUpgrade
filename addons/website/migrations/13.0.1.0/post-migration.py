@@ -16,7 +16,7 @@ def _fill_website_logo(env):
     """
     default_logo = env["website"]._default_logo()
     for website in env["website"].search([]):
-        if website.logo == default_logo:
+        if not website.logo or website.logo == default_logo:
             website.logo = website.company_id.logo
 
 
@@ -48,7 +48,7 @@ def _set_data_anchor_xml_attribute(env):
     )
     for view in website_views:
         doc = fromstring(view.arch_db)
-        links = doc.cssselect("a[href^=\#]:not([href=\#])")
+        links = doc.cssselect(r"a[href^=\#]:not([href=\#])")
         if links:
             replacement = {
                 "selector": ", ".join([link.attrib["href"] for link in links]),

@@ -11,6 +11,67 @@ def _get_main_company(cr):
     return cr.fetchone()
 
 
+def product_template_responsible_id_to_company_dependent(env):
+    """Usually for such cases, openupgrade.convert_to_company_dependent() should
+    normally be used, but that function does not seem to support converting
+    a field to company-dependent without changing its name at the same time.
+    moreover, it stores boolean values even when they are false (what odoo
+    does not), and it creates values for all companies, which does not make
+    sense when a record is linked to a particular company only.
+    """
+    responsible_id_field_id = (env.ref("stock.field_product_template__responsible_id").id,)
+    # this many2one property stores its value in the value_reference column
+    openupgrade.logged_query(
+        env.cr,
+        """
+        insert into ir_property (
+            company_id, fields_id, value_reference, name, res_id, type
+        )
+        select
+            company_id,
+            %(field_id)s,
+            'res.users,' || responsible_id,
+            'responsible_id',
+            'product.template,' || id,
+            'many2one'
+        from product_template
+        where
+            company_id is not null
+            and responsible_id is not null
+        order by id
+        """,
+        {"field_id": responsible_id_field_id},
+    )
+    # for product.template records that are not linked to a company, create an
+    # ir.property record for each company.
+    openupgrade.logged_query(
+        env.cr,
+        """
+        insert into ir_property (
+            company_id,
+            fields_id,
+            value_reference,
+            name,
+            res_id,
+            type
+        )
+        select
+            rc.id,
+            %(field_id)s,
+            'res.users,' || pt.responsible_id,
+            'responsible_id',
+            'product.template,' || pt.id,
+            'many2one'
+        from product_template as pt
+        inner join res_company as rc on
+            pt.company_id is null and
+            pt.responsible_id is not null
+        order by pt.id, rc.id
+        """,
+        {"field_id": responsible_id_field_id},
+    )
+
+
 def fill_company_id(cr):
     # stock.move.line
     openupgrade.logged_query(
@@ -185,17 +246,81 @@ def map_stock_location_usage(env):
     )
 
 
+def map_stock_picking_responsible_responsible_id_to_user_id(env):
+    """
+    responsible_id (partner_id) field in stock_picking_responsible is replaced by user_id (res.users)
+    We create a deactivated user for partners without user and then
+    map the partner to their user in the stock picking.
+    """
+    if not openupgrade.column_exists(env.cr, "stock_picking", "responsible_id"):
+        return
+
+    env.cr.execute(
+        """
+        SELECT distinct rp.id,
+                        rp.name,
+                        rp.company_id,
+                        rp.email
+        FROM stock_picking sp
+                 JOIN res_partner rp ON rp.id = sp.responsible_id
+                 LEFT JOIN res_users ru ON rp.id = ru.partner_id
+        WHERE ru.id IS NULL
+    """
+    )
+    partners_wo_user = env.cr.fetchall()
+
+    user_vals_list = []
+    for partner_id, name, company_id, email in partners_wo_user:
+        login = email if email else name
+        login = openupgrade.get_legacy_name(login).replace(" ", "_")
+        user_vals_list.append({
+            "login": login,
+            "partner_id": partner_id,
+            "company_id": company_id,
+            "active": False,
+        })
+
+    if user_vals_list:
+        env["res.users"].create(user_vals_list)
+
+    # map responsible_id to user_id
+    openupgrade.logged_query(
+        env.cr,
+        """
+        WITH partner_user AS (
+            SELECT sp.id AS picking_id,
+                   rp.id AS partner_id,
+                   ru.id AS user_id
+            FROM stock_picking sp
+                JOIN res_partner rp ON rp.id = sp.responsible_id
+                LEFT join res_users ru ON rp.id = ru.partner_id)
+        UPDATE stock_picking
+        SET user_id = partner_user.user_id
+        FROM partner_user
+        WHERE stock_picking.id = partner_user.picking_id;
+    """
+    )
+
+
 def fill_stock_picking_type_sequence_code(env):
     """Deduce sequence code from current sequence pattern """
     picking_types = env["stock.picking.type"].with_context(active_text=False).search([])
+    spt_seq_codes = []
     for picking_type in picking_types:
         prefix = picking_type.sequence_id.prefix
         if picking_type.warehouse_id:
             groups = re.findall(r"(.*)\/(.*)\/", prefix)
             if groups and len(groups[0]) == 2:
-                picking_type.sequence_code = groups[0][1]
+                spt_seq_codes += [(picking_type.id, groups[0][1])]
         else:
-            picking_type.sequence_code = prefix
+            spt_seq_codes += [(picking_type.id, prefix)]
+    for picking_type_id, prefix in spt_seq_codes:
+        env.cr.execute("""
+            UPDATE stock_picking_type spt
+            SET sequence_code = %s
+            WHERE spt.id = %s
+            """, (prefix, picking_type_id)
+        )
 
 
 def convert_many2one_stock_inventory_product_and_location(env):
@@ -343,21 +468,24 @@ def map_stock_locations(env, main_company):
         WHERE sq.location_id = sl.id""")
     env["stock.quant.package"].search([])._compute_package_info()
 
-    # xmlids are deprecated in v13
-    openupgrade.logged_query(env.cr, """
-    DELETE FROM ir_model_data imd
-    WHERE imd.module = 'stock' AND imd.name IN (
-        'property_stock_inventory', 'property_stock_production',
-        'stock_location_scrapped', 'location_inventory', 'location_production',
-        'location_procurement')
-    """)
-
 
 def stock_production_lot_multi_company_migration(env):
     rule = env.ref("stock.stock_production_lot_rule", raise_if_not_found=False)
     if 'user' in rule.domain_force:
         rule.write({"name": "Stock Production Lot multi-company",
                     "domain_force": "[('company_id','in', company_ids)]"})
+
+
+def stock_putaway_rule_multi_company_migration(env):
+    # once location_in_id is correctly set and company of locations are correctly set
+    # in previous methods, we can safely proceed with:
+    openupgrade.logged_query(
+        env.cr, """
+        UPDATE stock_putaway_rule spr
+        SET company_id = sl.company_id
+        FROM stock_location sl
+        WHERE spr.location_in_id = sl.id AND sl.company_id IS NOT NULL"""
+    )
 
 
 def recompute_stock_location_complete_name(env):
@@ -370,20 +498,45 @@ def recompute_stock_location_complete_name(env):
     locations._compute_complete_name()
 
 
+def update_sml_index(env):
+    # As company_id is a new indexed column for stock_move_line we must update
+    # the index according to the upstream config.
+    openupgrade.logged_query(
+        env.cr,
+        "DROP INDEX stock_move_line_free_reservation_index"
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        CREATE INDEX stock_move_line_free_reservation_index
+        ON
+            stock_move_line (
+                id, company_id, product_id, lot_id,
+                location_id, owner_id, package_id
+            )
+        WHERE
+            (state IS NULL OR state NOT IN ('cancel', 'done'))
+            AND product_qty > 0"""
+    )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     main_company = _get_main_company(env.cr)
+    product_template_responsible_id_to_company_dependent(env)
     fill_company_id(env.cr)
     fill_stock_putaway_rule_location_in_id(env)
     fill_propagate_date_minimum_delta(env)
     fill_stock_inventory_start_empty(env)
     map_stock_location_usage(env)
+    map_stock_picking_responsible_responsible_id_to_user_id(env)
     fill_stock_picking_type_sequence_code(env)
     handle_stock_scrap_sequence(env, main_company)
     map_stock_locations(env, main_company)
     convert_many2one_stock_inventory_product_and_location(env)
     openupgrade.load_data(env.cr, 'stock', 'migrations/13.0.1.1/noupdate_changes.xml')
     stock_production_lot_multi_company_migration(env)
+    stock_putaway_rule_multi_company_migration(env)
     if openupgrade.table_exists(env.cr, 'delivery_carrier'):
         openupgrade.load_data(
             env.cr, "stock", "migrations/13.0.1.1/noupdate_changes2.xml")
@@ -393,3 +546,4 @@ def migrate(env, version):
             ],
         )
     recompute_stock_location_complete_name(env)
+    update_sml_index(env)
