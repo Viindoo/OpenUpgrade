@@ -5,6 +5,7 @@ from odoo.modules import get_module_path
 from odoo.tools import config
 
 from . import odoo_patch
+from . import openupgradelib_patch
 
 if not config.get("upgrade_path"):
     path = get_module_path("openupgrade_scripts", display_warning=False)
