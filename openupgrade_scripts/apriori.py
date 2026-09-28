@@ -65,6 +65,8 @@ renamed_modules = {
     "to_l10n_vn_account_asset": "l10n_vn_viin_account_asset",
     "to_l10n_vn_account_asset_sale": "l10n_vn_viin_account_asset_sale",
     "to_account_reports_l10n_vn": "l10n_vn_viin_account_reports",
+    # Viindoo/themes
+    "theme_common": "theme_viin_common",
 }
 
 # Merged modules contain a mapping from old module names to other,
