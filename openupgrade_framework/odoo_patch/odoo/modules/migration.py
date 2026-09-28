@@ -13,11 +13,19 @@ def migrate_module(self, pkg, stage):
     state.
     """
     to_install = pkg.state == "to install"
+    module_scripts = {}
     if to_install:
         pkg.state = "to upgrade"
-    MigrationManager.migrate_module._original_method(self, pkg, stage)
-    if to_install:
-        pkg.state = "to install"
+        for key in ("module", "module_upgrades"):
+            if key in self.migrations[pkg.name]:
+                module_scripts[key] = self.migrations[pkg.name][key]
+                self.migrations[pkg.name][key] = {}
+    try:
+        MigrationManager.migrate_module._original_method(self, pkg, stage)
+    finally:
+        if to_install:
+            pkg.state = "to install"
+            self.migrations[pkg.name].update(module_scripts)
 
 
 def _get_files(self):
