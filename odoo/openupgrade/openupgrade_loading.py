@@ -7,7 +7,6 @@ import logging
 from odoo import release
 from openupgradelib.openupgrade_tools import table_exists
 from odoo.tools import config, safe_eval
-from odoo.modules.module import get_module_path
 
 
 # A collection of functions used in
@@ -64,31 +63,6 @@ def add_module_dependencies(cr, module_list):
 
         dependencies = [x[0] for x in cr.fetchall()]
         module_list += dependencies
-
-    # Select auto_install modules of which all dependencies
-    # are fulfilled based on the modules we know are to be
-    # installed
-    cr.execute("""
-        SELECT name from ir_module_module WHERE state IN %s
-        """, (('installed', 'to install', 'to upgrade'),))
-    modules = list(set(module_list + [row[0] for row in cr.fetchall()]))
-    cr.execute("""
-        SELECT name from ir_module_module m
-        WHERE auto_install IS TRUE
-            AND state = 'uninstalled'
-            AND NOT EXISTS(
-                SELECT id FROM ir_module_module_dependency d
-                WHERE d.module_id = m.id
-                AND name NOT IN %s)
-         """, (tuple(modules),))
-    auto_modules = [
-        row[0] for row in cr.fetchall()
-        if get_module_path(row[0])
-    ]
-    if auto_modules:
-        logger.info(
-            "Selecting autoinstallable modules %s", ','.join(auto_modules))
-        module_list += auto_modules
 
     # Set proper state for new dependencies so that any init scripts are run
     cr.execute("""
