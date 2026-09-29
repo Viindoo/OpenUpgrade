@@ -162,6 +162,58 @@ def ensure_country_state_id_on_existing_records(cr):
                 rows.append(row)
 
 
+def disambiguate_country_state_codes(cr):
+    """Give different states of a country that share one code a code of their
+    own. 10.0 adds unique(country_id, code) and the post-migration merges the
+    states that share country and code: fine for copies of one state, wrong
+    for different states (Vietnam entered by hand: HN is both Ha Noi and
+    Ha Nam, partners of the one would move to the other).
+    Copies of one state (same name) keep sharing their code and get merged.
+    The name used most by partners keeps the code; the others get the
+    initials of their name plus the second letter of the last word, then a
+    number if that is taken too.
+    """
+    cr.execute(
+        """
+        SELECT s.country_id, s.code, s.name, count(p.id), min(s.id)
+        FROM res_country_state s
+        LEFT JOIN res_partner p ON p.state_id = s.id
+        WHERE (s.country_id, s.code) IN (
+            SELECT country_id, code FROM res_country_state
+            WHERE code IS NOT NULL
+            GROUP BY country_id, code HAVING count(DISTINCT name) > 1)
+        GROUP BY s.country_id, s.code, s.name
+        ORDER BY s.country_id, s.code, count(p.id) DESC, min(s.id)
+        """)
+    rows = cr.fetchall()
+    if not rows:
+        return
+    cr.execute("SELECT country_id, code FROM res_country_state")
+    used = set(cr.fetchall())
+    seen = set()
+    for country_id, code, name, _partners, _min_id in rows:
+        if (country_id, code) not in seen:
+            # first name of the group: keeps the code
+            seen.add((country_id, code))
+            continue
+        words = (name or u'').split()
+        base = code
+        if words:
+            base = u''.join(w[0] for w in words).upper()
+            if len(words[-1]) > 1:
+                base += words[-1][1].upper()
+        new_code, n = base, 1
+        while (country_id, new_code) in used:
+            n += 1
+            new_code = u'%s%d' % (base, n)
+        used.add((country_id, new_code))
+        openupgrade.logged_query(
+            cr,
+            """UPDATE res_country_state SET code = %s
+            WHERE country_id = %s AND code = %s AND name = %s""",
+            (new_code, country_id, code, name))
+
+
 def precreate_partner_fields(cr):
     """ Emulate stored computed methods in a single SQL query """
     cr.execute(
@@ -235,6 +287,7 @@ def migrate(cr, version):
         end,
         'res.lang', id
         from res_lang''')
+    disambiguate_country_state_codes(cr)
     ensure_country_state_id_on_existing_records(cr)
     precreate_partner_fields(cr)
     openupgrade.update_module_names(
