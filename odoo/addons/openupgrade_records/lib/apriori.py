@@ -41,6 +41,10 @@ renamed_modules = {
 
 merged_modules = [
     ('account_full_reconcile', 'account'),
+    # 10.0 moved the whole of crm_partner_assign (partner grades, lead
+    # assignation) into website_crm_partner_assign, which website_customer,
+    # website_google_map and website_membership depend on from 10.0
+    ('crm_partner_assign', 'website_crm_partner_assign'),
     ('mail_tip', 'mail'),
     ('mrp_operations', 'mrp'),
     ('product_uos', 'sale'),
