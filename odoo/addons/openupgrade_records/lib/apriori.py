@@ -108,3 +108,18 @@ merged_modules = [
 
 renamed_models = {
 }
+
+# Modules of merged_modules that are not merged into anything: they are
+# removed without a successor on our addons paths. The technical records they
+# own (record rules, scheduled and server actions, views, menus, mail
+# templates...) are deleted by the update even when they are noupdate: see
+# release_records_of_lost_modules in the pre-migration of base.
+lost_modules = [
+    'crm_claim',
+    'report_webkit',
+    'to_hr_contract_promotion_path',
+    'to_payment_follow_up',
+    'to_sales_team_tree',
+    'web_analytics',
+    'website_crm_claim',
+]
