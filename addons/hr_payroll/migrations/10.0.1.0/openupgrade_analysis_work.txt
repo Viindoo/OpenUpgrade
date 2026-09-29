@@ -1,0 +1,23 @@
+---Fields in module 'hr_payroll'---
+---XML records in module 'hr_payroll'---
+DEL ir.rule: hr_payroll.property_rule_employee_payslip
+# DONE: post-migration: noupdate rule of 9.0 (officers: own payslips and the ones of their department) that 10.0 no longer ships; deleted, a 10.0 database has no record rule on payslips and the rule would restrict every payroll officer and manager
+
+NEW res.groups: hr_payroll.group_hr_payroll_manager
+NEW res.groups: hr_payroll.group_hr_payroll_user
+# DONE: post-migration: the users of hr.group_hr_user / hr.group_hr_manager (base.group_hr_user / base.group_hr_manager in 9.0, which gave the rights on payroll) are added to the new groups
+
+NEW res.users: base.default_user
+# NOTHING TO DO
+
+DEL workflow: hr_payroll.wkf
+DEL workflow.activity: hr_payroll.act_cancel
+DEL workflow.activity: hr_payroll.act_done
+DEL workflow.activity: hr_payroll.act_draft
+DEL workflow.activity: hr_payroll.act_verify
+DEL workflow.transition: hr_payroll.t1
+DEL workflow.transition: hr_payroll.t2
+DEL workflow.transition: hr_payroll.t3
+DEL workflow.transition: hr_payroll.t4
+DEL workflow.transition: hr_payroll.t5
+# DONE: pre-migration: workflow of hr.payslip deleted with its instances; the state of the payslips is in hr_payslip.state and does not change
