@@ -216,3 +216,12 @@ merged_models = {
     "repair.line": "stock.move",
     # OCA/...
 }
+
+# Modules of merged_modules that are not merged into anything: they are
+# removed without a successor on our addons paths. The technical records they
+# own (record rules, scheduled and server actions, views, menus, mail
+# templates...) are deleted by the update even when they are noupdate, and the
+# xml ids of records of models that go with them are detached: see
+# release_records_of_lost_modules in the pre-migration of base.
+lost_modules = [
+]
