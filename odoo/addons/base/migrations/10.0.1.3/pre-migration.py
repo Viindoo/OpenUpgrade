@@ -162,36 +162,78 @@ def ensure_country_state_id_on_existing_records(cr):
                 rows.append(row)
 
 
+_STATE_IS_MODULE_DATA = """EXISTS (
+    SELECT 1 FROM ir_model_data d
+    WHERE d.model = 'res.country.state' AND d.res_id = s.id
+        AND d.module NOT IN ('__export__', '__import__'))"""
+
+
+def unify_codes_of_same_name_country_states(cr):
+    """Copies of one state (same country, same name) entered with different
+    codes get one code, so that the merge of the post-migration, which works
+    by country and code, makes one state of them (Vietnam entered by hand:
+    Ha Noi once with code 04, four times with code HN). The code kept is the
+    one of a state shipped by a module if there is one, else the one partners
+    use most. States shipped by a module never change code.
+    """
+    cr.execute(
+        """
+        SELECT s.country_id, btrim(s.name), s.code
+        FROM res_country_state s
+        LEFT JOIN res_partner p ON p.state_id = s.id
+        WHERE s.code IS NOT NULL AND (s.country_id, btrim(s.name)) IN (
+            SELECT country_id, btrim(name) FROM res_country_state
+            WHERE code IS NOT NULL
+            GROUP BY country_id, btrim(name) HAVING count(DISTINCT code) > 1)
+        GROUP BY s.country_id, btrim(s.name), s.code
+        ORDER BY s.country_id, btrim(s.name),
+            bool_or(%s) DESC, count(p.id) DESC, min(s.id)
+        """ % _STATE_IS_MODULE_DATA)
+    seen = {}
+    for country_id, name, code in cr.fetchall():
+        if (country_id, name) not in seen:
+            seen[(country_id, name)] = code
+            continue
+        openupgrade.logged_query(
+            cr,
+            """UPDATE res_country_state s SET code = %%s
+            WHERE s.country_id = %%s AND s.code = %%s AND btrim(s.name) = %%s
+                AND NOT %s""" % _STATE_IS_MODULE_DATA,
+            (seen[(country_id, name)], country_id, code, name))
+
+
 def disambiguate_country_state_codes(cr):
     """Give different states of a country that share one code a code of their
     own. 10.0 adds unique(country_id, code) and the post-migration merges the
     states that share country and code: fine for copies of one state, wrong
-    for different states (Vietnam entered by hand: HN is both Ha Noi and
-    Ha Nam, partners of the one would move to the other).
+    for different states (Vietnam entered by hand: DN is both Da Nang and
+    Dong Nai, partners of the one would move to the other).
     Copies of one state (same name) keep sharing their code and get merged.
-    The name used most by partners keeps the code; the others get the
-    initials of their name plus the second letter of the last word, then a
-    number if that is taken too.
+    The code stays with the state shipped by a module if there is one, else
+    with the name partners use most; the others get the initials of their
+    name plus the second letter of the last word, then a number if that is
+    taken too. States shipped by a module never change code.
     """
     cr.execute(
         """
-        SELECT s.country_id, s.code, s.name, count(p.id), min(s.id)
+        SELECT s.country_id, s.code, btrim(s.name)
         FROM res_country_state s
         LEFT JOIN res_partner p ON p.state_id = s.id
         WHERE (s.country_id, s.code) IN (
             SELECT country_id, code FROM res_country_state
             WHERE code IS NOT NULL
-            GROUP BY country_id, code HAVING count(DISTINCT name) > 1)
-        GROUP BY s.country_id, s.code, s.name
-        ORDER BY s.country_id, s.code, count(p.id) DESC, min(s.id)
-        """)
+            GROUP BY country_id, code HAVING count(DISTINCT btrim(name)) > 1)
+        GROUP BY s.country_id, s.code, btrim(s.name)
+        ORDER BY s.country_id, s.code,
+            bool_or(%s) DESC, count(p.id) DESC, min(s.id)
+        """ % _STATE_IS_MODULE_DATA)
     rows = cr.fetchall()
     if not rows:
         return
     cr.execute("SELECT country_id, code FROM res_country_state")
     used = set(cr.fetchall())
     seen = set()
-    for country_id, code, name, _partners, _min_id in rows:
+    for country_id, code, name in rows:
         if (country_id, code) not in seen:
             # first name of the group: keeps the code
             seen.add((country_id, code))
@@ -209,8 +251,9 @@ def disambiguate_country_state_codes(cr):
         used.add((country_id, new_code))
         openupgrade.logged_query(
             cr,
-            """UPDATE res_country_state SET code = %s
-            WHERE country_id = %s AND code = %s AND name = %s""",
+            """UPDATE res_country_state s SET code = %%s
+            WHERE s.country_id = %%s AND s.code = %%s AND btrim(s.name) = %%s
+                AND NOT %s""" % _STATE_IS_MODULE_DATA,
             (new_code, country_id, code, name))
 
 
@@ -287,6 +330,7 @@ def migrate(cr, version):
         end,
         'res.lang', id
         from res_lang''')
+    unify_codes_of_same_name_country_states(cr)
     disambiguate_country_state_codes(cr)
     ensure_country_state_id_on_existing_records(cr)
     precreate_partner_fields(cr)
