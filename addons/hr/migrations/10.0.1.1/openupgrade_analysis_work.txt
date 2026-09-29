@@ -4,6 +4,8 @@ hr           / mail.alias               / alias_contact (False)         : NEW se
 # NOTHING TO DO
 ---XML records in module 'hr'---
 NEW hr.employee: hr.employee_root
+# DONE: post-migration: employee of the administrator, new noupdate data of 10.0: archived when this update has just created it (an upgrade does not add to the employees of the company)
+
 DEL ir.actions.act_window: hr.view_department_form_installer
 DEL ir.actions.client: hr.action_client_hr_menu
 DEL ir.actions.todo: base.open_menu
