@@ -107,6 +107,9 @@ renamed_modules = {
 # Merged modules contain a mapping from old module names to other,
 # preexisting module names
 merged_modules = {
+    # Viindoo/tvtmaaddons: removed in 14.0 without a successor (public holidays
+    # per year are part of resource.calendar.leaves)
+    "to_holidays_in_years": "resource",
     # odoo
     "account_analytic_default": "account",
     "account_analytic_default_hr_expense": "hr_expense",
@@ -237,3 +240,14 @@ merged_models = {
     "account.vninvoice.template": "account.einvoice.template",
     "account.vninvoice.type": "account.einvoice.type",
 }
+
+# Modules of merged_modules that are not merged into anything: they are
+# removed without a successor on our addons paths. The technical records they
+# own (record rules, scheduled and server actions, views, menus, mail
+# templates...) are deleted by the update even when they are noupdate, and the
+# xml ids of records of models that go with them are detached: see
+# release_records_of_lost_modules in the pre-migration of base.
+lost_modules = [
+    "to_holidays_in_years",
+    "web_diagram",
+]
