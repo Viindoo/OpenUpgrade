@@ -61,6 +61,16 @@ renamed_modules = {
 merged_modules = {
     # Odoo
     'account_tax_cash_basis': 'account',
+    # Odoo: removed without a successor on our addons paths. Merging them into
+    # the module they extended lets the update remove their views, fields and
+    # access rights; tables and columns are kept.
+    # OCA/timesheet has hr_timesheet_sheet for 11.0: add that repository and
+    # drop the line to keep the timesheet sheets.
+    'hr_timesheet_sheet': 'hr_timesheet',
+    'marketing_campaign': 'mail',
+    'rating_project_issue': 'rating_project',
+    'subscription': 'base',
+    'website_project_issue_sheet': 'hr_timesheet',
     'portal_gamification': 'gamification',
     'portal_sale': 'sale',
     'portal_stock': 'portal',
