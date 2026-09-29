@@ -207,6 +207,12 @@ def fill_manufacture_mto_pull(env):
         ('manufacture_mto_pull_id', '=', False),
     ])
     for wh in warehouses:
+        if not wh.manu_type_id or not wh.pbm_type_id or not wh.sam_type_id:
+            # 10.0 created the manufacturing operation type only for the
+            # warehouses having manufacturing orders: a warehouse flagged
+            # manufacture_to_resupply without any has none, and the rule
+            # below cannot be created without it
+            wh.write(wh._create_or_update_sequences_and_picking_types())
         rule_details = wh._get_global_route_rules_values()['manufacture_mto_pull_id']
         values = rule_details.get('update_values', {})
         values.update(rule_details['create_values'])
