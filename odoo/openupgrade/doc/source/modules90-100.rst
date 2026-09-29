@@ -595,7 +595,7 @@ missing in the new release are marked with |del|.
 +-----------------------------------+-----------------------------------+
 |website_sale_delivery              | Nothing to do                     |
 +-----------------------------------+-----------------------------------+
-|website_sale_digital               | Nothing to do                     |
+|website_sale_digital               | Done                              |
 +-----------------------------------+-----------------------------------+
 |website_sale_options               | Nothing to do                     |
 +-----------------------------------+-----------------------------------+

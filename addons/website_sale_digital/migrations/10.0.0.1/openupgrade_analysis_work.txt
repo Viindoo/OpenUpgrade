@@ -1,5 +1,5 @@
 ---Fields in module 'website_sale_digital'---
 website_sale_digital / ir.attachment            / product_downloadable (boolean): NEW
-# NOTHING TO DO
+# DONE: pre-migration: True for the attachments of the products of type 'digital' (the attachments that store a field of the product, like the image, aside): 9.0 let the customers who paid download everything attached to a digital product. The analysis does not show it, but the product type 'digital' of 9.0 (added to the selection of product.template.type by a method) does not exist in 10.0: the digital products become services, the 9.0 type is kept in the legacy column
 
 ---XML records in module 'website_sale_digital'---

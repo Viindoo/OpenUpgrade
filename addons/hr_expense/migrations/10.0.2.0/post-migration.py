@@ -38,6 +38,8 @@ def set_expense_states(env):
     openupgrade.map_values(
         env.cr, openupgrade.get_legacy_name('state'), 'state', [
             ('submit', 'reported'),
+            # the state of 9.0 is 'approve'
+            ('approve', 'reported'),
             ('approved', 'reported'),
             ('post', 'done'),
             ('cancel', 'refused'),
