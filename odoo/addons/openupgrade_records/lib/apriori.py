@@ -150,3 +150,16 @@ renamed_models = {
     'stock.pack.operation': 'stock.move.line',
     'stock.picking.wave': 'stock.picking.batch',
 }
+
+# Modules of merged_modules that are not merged into anything: they are
+# removed without a successor on our addons paths. The technical records they
+# own (record rules, scheduled and server actions, views, menus, mail
+# templates...) are deleted by the update even when they are noupdate: see
+# release_records_of_lost_modules in the pre-migration of base.
+lost_modules = [
+    'hr_timesheet_sheet',
+    'marketing_campaign',
+    'rating_project_issue',
+    'subscription',
+    'website_project_issue_sheet',
+]
