@@ -87,6 +87,20 @@ def deduplicate_ir_properties(cr):
     )
 
 
+def merge_web_diagram_if_unused(cr):
+    """web_diagram is gone in 14.0 and nothing replaces it: merge it into web as long
+    as no view uses the diagram type any more, the module has to be dealt with by hand
+    otherwise. Upstream does it in the end-migration of base (9e589908b87); done here,
+    before the module graph is loaded, the module is not left behind "to upgrade"
+    during the migration either.
+    """
+    cr.execute("SELECT 1 FROM ir_ui_view WHERE type = 'diagram' LIMIT 1")
+    if not cr.fetchone():
+        openupgrade.update_module_names(
+            cr, [("web_diagram", "web")], merge_modules=True
+        )
+
+
 @openupgrade.migrate(use_env=False)
 def migrate(cr, version):
     """
@@ -125,6 +139,7 @@ def migrate(cr, version):
     # Perform module renames and merges
     openupgrade.update_module_names(cr, renamed_modules.items())
     openupgrade.update_module_names(cr, merged_modules.items(), merge_modules=True)
+    merge_web_diagram_if_unused(cr)
     # Migrate partners from Fil to Tagalog
     # See https://github.com/odoo/odoo/commit/194ed76c5cc9
     openupgrade.logged_query(
