@@ -42,7 +42,9 @@ def migrate(env, version):
     for xml_id in xml_ids_to_remove:
         try:
             with env.cr.savepoint():
-                env.ref(xml_id).unlink()
+                # with the views that inherit from it (they are obsolete as
+                # well), or the foreign key stops the deletion
+                env.ref(xml_id).with_context(_force_unlink=True).unlink()
         except Exception:
             pass
     openupgrade.update_module_moved_fields(
