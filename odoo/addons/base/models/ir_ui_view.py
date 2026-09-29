@@ -508,8 +508,11 @@ actual arch.
 
     def unlink(self):
         # if in uninstall mode and has children views, emulate an ondelete cascade
-        if self.env.context.get('_force_unlink', False) and self.inherit_children_ids:
-            self.inherit_children_ids.unlink()
+        # OpenUpgrade: the archived children too, or their foreign key keeps
+        # the view of a removed module in the database
+        children = self.with_context(active_test=False).inherit_children_ids
+        if self.env.context.get('_force_unlink', False) and children:
+            children.unlink()
         return super(View, self).unlink()
 
     @api.returns('self', lambda value: value.id)
