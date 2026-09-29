@@ -163,3 +163,16 @@ lost_modules = [
     'subscription',
     'website_project_issue_sheet',
 ]
+
+# Merges that only make sense when the module merged into is installed. When
+# it is not (the database never used it, or uninstalled it), installing it
+# would bring an application the company does not use, and run its migration
+# scripts on tables that do not exist: the module is then removed like the
+# ones of lost_modules, merged into the fallback module.
+# {module: (module merged into, fallback)}
+merged_modules_if_installed = {
+    # procurement without stock: the procurement orders of 9.0/10.0 only
+    # made the service tasks of the sale orders (sale_timesheet 11.0 makes
+    # them directly from the order lines)
+    'procurement': ('stock', 'base'),
+}
