@@ -256,6 +256,27 @@ def _handle_partner_private_type(cr):
     )
 
 
+def _fix_address_format_placeholders(cr):
+    """A placeholder without its conversion type breaks the display of every
+    address of the country: after '%(street2)' the line break that follows
+    becomes the conversion type, and formatting raises "unsupported format
+    character".
+    Odoo shipped that format for Japan in 11.0 (13ee5596c6dd, fixed by
+    087bebf87a64) and the countries are noupdate data, so databases that loaded it
+    back then still have it. The end-migration of account_edi_ubl_cii writes on
+    every partner with a country, which computes their address and dies on it.
+    """
+    pattern = r"(%\(\w+\))(?![a-zA-Z])"
+    openupgrade.logged_query(
+        cr,
+        """
+        UPDATE res_country
+        SET address_format = regexp_replace(address_format, %s, %s, 'g')
+        WHERE address_format ~ %s""",
+        (pattern, r"\1s", pattern),
+    )
+
+
 @openupgrade.migrate(use_env=False)
 def migrate(cr, version):
     """
@@ -278,3 +299,4 @@ def migrate(cr, version):
     _fill_ir_server_object_lines_into_action_server(cr)
     _fill_empty_country_codes(cr)
     _handle_partner_private_type(cr)
+    _fix_address_format_placeholders(cr)
