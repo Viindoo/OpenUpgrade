@@ -4,6 +4,8 @@ to help the matching process
 
 # Renamed modules is a mapping from old module name to new module name
 renamed_modules = {
+    # Viindoo/tvtmaaddons
+    "viin_hr_recruitment_approval": "viin_approval_hr_recruitment",
     # odoo
     "l10n_es_pos_tbai": "l10n_es_edi_tbai_pos",
     "mrp_subonctracting_landed_costs": "mrp_subcontracting_landed_costs",
@@ -60,6 +62,8 @@ renamed_modules = {
 # Merged modules contain a mapping from old module names to other,
 # preexisting module names
 merged_modules = {
+    # Viindoo/tvtmaaddons: absorbed by account in 18.0 (journal items and bank/cash analysis)
+    "to_accounting_bi": "account",
     # odoo
     "account_audit_trail": "account",
     "account_debit_note_sequence": "account_debit_note",
@@ -134,3 +138,13 @@ merged_models = {
     "mrp.document": "product.document",
     # OCA/...
 }
+
+# Modules of merged_modules that are not merged into anything: they are
+# removed without a successor on our addons paths. The technical records they
+# own (record rules, scheduled and server actions, views, menus, mail
+# templates...) are deleted by the update even when they are noupdate, and the
+# xml ids of records of models that go with them are detached: see
+# release_records_of_lost_modules in the pre-migration of base.
+lost_modules = [
+    "to_accounting_bi",
+]
