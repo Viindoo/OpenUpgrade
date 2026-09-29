@@ -784,6 +784,62 @@ def rename_ir_module_category(env):
                 openupgrade.rename_xmlids(env.cr, [(old_xmlid, new_xmlid)])
 
 
+_TECHNICAL_MODELS = (
+    "ir.actions.act_url",
+    "ir.actions.act_window",
+    "ir.actions.client",
+    "ir.actions.report",
+    "ir.actions.server",
+    "ir.actions.todo",
+    "ir.cron",
+    "ir.filters",
+    "ir.model.access",
+    "ir.property",
+    "ir.rule",
+    "ir.ui.menu",
+    "ir.ui.view",
+    "mail.template",
+    "website.menu",
+)
+
+
+def release_records_of_lost_modules(cr):
+    """A module that is removed without a successor is merged into the module
+    it extended (apriori.lost_modules), and the update of that module deletes
+    the records it no longer finds in the data files, except the noupdate
+    ones: release the technical records, so that they are deleted too, and
+    detach the xml ids of the records of models that go with the module (the
+    rows stay). Business records stay.
+    """
+    lost_modules = tuple(getattr(apriori, "lost_modules", []))
+    if not lost_modules:
+        return
+    openupgrade.logged_query(
+        cr,
+        """
+        UPDATE ir_model_data SET noupdate = FALSE
+        WHERE noupdate AND module IN %s AND model IN %s
+        """,
+        (lost_modules, _TECHNICAL_MODELS),
+    )
+    openupgrade.logged_query(
+        cr,
+        """
+        DELETE FROM ir_model_data d
+        WHERE d.module IN %s AND d.model IN (
+            SELECT m.model
+            FROM ir_model m
+            JOIN ir_model_data md ON md.model = 'ir.model'
+                AND md.res_id = m.id AND md.module IN %s
+            WHERE NOT EXISTS (
+                SELECT 1 FROM ir_model_data o
+                WHERE o.model = 'ir.model' AND o.res_id = m.id
+                    AND o.module NOT IN %s))
+        """,
+        (lost_modules,) * 3,
+    )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.remove_tables_fks(env.cr, _obsolete_tables)
@@ -795,6 +851,7 @@ def migrate(env, version):
         UPDATE ir_model_data SET noupdate=False
         WHERE module='base' AND name='group_user'""",
     )
+    release_records_of_lost_modules(env.cr)
     openupgrade.update_module_names(
         env.cr, apriori.renamed_modules.items(), environment_namespec=True
     )
