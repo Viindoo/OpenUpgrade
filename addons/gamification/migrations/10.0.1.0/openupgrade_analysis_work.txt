@@ -1,0 +1,21 @@
+---Fields in module 'gamification'---
+gamification / gamification.challenge   / category (selection)          : selection_keys is now '['hr', 'other']' ('function')
+# NOTHING TO DO: the selection is a list instead of a method now, the values are the same ('forum' is added by website_forum in both versions)
+
+gamification / gamification.challenge.line / condition (selection)         : selection_keys is now 'function' ('['higher', 'lower']')
+gamification / gamification.goal        / computation_mode (char)       : selection_keys is now 'function' ('False')
+gamification / gamification.goal        / computation_mode (char)       : type is now 'selection' ('char')
+gamification / gamification.goal        / definition_condition (char)   : selection_keys is now 'function' ('False')
+gamification / gamification.goal        / definition_condition (char)   : type is now 'selection' ('char')
+gamification / gamification.goal        / definition_description (char) : type is now 'text' ('char')
+gamification / gamification.goal        / definition_display (char)     : selection_keys is now 'function' ('False')
+gamification / gamification.goal        / definition_display (char)     : type is now 'selection' ('char')
+# NOTHING TO DO: related field of the goal definition, not stored
+
+---XML records in module 'gamification'---
+DEL ir.actions.act_window: gamification.challenge_wizard
+DEL ir.ui.view: gamification.view_challenge_wizard
+# NOTHING TO DO: no longer shipped and not noupdate, deleted by the update of the module
+
+DEL res.groups: base.group_hr_manager
+# NOTHING TO DO: the group is not deleted, its xml id is renamed to hr.group_hr_manager by the pre-migration of hr

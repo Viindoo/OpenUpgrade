@@ -1,0 +1,40 @@
+---Fields in module 'website_forum'---
+website_forum / forum.forum              / active (boolean)              : NEW 
+# NOTHING TO DO: new column, the ORM fills the existing forums with the default True
+
+website_forum / forum.forum              / karma_retag (integer)         : was renamed to karma_edit_retag [nothing to do]
+# NOTHING TO DO: the field declares oldname, the ORM renames the column and keeps the values
+
+website_forum / forum.forum              / karma_tag_create (integer)    : NEW 
+# NOTHING TO DO: new column, the ORM fills the existing forums with the default 30
+
+website_forum / forum.forum              / website_message_ids (one2many): DEL relation: mail.message
+# NOTHING TO DO: one2many of the website mail thread, no column
+
+website_forum / forum.tag                / message_follower_ids (one2many): NEW relation: mail.followers
+website_forum / forum.tag                / message_ids (one2many)        : NEW relation: mail.message
+# NOTHING TO DO: forum.tag becomes a mail thread, one2many without column
+
+website_forum / forum.tag                / message_last_post (datetime)  : NEW 
+# NOTHING TO DO: forum.tag becomes a mail thread; empty for the existing tags, as for a tag nobody has posted on
+
+website_forum / gamification.challenge   / category (False)              : NEW selection_keys: ['forum', 'hr', 'other'], mode: modify
+# NOTHING TO DO: 'forum' is added to the selection in both versions
+
+website_forum / res.users                / badge_ids (one2many)          : module is now 'hr_gamification' ('website_forum')
+# NOTHING TO DO: one2many on gamification.badge.user, no column; now declared by hr_gamification
+
+---XML records in module 'website_forum'---
+NEW ir.actions.act_window: website_forum.forum_tag_action
+NEW ir.ui.menu: website_forum.menu_forum_tag
+NEW ir.ui.view: website_forum.forum_post_template_new_answer
+NEW ir.ui.view: website_forum.forum_post_template_new_question
+NEW ir.ui.view: website_forum.forum_post_template_validation
+NEW ir.ui.view: website_forum.forum_tag_view_form
+NEW ir.ui.view: website_forum.forum_tag_view_list
+NEW ir.ui.view: website_forum.forum_view_search
+NEW ir.ui.view: website_forum.layout
+# NOTHING TO DO: new record, created by the update of the module
+
+DEL ir.ui.view: website_forum.badge_user
+# NOTHING TO DO: no longer shipped and not noupdate, deleted by the update of the module

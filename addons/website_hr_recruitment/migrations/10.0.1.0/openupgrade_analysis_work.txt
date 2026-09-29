@@ -1,0 +1,7 @@
+---Fields in module 'website_hr_recruitment'---
+---XML records in module 'website_hr_recruitment'---
+NEW ir.ui.view: website_hr_recruitment.default_website_description
+# NOTHING TO DO: new record, created by the update of the module
+
+NEW res.groups: hr_recruitment.group_hr_recruitment_manager
+# NOTHING TO DO: group of hr_recruitment, whose post-migration adds the HR managers of 9.0 to it

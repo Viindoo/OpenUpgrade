@@ -1,0 +1,23 @@
+---Fields in module 'rating_project'---
+rating_project / project.project          / is_visible_happy_customer (boolean): DEL 
+# DONE: post-migration: 10.0 shows the customer satisfaction of the projects whose rating_status is not 'no'; the projects flagged in 9.0 get rating_status 'stage' (the column is_visible_happy_customer is left in the table)
+
+rating_project / project.project          / rating_status (selection)     : NEW required: required, selection_keys: ['no', 'periodic', 'stage'], req_default: function
+# DONE: post-migration: 'stage' for the projects that have a stage with a rating template (9.0 asked for a rating whenever a task reached such a stage, 10.0 only does for the projects set to 'stage') and for the projects that showed the customer satisfaction; the others keep the default 'no'
+
+rating_project / project.project          / rating_status_period (selection): NEW selection_keys: ['bimonthly', 'daily', 'monthly', 'quarterly', 'weekly', 'yearly']
+# NOTHING TO DO: only used with the periodical rating, new in 10.0
+
+rating_project / project.task             / rating_ids (one2many)         : NEW relation: rating.rating
+# NOTHING TO DO: one2many on rating.rating (res_model, res_id), no column
+
+---XML records in module 'rating_project'---
+NEW ir.actions.act_window: rating_project.rating_rating_action_project
+NEW ir.actions.act_window: rating_project.rating_rating_action_task
+NEW ir.cron: rating_project.ir_cron_rating_project
+NEW ir.ui.menu: rating_project.rating_rating_menu_project
+NEW ir.ui.view: rating_project.project_task_view_form_inherit_rating
+NEW ir.ui.view: rating_project.project_task_view_kanban_inherit_rating
+NEW mail.message.subtype: rating_project.mt_project_task_rating
+NEW mail.message.subtype: rating_project.mt_task_rating
+# NOTHING TO DO: new record, created by the update of the module
