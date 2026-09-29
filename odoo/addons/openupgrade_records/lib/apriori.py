@@ -45,6 +45,17 @@ merged_modules = [
     # assignation) into website_crm_partner_assign, which website_customer,
     # website_google_map and website_membership depend on from 10.0
     ('crm_partner_assign', 'website_crm_partner_assign'),
+    # Odoo: removed without a successor on our addons paths. Merging them into
+    # the module they extended lets the update remove their views, fields and
+    # access rights; tables and columns are kept.
+    ('crm_claim', 'crm'),
+    ('report_webkit', 'report'),
+    ('web_analytics', 'web'),
+    ('website_crm_claim', 'website'),
+    # Viindoo/tvtmaaddons: not ported to 10.0
+    ('to_hr_contract_promotion_path', 'to_hr_advanced'),
+    ('to_payment_follow_up', 'account'),
+    ('to_sales_team_tree', 'sales_team'),
     ('mail_tip', 'mail'),
     ('mrp_operations', 'mrp'),
     ('product_uos', 'sale'),
