@@ -235,6 +235,22 @@ def release_records_of_lost_modules(cr):
         UPDATE ir_model_data SET noupdate = FALSE
         WHERE noupdate AND module IN %s AND model IN %s
         """, (tuple(lost_modules), _TECHNICAL_MODELS))
+    # records of the models that go with the modules: the rows stay in their
+    # tables, which no model reads any more; their xml ids would dangle
+    openupgrade.logged_query(
+        cr,
+        """
+        DELETE FROM ir_model_data d
+        WHERE d.module IN %s AND d.model IN (
+            SELECT m.model
+            FROM ir_model m
+            JOIN ir_model_data md ON md.model = 'ir.model'
+                AND md.res_id = m.id AND md.module IN %s
+            WHERE NOT EXISTS (
+                SELECT 1 FROM ir_model_data o
+                WHERE o.model = 'ir.model' AND o.res_id = m.id
+                    AND o.module NOT IN %s))
+        """, (tuple(lost_modules), ) * 3)
 
 
 @openupgrade.migrate(use_env=True)
