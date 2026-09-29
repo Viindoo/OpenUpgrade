@@ -179,6 +179,10 @@ merged_modules = {
     "viin_hr_holidays_patch1": "viin_hr_holidays",
     "viin_social_facebook_page_setting": "viin_social_facebook",
     "viin_social_facebook_page_setting_patch1": "viin_social_facebook",
+    # the wallet extensions removed in 16.0 (b56e788a2c), to_wallet stays
+    "to_sale_wallet": "to_wallet",
+    "to_wallet_adjustment": "to_wallet",
+    "to_wallet_currency_conversion_diff": "to_wallet",
     # Viindoo/enterprise
     "to_account_asset_patch1": "to_account_asset",
     "to_mrp_account_patch1": "viin_mrp_account",
@@ -211,14 +215,20 @@ merged_modules = {
     "viin_mrp_gantt": "viin_mrp",
     "viin_mrp_split_merge": "mrp",  # Feature available in odoo v16.0
     "viin_mrp_standard_consumption": "viin_mrp",
+    "l10n_vn_viin_account_asset_sale": "l10n_vn_viin_account_asset",
+    # 95f460416: use viin_account_auto_transfer instead (the deferrals are not converted)
+    "to_cost_revenue_deferred": "viin_account_auto_transfer",
     # Viindoo/saas-infrastructure
     "viin_odoo_module_sale_subscription": "viin_odoo_module_subscription",
     "viin_saas_sale_subscription_free_product": "viin_saas_sale_subscription_loyalty",
+    "to_odoo_saas_product_wallet": "to_odoo_saas_product",
+    "to_odoo_saas_wallet": "to_odoo_saas_sale",
     # Viindoo/odoo-tvtma
     "viin_saas_membership": "viin_saas_reseller",
     "viin_saas_reseller_portal": "viin_saas_reseller",
     "viin_viindoo_membership_white_label": "viin_viindoo_saas_reseller",
     "viin_website_product_add_to_cart_snippet": "website_sale",
+    "to_website_docs_odoo_docs": "to_website_docs_odoo_data",
     # Viindoo/branding
     "viin_brand_web": "viin_brand_common",
     "viin_brand_web_editor": "web_editor",
