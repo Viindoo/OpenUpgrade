@@ -129,4 +129,4 @@ DEL res.country.state: __export__.res_country_state_52
 DEL res.country.state: __export__.res_country_state_53
 DEL res.country.state: __export__.res_country_state_56
 DEL res.country.state: __export__.res_country_state_60
-# DONE: pre-migration: renamed xml_ids
+# DONE: pre-migration: each state of the data file takes over the existing state of Vietnam with the same name (case, accents and a Tinh / Thanh pho / TP prefix ignored; among copies, the one most partners use) by getting its xml id; the load then updates it (official name and ISO code) instead of creating a second one. Matched by name, never by the __export__ xml ids of to_vietnam_states: those are ids of the database the module was exported from and mean other states in another database. The __export__ xml ids stay.

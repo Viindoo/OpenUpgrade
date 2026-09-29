@@ -1,73 +1,103 @@
+# Copyright 2019 Viindoo (David Tran)
+# Copyright 2026 Viindoo
+# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
+import csv
+import io
+import re
+import unicodedata
+
+from odoo.modules.module import get_module_resource
 from openupgradelib import openupgrade
 
-# rename res.country.state's xml_ids
-xmlid_renames = [
-    ('__export__.res_country_state_112', 'l10n_vn.state_vn_VN-44'),
-    ('__export__.res_country_state_119', 'l10n_vn.state_vn_VN-57'),
-    ('__export__.res_country_state_120', 'l10n_vn.state_vn_VN-31'),
-    ('__export__.res_country_state_115', 'l10n_vn.state_vn_VN-54'),
-    ('__export__.res_country_state_116', 'l10n_vn.state_vn_VN-53'),
-    ('__export__.res_country_state_114', 'l10n_vn.state_vn_VN-55'),
-    ('__export__.res_country_state_117', 'l10n_vn.state_vn_VN-56'),
-    ('__export__.res_country_state_121', 'l10n_vn.state_vn_VN-58'),
-    ('__export__.res_country_state_113', 'l10n_vn.state_vn_VN-43'),
-    ('__export__.res_country_state_118', 'l10n_vn.state_vn_VN-40'),
-    ('__export__.res_country_state_165', 'l10n_vn.state_vn_VN-50'),
-    ('__export__.res_country_state_123', 'l10n_vn.state_vn_VN-04'),
-    ('__export__.res_country_state_122', 'l10n_vn.state_vn_VN-59'),
-    ('__export__.res_country_state_163', 'l10n_vn.state_vn_VN-CT'),
-    ('__export__.res_country_state_126', 'l10n_vn.state_vn_VN-71'),
-    ('__export__.res_country_state_124', 'l10n_vn.state_vn_VN-33'),
-    ('__export__.res_country_state_164', 'l10n_vn.state_vn_VN-DN'),
-    ('__export__.res_country_state_125', 'l10n_vn.state_vn_VN-39'),
-    ('__export__.res_country_state_166', 'l10n_vn.state_vn_VN-72'),
-    ('__export__.res_country_state_127', 'l10n_vn.state_vn_VN-45'),
-    ('__export__.res_country_state_128', 'l10n_vn.state_vn_VN-30'),
-    ('__export__.res_country_state_133', 'l10n_vn.state_vn_VN-14'),
-    ('__export__.res_country_state_60', 'l10n_vn.state_vn_VN-SG'),
-    ('__export__.res_country_state_132', 'l10n_vn.state_vn_VN-61'),
-    ('__export__.res_country_state_129', 'l10n_vn.state_vn_VN-73'),
-    ('__export__.res_country_state_167', 'l10n_vn.state_vn_VN-03'),
-    ('__export__.res_country_state_56', 'l10n_vn.state_vn_VN-HN'),
-    ('__export__.res_country_state_130', 'l10n_vn.state_vn_VN-63'),
-    ('__export__.res_country_state_52', 'l10n_vn.state_vn_VN-HP'),
-    ('__export__.res_country_state_131', 'l10n_vn.state_vn_VN-23'),
-    ('__export__.res_country_state_134', 'l10n_vn.state_vn_VN-66'),
-    ('__export__.res_country_state_136', 'l10n_vn.state_vn_VN-47'),
-    ('__export__.res_country_state_135', 'l10n_vn.state_vn_VN-34'),
-    ('__export__.res_country_state_137', 'l10n_vn.state_vn_VN-28'),
-    ('__export__.res_country_state_141', 'l10n_vn.state_vn_VN-41'),
-    ('__export__.res_country_state_138', 'l10n_vn.state_vn_VN-02'),
-    ('__export__.res_country_state_168', 'l10n_vn.state_vn_VN-01'),
-    ('__export__.res_country_state_140', 'l10n_vn.state_vn_VN-35'),
-    ('__export__.res_country_state_139', 'l10n_vn.state_vn_VN-09'),
-    ('__export__.res_country_state_143', 'l10n_vn.state_vn_VN-22'),
-    ('__export__.res_country_state_144', 'l10n_vn.state_vn_VN-18'),
-    ('__export__.res_country_state_142', 'l10n_vn.state_vn_VN-67'),
-    ('__export__.res_country_state_145', 'l10n_vn.state_vn_VN-36'),
-    ('__export__.res_country_state_146', 'l10n_vn.state_vn_VN-68'),
-    ('__export__.res_country_state_147', 'l10n_vn.state_vn_VN-32'),
-    ('__export__.res_country_state_148', 'l10n_vn.state_vn_VN-24'),
-    ('__export__.res_country_state_53', 'l10n_vn.state_vn_VN-13'),
-    ('__export__.res_country_state_169', 'l10n_vn.state_vn_VN-27'),
-    ('__export__.res_country_state_170', 'l10n_vn.state_vn_VN-29'),
-    ('__export__.res_country_state_150', 'l10n_vn.state_vn_VN-25'),
-    ('__export__.res_country_state_152', 'l10n_vn.state_vn_VN-05'),
-    ('__export__.res_country_state_151', 'l10n_vn.state_vn_VN-52'),
-    ('__export__.res_country_state_154', 'l10n_vn.state_vn_VN-20'),
-    ('__export__.res_country_state_157', 'l10n_vn.state_vn_VN-46'),
-    ('__export__.res_country_state_155', 'l10n_vn.state_vn_VN-21'),
-    ('__export__.res_country_state_153', 'l10n_vn.state_vn_VN-69'),
-    ('__export__.res_country_state_171', 'l10n_vn.state_vn_VN-37'),
-    ('__export__.res_country_state_159', 'l10n_vn.state_vn_VN-07'),
-    ('__export__.res_country_state_156', 'l10n_vn.state_vn_VN-26'),
-    ('__export__.res_country_state_158', 'l10n_vn.state_vn_VN-51'),
-    ('__export__.res_country_state_160', 'l10n_vn.state_vn_VN-49'),
-    ('__export__.res_country_state_161', 'l10n_vn.state_vn_VN-70'),
-    ('__export__.res_country_state_162', 'l10n_vn.state_vn_VN-06'),
-    ]
+
+def _state_key(name):
+    """Name of a state without case, accents, punctuation, spacing and the
+    prefix of its kind (Tinh, Thanh pho, TP)."""
+    text = unicodedata.normalize('NFD', (name or '').strip().casefold())
+    text = ''.join(
+        ch for ch in text if unicodedata.category(ch) != 'Mn'
+    ).replace('đ', 'd')
+    text = re.sub(r'^(tinh|thanh pho|tp\.?)\s+', '', text)
+    return re.sub(r'[^a-z0-9]+', '', text)
+
+
+def adopt_existing_states(cr):
+    """12.0 starts shipping the states of Vietnam in l10n_vn. A database
+    usually has them already: from to_vietnam_states of tvtmaaddons, or
+    entered / imported by the company. Loaded as they are, the 63 states would
+    be created once more, next to the ones the partners use.
+
+    Each state of the data file takes over the existing state of Vietnam that
+    has the same name: it gets the xml id of the data file, so that the load
+    updates it instead of creating another one. Among several states of one
+    name, the one most partners use is taken.
+
+    The states are matched by name, never by xml id: the __export__ xml ids
+    of to_vietnam_states are the ids of the database the module was exported
+    from, and another database may well have the same xml ids on other states
+    (v3tech: __export__.res_country_state_124 is Ha Noi, not Dak Lak).
+    """
+    path = get_module_resource('l10n_vn', 'data', 'res.country.state.csv')
+    if not path:
+        return
+    with io.open(path, encoding='utf-8') as csv_file:
+        shipped = list(csv.DictReader(csv_file))
+    cr.execute("SELECT id FROM res_country WHERE upper(code) = 'VN'")
+    country = cr.fetchone()
+    if not country:
+        return
+    cr.execute(
+        """
+        SELECT s.id, s.name, count(p.id)
+        FROM res_country_state s
+        LEFT JOIN res_partner p ON p.state_id = s.id
+        WHERE s.country_id = %s
+        GROUP BY s.id
+        """, (country[0], ))
+    candidates = {}
+    for state_id, name, partners in cr.fetchall():
+        candidates.setdefault(_state_key(name), []).append(
+            (-partners, state_id))
+    cr.execute(
+        """
+        SELECT name, res_id FROM ir_model_data
+        WHERE module = 'l10n_vn' AND model = 'res.country.state'
+        """)
+    existing = dict(cr.fetchall())
+    taken = set(existing.values())
+    for line in shipped:
+        module, _dot, name = line['id'].rpartition('.')
+        if (module or 'l10n_vn') != 'l10n_vn' or name in existing:
+            continue
+        choices = sorted(
+            choice for choice in candidates.get(_state_key(line['name']), [])
+            if choice[1] not in taken)
+        if not choices:
+            # created by the load of the data file
+            continue
+        state_id = choices[0][1]
+        taken.add(state_id)
+        openupgrade.logged_query(
+            cr,
+            """
+            INSERT INTO ir_model_data
+                (module, name, model, res_id, noupdate,
+                 create_uid, write_uid, create_date, write_date,
+                 date_init, date_update)
+            VALUES
+                ('l10n_vn', %s, 'res.country.state', %s, false,
+                 1, 1, now() at time zone 'UTC', now() at time zone 'UTC',
+                 now() at time zone 'UTC', now() at time zone 'UTC')
+            """, (name, state_id))
+        # the code of the data file may be the code of another existing
+        # state of the country (entered by hand): free it
+        cr.execute(
+            """
+            UPDATE res_country_state SET code = code || '-' || id
+            WHERE country_id = %s AND code = %s AND id != %s
+            """, (country[0], line['code'], state_id))
 
 
 @openupgrade.migrate(use_env=False)
 def migrate(cr, version):
-    openupgrade.rename_xmlids(cr, xmlid_renames)
+    adopt_existing_states(cr)
