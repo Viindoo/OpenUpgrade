@@ -1,7 +1,7 @@
 ---Fields in module 'website_project_issue'---
 ---XML records in module 'website_project_issue'---
 DEL ir.rule: project_issue.issue_user_rule
-# Done: noupdate record deleted on pre-migration
+# NOTHING TO DO: 9.0 website_project_issue overwrote this rule of project_issue, 10.0 does not any more; the rule is still shipped by project_issue 10.0, whose noupdate_changes.xml gives it the 10.0 definition (deleting it here left employees without any rule on issues)
 
 NEW ir.ui.view: website_project_issue.my_issues
 NEW ir.ui.view: website_project_issue.my_issues_issue
