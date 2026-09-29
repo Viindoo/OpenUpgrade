@@ -44,6 +44,7 @@ def _rename_fields(env):
             ),
             ("mail.message", "mail_message", "no_auto_thread", "reply_to_force_new"),
             ("mail.notification", "mail_notification", "mail_id", "mail_mail_id"),
+            ("mail.mail", "mail_mail", "notification", "is_notification"),
         ],
     )
 
@@ -346,8 +347,10 @@ def migration_to_mail_group(env):
 @openupgrade.migrate()
 def migrate(env, version):
     _copy_columns(env)
-    _rename_fields(env)
+    # the tables first: mail_notification is the renamed
+    # mail_message_res_partner_needaction_rel, whose column mail_id is renamed
     _rename_tables(env)
+    _rename_fields(env)
     _add_follwers_from_mail_channel(env)
     _delete_channel_follower_records(env)
     delete_obsolete_constraints(env)
