@@ -115,8 +115,22 @@ merged_modules = {
     "to_l10n_vn_state_group": "to_res_state_group",
     "to_account_expense_tracking": "to_hr_expense",
     "to_l10n_vn_fleet_driver": "to_fleet_driver",
+    "to_hr_holidays_period_limit": "hr_holidays",
+    "to_hr_work_day_type": "hr",
+    "to_shorten_url": "link_tracker",
+    "to_website_registration_email_blacklist": "to_registration_email_blacklist",
+    # removed in 14.0; auto-installed as soon as l10n_vn gets installed otherwise
+    "viin_l10n_vn_account_payment_internal_transfer": "l10n_vn",
     # Viindoo/odoo-tvtma
     "viin_hr_department_multilang": "viin_hr",
+    "to_website_erponline_cart": "website_sale",
+    # a data module of the ERPOnline website, not ported beyond 13.0: its records
+    # (website, pages, menus, blog, forum) are all noupdate and stay with the theme
+    "to_website_erponline_data": "theme_erponline",
+    "to_website_language_menu_erponline_data": "to_website_language_menu",
+    "to_website_menu_icon_erponline_data": "to_website_menu_icon",
+    # Viindoo/odoo-joomla2odoo
+    "to_redirect_early": "website",
 }
 
 # only used here for upgrade_analysis
