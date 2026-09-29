@@ -1,0 +1,7 @@
+---Fields in module 'website_sale_digital'---
+---XML records in module 'website_sale_digital'---
+NEW ir.ui.view: website_sale_digital.portal_order_page_downloads
+# NOTHING TO DO: new record, created by the update of the module
+
+DEL ir.ui.view: website_sale_digital.orders_followup_downloads
+# NOTHING TO DO: no longer shipped and not noupdate, deleted by the update of the module

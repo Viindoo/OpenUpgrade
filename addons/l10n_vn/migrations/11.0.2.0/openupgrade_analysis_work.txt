@@ -1,0 +1,9 @@
+---Fields in module 'l10n_vn'---
+---XML records in module 'l10n_vn'---
+DEL account.account.type: l10n_vn.account_type_other (noupdate)
+# NOTHING TO DO: noupdate account type that 11.0 no longer ships: it stays in the database, the accounts that use it keep their type
+
+NEW account.tax.group: l10n_vn.tax_group_0 (noupdate)
+NEW account.tax.group: l10n_vn.tax_group_10 (noupdate)
+NEW account.tax.group: l10n_vn.tax_group_5 (noupdate)
+# NOTHING TO DO: new record, created by the update of the module

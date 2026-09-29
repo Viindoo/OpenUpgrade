@@ -35,15 +35,6 @@
   <record id="goal_user_visibility" model="ir.rule">
     <field name="groups" eval="[(4, ref('base.group_user')), (4, ref('base.group_portal'))]"/>
   </record>
-  <record id="ir_cron_check_challenge" model="ir.cron" forcecreate="True">
-    <field name="args"/>
-    <field name="function"/>
-    <field name="model"/>
-    <field name="name">Gamification: Goal Challenge Check</field>
-    <field name="model_id" ref="model_gamification_challenge"/>
-    <field name="state">code</field>
-    <field name="code">model._cron_update()</field>
-  </record>
   <record id="simple_report_template" model="mail.template">
     <field name="body_html"><![CDATA[ 
 % set record = ctx.get('record')
