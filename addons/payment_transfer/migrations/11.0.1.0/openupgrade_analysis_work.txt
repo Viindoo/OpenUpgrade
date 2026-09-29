@@ -2,5 +2,7 @@
 ---XML records in module 'payment_transfer'---
 NEW ir.ui.view: payment_transfer.payment_acquirer_view_form_inherit_transfer
 NEW ir.ui.view: payment_transfer.transfer_form
-DEL ir.ui.view: payment_transfer.transfer_acquirer_button
 # Nothing to do
+
+DEL ir.ui.view: payment_transfer.transfer_acquirer_button
+# DONE: post-migration: every transfer acquirer that still uses the removed button (the ones the company created; the one of the module data is switched by noupdate_changes.xml) gets the 11.0 form, then the update deletes the view
