@@ -42,6 +42,11 @@ renamed_modules = {
     'to_stock_picking_validate_manual_time': 'to_stock_picking_backdate',
     # Viindoo/odoo-web_gantt
     'project_gantt': 'viin_project_gantt',
+    # Viindoo/odoo-tvtma
+    # the mega menu itself is in the website module of Odoo now; what is left of
+    # the module (icon_class, text_hide) became to_website_menu_icon
+    'to_website_mega_menu': 'to_website_menu_icon',
+    'to_website_mega_menu_erponline_data': 'to_website_menu_icon_erponline_data',
     # OCA/l10n-netherlands -> OCA/account-financial-reporting
     'l10n_nl_mis_reports': 'mis_template_financial_report',
 }
@@ -68,6 +73,13 @@ merged_modules = {
     'website_crm_phone_validation': 'website_crm',
     'website_sale_link_tracker': 'website_sale',
     'website_survey': 'survey',
+    # Odoo: removed without a successor on our addons paths. Merging them into the
+    # module they extended lets the update remove their views, fields and access
+    # rights (website_hr gave public users access to employees); columns are kept.
+    # OCA/crm has crm_project for 13.0: add that repository and drop this line to
+    # keep the wizard that converts a lead into a task.
+    'crm_project': 'crm',
+    'website_hr': 'hr',
     # OCA/account-analytic
     'account_analytic_default_account': 'account_analytic_default',
     # OCA/account-financial-tools
@@ -170,6 +182,21 @@ merged_modules = {
     'muk_dms_mail': 'dms',
     'muk_dms_thumbnails': 'dms',
     'muk_dms_view': 'dms',
+    # Viindoo/erponline-enterprise
+    'to_enterprise_marks_hr_payroll': 'to_hr_payroll',
+    # Viindoo/odoo-joomla2odoo
+    'to_website_content_language': 'to_website_language_page',
+    'to_website_content_language_blog': 'to_website_language_blog',
+    # Viindoo/odoo-tvtma
+    'to_odoo_saas_erponline': 'to_odoo_saas_sale',
+    'to_refresh_sale_order': 'sale',
+    'to_tvtma_project': 'project',
+    'to_website_erponline': 'to_website_erponline_data',
+    'to_website_language_forum_erponline_data': 'to_website_erponline_data',
+    'to_website_language_page_erponline_data': 'to_website_erponline_data',
+    'to_website_logo': 'website',
+    # Viindoo/saas-infrastructure
+    'to_response': 'to_saas_base',
     # Viindoo/tvtmaaddons
     'to_equipment_archive': 'maintenance',
     'to_hr_advanced': 'to_hr_payroll',
@@ -179,6 +206,12 @@ merged_modules = {
     'to_l10n_vn_hr_insurance': 'to_l10n_vn_hr_payroll',
     'to_l10n_vn_hr_insurance_account': 'to_l10n_vn_hr_payroll_account',
     'to_account_journal_entry_chatter': 'account',
+    'to_hr_scheduled_working_days': 'to_hr_payroll',
+    'to_hr_subordinates': 'hr_org_chart',
+    'to_invoice_partner_vat': 'account',
+    'to_l10n_vn_account_financial_income': 'to_account_financial_income',
+    'to_l10n_vn_account_income_deduct': 'to_account_income_deduct',
+    'to_mail_archive': 'mail',
 }
 
 # only used here for openupgrade_records analysis:
