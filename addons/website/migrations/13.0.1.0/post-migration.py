@@ -9,6 +9,26 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
+def _convert_logo(env):
+    """Modules that gave each website its own logo before 13.0 (e.g. Viindoo's
+    to_website_logo, merged into website) stored it in the table, while the field of
+    13.0 is stored as attachment: move the logos over, or _fill_website_logo finds no
+    logo at all and replaces every one of them with the logo of the company.
+    """
+    if not openupgrade.column_exists(env.cr, "website", "logo"):
+        return
+    env.cr.execute("SELECT id, logo FROM website WHERE logo IS NOT NULL")
+    for website_id, logo in env.cr.fetchall():
+        try:
+            env["website"].browse(website_id).write({"logo": logo.tobytes()})
+        except Exception as e:
+            _logger.error(
+                "Error while converting the logo of website %s: %s",
+                website_id,
+                repr(e),
+            )
+
+
 def _fill_website_logo(env):
     """V13 introduces website.logo, where v12 used res.company.logo. We do it this way
     for being tolerable to already stored logos (for example, through the website_logo
@@ -59,6 +79,7 @@ def _set_data_anchor_xml_attribute(env):
 
 @openupgrade.migrate()
 def migrate(env, version):
+    _convert_logo(env)
     _fill_website_logo(env)
     _convert_favicon(env)
     openupgrade.load_data(env.cr, 'website', 'migrations/13.0.1.0/noupdate_changes.xml')
