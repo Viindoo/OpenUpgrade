@@ -29,4 +29,5 @@ DEL ir.ui.view: portal_sale.view_order_form_portal_sale
 DEL mail.template: portal_sale.email_template_edi_invoice
 DEL mail.template: portal_sale.email_template_edi_sale
 # Done. Pre-migration: deleted xmlids from account/sale and changing names of
-# portal_sale xmlids to account/sale
+# portal_sale xmlids to account/sale (only when the portal_sale template
+# exists: the xml id of account/sale is never left without a template)
