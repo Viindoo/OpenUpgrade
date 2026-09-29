@@ -8,7 +8,6 @@ renamed_modules = {
     'mrp_repair': 'repair',
     'product_extended': 'mrp_bom_cost',
     # OCA/account-budgeting
-    'account_budget': 'account_budget_oca',
     # OCA/account-payment
     'account_payment_return_import_sepa_pain': (
         'account_payment_return_import_iso20022'
@@ -29,6 +28,7 @@ renamed_modules = {
     # erponline-enterprise
     'account_accountant': 'to_account_accountant',
     'account_asset': 'to_account_asset',
+    'account_budget': 'to_account_budget',
     'mrp_account': 'to_mrp_account',
     'mrp_workorder': 'to_mrp_workorder',
     'quality': 'to_quality',
@@ -62,6 +62,11 @@ renamed_modules = {
 merged_modules = {
     # Odoo
     'auth_crypt': 'base',
+    # Odoo: removed without a successor on our addons paths. Merging them into
+    # the module they extended lets the update remove their views, fields and
+    # access rights; tables and columns are kept.
+    'test_documentation_examples': 'base',
+    'website_forum_doc': 'website_forum',
     'account_cash_basis_base_account': 'account',
     'account_invoicing': 'account',
     'rating_project': 'project',
