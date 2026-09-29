@@ -64,6 +64,22 @@ def set_expense_sheet_accounting_date(env):
     )
 
 
+def assign_expense_groups(env):
+    """9.0 gave the rights on expenses to the HR officers and managers
+    (base.group_hr_user / base.group_hr_manager, now hr.group_hr_user /
+    hr.group_hr_manager). 10.0 gives them to groups of the application:
+    the users who had the rights keep them.
+    """
+    for old_group, new_group in (
+            ('hr.group_hr_user',
+             'hr_expense.group_hr_expense_user'),
+            ('hr.group_hr_manager',
+             'hr_expense.group_hr_expense_manager'),
+    ):
+        users = env.ref(old_group).with_context(active_test=False).users
+        users.write({'groups_id': [(4, env.ref(new_group).id)]})
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     cr = env.cr
@@ -108,3 +124,4 @@ def migrate(env, version):
     Sheet.recompute()
     openupgrade.load_data(
         cr, 'hr_expense', 'migrations/10.0.2.0/noupdate_changes.xml')
+    assign_expense_groups(env)

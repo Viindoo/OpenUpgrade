@@ -112,6 +112,7 @@ NEW mail.message.subtype: hr_expense.mt_expense_paid
 NEW product.product: hr_expense.product_product_fixed_cost
 NEW res.groups: hr_expense.group_hr_expense_manager
 NEW res.groups: hr_expense.group_hr_expense_user
+# DONE: post-migration: the users of hr.group_hr_user / hr.group_hr_manager (the groups that gave the rights on expenses in 9.0) are added to the new groups
 NEW res.users: base.default_user
 NEW web.planner: hr_expense.planner_hr_expense
 DEL web.tip: hr_expense.expense_tip_1

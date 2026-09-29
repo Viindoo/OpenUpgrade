@@ -64,7 +64,7 @@ DEL ir.ui.view: hr_timesheet.view_hr_timesheet_report_search
 # Nothing to do: noupdate=0 records
 
 NEW res.groups: hr_timesheet.group_hr_timesheet_user
-# Nothing to do: There's no way to know which users will need this new group
+# DONE: post-migration: the users of hr.group_hr_user (the group that gave the rights on the timesheets of all employees in 9.0) are added to the new group
 
 NEW res.users: base.default_user
 # Nothing to do: It's not really a new group
