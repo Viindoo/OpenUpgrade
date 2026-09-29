@@ -49,6 +49,11 @@ renamed_modules = {
     "to_l10n_vn_hr_payroll_account": "l10n_vn_viin_hr_payroll_account",
     "to_l10n_vn_hr_payroll_meal_account": "l10n_vn_viin_hr_payroll_meal_account",
     "to_l10n_vn_stock_reports": "l10n_vn_viin_stock_reports",
+    "viin_l10n_vn_einvoice_sale": "l10n_vn_viin_einvoice_sale",
+    "viin_l10n_vn_hr_account": "l10n_vn_viin_hr_account",
+    "to_loan_management_l10n_vn": "l10n_vn_viin_loan_management",
+    # Viindoo/odoo-tvtma
+    "to_tvtma_sale_crm": "viin_sale_crm",  # moved to Viindoo/erponline-enterprise
     # Viindoo/erponline-enterprise
     "to_enterprise_marks_account": "viin_hide_ent_modules_account",
     "viin_mobile_notification_firebase": "viin_mobile_firebase",
@@ -158,6 +163,12 @@ merged_modules = {
     "viin_l10n_vn_account_move_print": "l10n_vn_viin",
     "viin_l10n_vn_payment_print": "l10n_vn_viin",
     "viin_payment_mediate": "viin_account",
+    "to_currency_rate": "base",
+    "to_l10n_vn_currency_conversion_diff": "to_currency_conversion_diff",
+    "to_lines_count_on_account_move": "to_account_accountant",
+    "viin_remove_only_reference_from_one2many": "web",
+    # Viindoo/erponline-enterprise
+    "to_enterprise_mobile": "base",
     # Viindoo/odoo-tvtma
     "to_tvtma_crm": "viin_crm",
     "to_tvtma_sales": "viin_sale",
