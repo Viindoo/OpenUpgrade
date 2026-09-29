@@ -153,9 +153,39 @@ def rename_mass_mailing_event(env):
             merge_modules=True)
 
 
+_TECHNICAL_MODELS = (
+    'ir.actions.act_url', 'ir.actions.act_window', 'ir.actions.client',
+    'ir.actions.report', 'ir.actions.report.xml', 'ir.actions.server',
+    'ir.actions.todo', 'ir.cron', 'ir.filters', 'ir.model.access',
+    'ir.property', 'ir.rule', 'ir.ui.menu', 'ir.ui.view', 'ir.values',
+    'mail.template', 'web.tip', 'website.menu',
+)
+
+
+def release_records_of_lost_modules(cr):
+    """A module that is removed without a successor is merged into the module
+    it extended (apriori.lost_modules), and the update of that module deletes
+    the records it no longer finds in the data files, except the noupdate
+    ones. Of a module that is gone, a noupdate scheduled action calls a model
+    that does not exist, a record rule or a mail template reads fields that
+    do not exist: release the technical records, so that they are deleted
+    too. Business records (stages, campaigns, products...) stay.
+    """
+    lost_modules = getattr(apriori, 'lost_modules', [])
+    if not lost_modules:
+        return
+    openupgrade.logged_query(
+        cr,
+        """
+        UPDATE ir_model_data SET noupdate = FALSE
+        WHERE noupdate AND module IN %s AND model IN %s
+        """, (tuple(lost_modules), _TECHNICAL_MODELS))
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.remove_tables_fks(env.cr, _obsolete_tables)
+    release_records_of_lost_modules(env.cr)
     openupgrade.update_module_names(
         env.cr, apriori.renamed_modules.items(), environment_namespec=True
     )
