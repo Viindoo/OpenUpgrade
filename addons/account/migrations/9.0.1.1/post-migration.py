@@ -1411,12 +1411,25 @@ def migrate(env, version):
     fill_account_invoice_tax_taxes(env)
     fill_blacklisted_fields(cr)
     fast_compute_cash_basis(env)
-    reset_blacklist_field_recomputation()
     fill_move_line_invoice(cr)
     merge_invoice_journals(env)
     update_account_invoice_date(cr)
     update_move_date(cr)
     fill_bank_accounts(cr)
+    # noupdate_changes.xml writes the field `type` of every account type.
+    # matched_percentage of account.move depends on it, so with the blacklist
+    # already lifted each of these writes recomputes through the ORM the
+    # journal entries having a line on an account of that type (nearly all of
+    # them, once per account type), although the values were filled by SQL
+    # above. Keep the blacklist until the data is loaded.
+    cr.execute("SELECT id, type FROM account_account_type")
+    types_before = dict(cr.fetchall())
     openupgrade.load_data(
         cr, 'account', 'migrations/9.0.1.1/noupdate_changes.xml',
     )
+    env['account.move'].recompute()
+    cr.execute("SELECT id, type FROM account_account_type")
+    if dict(cr.fetchall()) != types_before:
+        # the data changed a type: the values computed above are outdated
+        fast_compute_cash_basis(env)
+    reset_blacklist_field_recomputation()
