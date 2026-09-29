@@ -15,10 +15,10 @@ hr_attendance / hr.employee              / attendance_ids (one2many)     : NEW r
 # NOTHING TO DO
 
 hr_attendance / hr.employee              / barcode (char)                : NEW
-# NOTHING TO DO
+# DONE: pre-migration: column created with a random value of its own for each employee (the ORM default would give every employee the same one, and unique(barcode) could not be created)
 
 hr_attendance / hr.employee              / pin (char)                    : NEW
-# NOTHING TO DO
+# DONE: pre-migration: column created with a random value of its own for each employee (the ORM default would give every employee the same one, and unique(barcode) could not be created)
 
 ---XML records in module 'hr_attendance'---
 NEW ir.actions.act_window: hr_attendance.action_hr_attendance_settings
