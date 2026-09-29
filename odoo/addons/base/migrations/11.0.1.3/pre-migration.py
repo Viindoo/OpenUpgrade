@@ -162,7 +162,7 @@ _TECHNICAL_MODELS = (
 )
 
 
-def release_records_of_lost_modules(cr):
+def release_records_of_lost_modules(cr, lost_modules=None):
     """A module that is removed without a successor is merged into the module
     it extended (apriori.lost_modules), and the update of that module deletes
     the records it no longer finds in the data files, except the noupdate
@@ -171,7 +171,8 @@ def release_records_of_lost_modules(cr):
     do not exist: release the technical records, so that they are deleted
     too. Business records (stages, campaigns, products...) stay.
     """
-    lost_modules = getattr(apriori, 'lost_modules', [])
+    if lost_modules is None:
+        lost_modules = getattr(apriori, 'lost_modules', [])
     if not lost_modules:
         return
     openupgrade.logged_query(
@@ -198,16 +199,40 @@ def release_records_of_lost_modules(cr):
         """, (tuple(lost_modules), ) * 3)
 
 
+def modules_to_merge(cr):
+    """apriori.merged_modules, where the merges of
+    apriori.merged_modules_if_installed whose target is not installed are
+    replaced by their fallback. Returns (merges, modules removed)."""
+    merges = dict(apriori.merged_modules)
+    dropped = []
+    for module, (target, fallback) in getattr(
+            apriori, 'merged_modules_if_installed', {}).items():
+        cr.execute(
+            "SELECT name, state FROM ir_module_module WHERE name IN %s",
+            ((module, target), ))
+        states = dict(cr.fetchall())
+        if states.get(module) not in ('installed', 'to upgrade'):
+            continue
+        if states.get(target) in ('installed', 'to upgrade', 'to install'):
+            merges[module] = target
+            continue
+        merges[module] = fallback
+        dropped.append(module)
+    return merges, dropped
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.remove_tables_fks(env.cr, _obsolete_tables)
-    release_records_of_lost_modules(env.cr)
+    merges, dropped = modules_to_merge(env.cr)
+    release_records_of_lost_modules(
+        env.cr, list(getattr(apriori, 'lost_modules', [])) + dropped)
     openupgrade.update_module_names(
         env.cr, apriori.renamed_modules.items(), environment_namespec=True
     )
     openupgrade.update_module_names(
         env.cr,
-        apriori.merged_modules.items(),
+        merges.items(),
         merge_modules=True,
         environment_namespec=True,
     )
