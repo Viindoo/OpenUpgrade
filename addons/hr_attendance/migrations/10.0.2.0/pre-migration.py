@@ -18,24 +18,40 @@ def fill_employee_barcode_and_pin(env):
     default is evaluated once and written on every employee: they all share
     one badge ID and unique(barcode) cannot be created. Create the columns
     here with a value of their own for each employee.
+
+    A 9.0 database may already have hr_employee.barcode from another module
+    (e.g. to_attendance_device) with the same value on several employees: the
+    first employee keeps it, the others get a new one.
     """
     cr = env.cr
-    if openupgrade.column_exists(cr, 'hr_employee', 'barcode'):
-        return
-    cr.execute(
-        """ALTER TABLE hr_employee
-        ADD COLUMN barcode varchar, ADD COLUMN pin varchar""")
-    cr.execute("SELECT id FROM hr_employee ORDER BY id")
+    has_barcode = openupgrade.column_exists(cr, 'hr_employee', 'barcode')
+    has_pin = openupgrade.column_exists(cr, 'hr_employee', 'pin')
+    if not has_barcode:
+        cr.execute("ALTER TABLE hr_employee ADD COLUMN barcode varchar")
+    if not has_pin:
+        cr.execute("ALTER TABLE hr_employee ADD COLUMN pin varchar")
+    cr.execute("SELECT id, barcode FROM hr_employee ORDER BY id")
     barcodes = set()
-    for employee_id, in cr.fetchall():
-        barcode = None
-        while not barcode or barcode in barcodes:
-            barcode = "".join(choice(digits) for i in range(8))
-        barcodes.add(barcode)
-        pin = "".join(choice(digits) for i in range(4))
-        cr.execute(
-            "UPDATE hr_employee SET barcode = %s, pin = %s WHERE id = %s",
-            (barcode, pin, employee_id))
+    for employee_id, barcode in cr.fetchall():
+        if barcode and barcode not in barcodes:
+            barcodes.add(barcode)
+        else:
+            if barcode:
+                openupgrade.message(
+                    cr, 'hr_attendance', 'hr_employee', 'barcode',
+                    'employee %s: badge ID %s is already used by another '
+                    'employee, a new one is assigned', employee_id, barcode)
+            barcode = None
+            while not barcode or barcode in barcodes:
+                barcode = "".join(choice(digits) for i in range(8))
+            barcodes.add(barcode)
+            cr.execute(
+                "UPDATE hr_employee SET barcode = %s WHERE id = %s",
+                (barcode, employee_id))
+        if not has_pin:
+            cr.execute(
+                "UPDATE hr_employee SET pin = %s WHERE id = %s",
+                ("".join(choice(digits) for i in range(4)), employee_id))
 
 
 @openupgrade.migrate()
