@@ -219,15 +219,25 @@ def migrate(env, version):
         WHERE  module='base' AND name='group_user'""",
     )
     openupgrade.update_module_names(
-        env.cr, apriori.renamed_modules.items())
+        env.cr, apriori.renamed_modules.items(), environment_namespec=True
+    )
     openupgrade.update_module_names(
-        env.cr, apriori.merged_modules.items(), merge_modules=True)
+        env.cr,
+        apriori.merged_modules.items(),
+        merge_modules=True,
+        environment_namespec=True,
+    )
+    openupgrade.clean_transient_models(env.cr)
     if openupgrade.table_exists(env.cr, 'product_uom'):
         openupgrade.rename_models(env.cr, model_renames_product)
         openupgrade.rename_tables(env.cr, table_renames_product)
+        for _old, model in model_renames_product:
+            openupgrade.update_module_moved_models(env.cr, model, 'product', 'uom')
     if openupgrade.table_exists(env.cr, 'stock_incoterms'):
         openupgrade.rename_models(env.cr, model_renames_stock)
         openupgrade.rename_tables(env.cr, table_renames_stock)
+        for _old, model in model_renames_stock:
+            openupgrade.update_module_moved_models(env.cr, model, 'stock', 'account')
     openupgrade.rename_xmlids(env.cr, xmlid_renames)
     switch_noupdate_flag(env)
     eliminate_duplicate_translations(env.cr)

@@ -129,6 +129,10 @@ missing in the new release are marked with |del|.
 +--------------------------------------------+-------------------------------------------------+
 |fetchmail                                   | Nothing to do                                   |
 +--------------------------------------------+-------------------------------------------------+
+| |new| fetchmail_gmail                      |                                                 |
++--------------------------------------------+-------------------------------------------------+
+| |new| fetchmail_outlook                    |                                                 |
++--------------------------------------------+-------------------------------------------------+
 |fleet                                       | Done                                            |
 +--------------------------------------------+-------------------------------------------------+
 |gamification                                | Done                                            |
@@ -140,6 +144,8 @@ missing in the new release are marked with |del|.
 |google_calendar                             | Nothing to do                                   |
 +--------------------------------------------+-------------------------------------------------+
 |google_drive                                | Nothing to do                                   |
++--------------------------------------------+-------------------------------------------------+
+| |new| google_gmail                         |                                                 |
 +--------------------------------------------+-------------------------------------------------+
 |google_spreadsheet                          | Nothing to do                                   |
 +--------------------------------------------+-------------------------------------------------+
@@ -333,7 +339,7 @@ missing in the new release are marked with |del|.
 +--------------------------------------------+-------------------------------------------------+
 |l10n_pl                                     |                                                 |
 +--------------------------------------------+-------------------------------------------------+
-|l10n_pt                                     |                                                 |
+|l10n_pt                                     | Done                                            |
 +--------------------------------------------+-------------------------------------------------+
 |l10n_ro                                     |                                                 |
 +--------------------------------------------+-------------------------------------------------+
@@ -382,6 +388,8 @@ missing in the new release are marked with |del|.
 | |new| mass_mailing_sale                    |                                                 |
 +--------------------------------------------+-------------------------------------------------+
 |membership                                  | Nothing to do                                   |
++--------------------------------------------+-------------------------------------------------+
+| |new| microsoft_outlook                    |                                                 |
 +--------------------------------------------+-------------------------------------------------+
 |mrp                                         | Done                                            |
 +--------------------------------------------+-------------------------------------------------+
@@ -656,18 +664,15 @@ missing in the new release are marked with |del|.
     by the Odoo Community Association module 'Account Budget OCA':
     See : https://github.com/OCA/account-budgeting/tree/12.0/account_budget_oca
 
-OCA modules
-===========
+**OCA modules**
 
 Here you will find the coverage of OpenUpgrade for other OCA modules that has
 suffered any kind of transformation and it has been taken into account here:
 
-OCA/account-financial-tools
----------------------------
+* OCA/account-financial-tools
 
-* |del| account_reversal: Feature is now included in core account module.
+    * |del| account_reversal: Feature is now included in core account module.
 
-OCA/stock-logistics-warehouse
------------------------------
+* OCA/stock-logistics-warehouse
 
-* |del| stock_putaway_product: Feature is now included in core stock module.
+    * |del| stock_putaway_product: Feature is now included in core stock module.
