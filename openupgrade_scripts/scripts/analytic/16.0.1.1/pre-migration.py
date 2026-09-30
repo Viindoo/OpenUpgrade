@@ -52,6 +52,21 @@ def analytic_account_set_plan_id_if_null(env):
         """,
         {"plan_id": plan_id},
     )
+    # The plan of analytic lines is stored related to the one of their account: the
+    # lines of the accounts above have no plan otherwise, and are not moved to the
+    # column of the plan when migrating to 17.0
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE account_analytic_line aal
+        SET plan_id = aaa.plan_id
+        FROM account_analytic_account aaa
+        WHERE aal.account_id = aaa.id
+            AND aaa.plan_id = %(plan_id)s
+            AND aal.plan_id IS NULL
+        """,
+        {"plan_id": plan_id},
+    )
     # Manually update parent_path for legacy plan that we have created
     # or else we will get error when accessing it
     openupgrade.logged_query(
