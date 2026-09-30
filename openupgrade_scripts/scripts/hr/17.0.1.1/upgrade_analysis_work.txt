@@ -67,6 +67,8 @@ hr           / hr.employee              / private_street (char)         : NEW
 hr           / hr.employee              / private_street2 (char)        : NEW
 hr           / hr.employee              / private_zip (char)            : NEW
 # DONE: post-migration: fill values from address_home_id to the employee fields, and anonymize the information on the res.partner record
+# a private address entered as the name of a contact with no address field goes to private_street
+# (the end-migration merges that contact into the work contact, which keeps its own name)
 
 hr           / hr.employee              / rating_ids (one2many)         : NEW relation: rating.rating
 hr           / hr.job                   / message_main_attachment_id (many2one): DEL relation: ir.attachment

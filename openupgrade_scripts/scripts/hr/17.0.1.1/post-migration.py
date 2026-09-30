@@ -101,8 +101,30 @@ def _transfer_employee_private_data(env):
     openupgrade.logged_query(cr, query)
 
 
+def _transfer_private_address_typed_as_name(env):
+    """A private address is often entered as a contact whose name is the
+    address itself ("12 Main Street, Springfield"), with no address field
+    filled. Nothing above picks it up, and the end-migration merges that
+    contact into the work contact, which keeps its own name: the address is
+    lost. Keep it as the private street of the employee."""
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE hr_employee he
+        SET private_street = rp.name
+        FROM res_partner rp
+        WHERE he.address_home_id = rp.id
+            AND he.private_street IS NULL AND he.private_street2 IS NULL
+            AND he.private_city IS NULL AND he.private_zip IS NULL
+            AND rp.name IS NOT NULL AND rp.name != he.name
+            AND NOT COALESCE(rp.is_company, FALSE)
+        """,
+    )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     _transfer_employee_private_data(env)
+    _transfer_private_address_typed_as_name(env)
     openupgrade.load_data(env, "hr", "17.0.1.1/noupdate_changes.xml")
     openupgrade.delete_records_safely_by_xml_id(env, _deleted_xml_records)
