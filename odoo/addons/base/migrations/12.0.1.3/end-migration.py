@@ -98,27 +98,28 @@ def fork_off_system_user(env):
     # of the copied fields (e.g. the digests the admin receives); moving the
     # links of user_root to user_admin would then violate the unique pair.
     # Drop the links of user_root that user_admin already has.
+    # (pg_catalog: the same query on information_schema takes minutes)
     env.cr.execute(
-        """ SELECT kcu.table_name, kcu.column_name
-            FROM information_schema.table_constraints AS tc
-            JOIN information_schema.key_column_usage AS kcu
-                ON tc.constraint_name = kcu.constraint_name
-                AND tc.table_schema = kcu.table_schema
-            JOIN information_schema.constraint_column_usage AS ccu
-                ON ccu.constraint_name = tc.constraint_name
-                AND ccu.table_schema = tc.table_schema
-            WHERE constraint_type = 'FOREIGN KEY'
-            AND ccu.table_name = 'res_users' AND ccu.column_name = 'id'
-            AND (SELECT count(*) FROM information_schema.columns c
-                 WHERE c.table_schema = kcu.table_schema
-                    AND c.table_name = kcu.table_name) = 2
+        """ SELECT cl.relname, a.attname
+            FROM pg_constraint c
+            JOIN pg_class cl ON cl.oid = c.conrelid
+            JOIN pg_attribute a ON a.attrelid = c.conrelid
+                AND a.attnum = c.conkey[1]
+            WHERE c.contype = 'f'
+                AND c.confrelid = 'res_users'::regclass
+                AND array_length(c.conkey, 1) = 1
+                AND (SELECT count(*) FROM pg_attribute a2
+                     WHERE a2.attrelid = c.conrelid AND a2.attnum > 0
+                        AND NOT a2.attisdropped) = 2
         """)
     for table, column in env.cr.fetchall():
         if (table, column) in exclude_columns:
             continue
         env.cr.execute(
-            """ SELECT column_name FROM information_schema.columns
-            WHERE table_name = %s AND column_name != %s """, (table, column))
+            """ SELECT attname FROM pg_attribute
+            WHERE attrelid = %s::regclass AND attnum > 0
+                AND NOT attisdropped AND attname != %s """,
+            ('"%s"' % table, column))
         other = env.cr.fetchone()[0]
         openupgrade.logged_query(
             env.cr,
