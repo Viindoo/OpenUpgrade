@@ -19,12 +19,14 @@
     <!--<field name="image" type="base64" file="gamification/static/img/badge_problem_solver-image.png"/>-->
     <field name="image_1920" type="base64" file="gamification/static/img/badge_problem_solver-image.png"/>
   </record>
-  <record id="base.user_admin" model="res.users">
+  <!-- the karma a new database gives the admin: in a migrated one it would
+       overwrite the karma the users earned -->
+  <!--<record id="base.user_admin" model="res.users">
     <field name="karma">2500</field>
   </record>
   <record id="base.user_root" model="res.users">
     <field name="karma">2500</field>
-  </record>
+  </record>-->
   <record id="email_template_badge_received" model="mail.template">
     <field name="body_html" type="xml">
       <table border="0" cellpadding="0" style="padding-top: 16px; background-color: #F1F1F1; color: #454748; width: 100%; border-collapse:separate;">

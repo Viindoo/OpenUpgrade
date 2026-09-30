@@ -55,6 +55,8 @@ NEW mail.template: gamification.mail_template_data_new_rank_reached
 
 NEW res.users: base.user_admin [potentially moved from website_forum module] (noupdate)
 NEW res.users: base.user_root [potentially moved from website_forum module] (noupdate)
+# DONE: not loaded from noupdate_changes.xml: their karma of 2500 is the one of a new database, it would
+# overwrite the karma the admin earned
 # NOTHING TO DO: Xml name doen't changed
 
 DEL mail.message.subtype: gamification.mt_badge_granted (noupdate)
