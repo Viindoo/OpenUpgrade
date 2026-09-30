@@ -186,6 +186,9 @@ merged_modules = {
     "to_l10n_vn_fleet_driver": "to_fleet_driver",
     "to_hr_holidays_period_limit": "hr_holidays",
     "to_hr_work_day_type": "hr",
+    # no 14.0 code; website(_sale) 14.0 has its own search box (s_products_searchbar)
+    "to_website_search_suggestion": "website",
+    "to_website_search_suggestion_product": "website_sale",
     "to_shorten_url": "link_tracker",
     "to_website_registration_email_blacklist": "to_registration_email_blacklist",
     # removed in 14.0; auto-installed as soon as l10n_vn gets installed otherwise
@@ -249,5 +252,8 @@ merged_models = {
 # release_records_of_lost_modules in the pre-migration of base.
 lost_modules = [
     "to_holidays_in_years",
+    "to_hr_work_day_type",
+    "to_website_search_suggestion",
+    "to_website_search_suggestion_product",
     "web_diagram",
 ]
