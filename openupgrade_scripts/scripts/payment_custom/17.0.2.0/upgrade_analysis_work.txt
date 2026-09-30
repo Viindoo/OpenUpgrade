@@ -6,4 +6,8 @@ NEW ir.ui.view: payment_custom.token_form
 # NOTHING TO DO: new views
 
 NEW payment.method: payment_custom.payment_method_wire_transfer (noupdate)
-# NOTHING TO DO: new payment method
+# DONE: post-migration: set as the payment method of every custom provider. The checkout now lists payment
+# methods (one provider each): when a company has several custom providers (bank transfer, cash, phone card...),
+# the provider of payment.payment_provider_transfer (or else the first one) keeps this method and every other
+# one gets a copy of it named as the provider (code 'wire_transfer', so enabling the provider activates it),
+# else they would show as a single option with the instructions of only one of them.
