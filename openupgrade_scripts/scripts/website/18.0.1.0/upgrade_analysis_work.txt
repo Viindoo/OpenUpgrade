@@ -204,3 +204,9 @@ NEW ir.ui.view: website.website_controller_pages_search_view
 NEW ir.ui.view: website.website_page_properties_base_view_form
 DEL ir.ui.view: website.s_faq_collapse_options
 # NOTHING TO DO
+
+# Not in the analysis: website-specific copies made by the 12.0 bootstrap_4_migration of every template
+# changed with the website editor of 11.0 or older froze those templates; in 18.0 the views of the modules
+# no longer find what they extend in them, and a frozen search box or footer breaks every page (/web/login
+# included). DONE: end-migration: archive them (pages excepted) and the website-specific views built on
+# them; logged, content kept in the archived views.
