@@ -856,6 +856,59 @@ def move_xmlids_between_modules(cr):
                 for name in existing])
 
 
+def _delete_unreferenced(cr, table, model, where):
+    """Delete the rows of `table` matching `where` that no foreign key points
+    at, with their xml ids and their chatter."""
+    cr.execute(
+        """SELECT c.conrelid::regclass::text, a.attname
+        FROM pg_constraint c
+        JOIN pg_attribute a
+            ON a.attrelid = c.conrelid AND a.attnum = c.conkey[1]
+        WHERE c.contype = 'f' AND c.confrelid = %s::regclass""", (table,))
+    unused = "".join(
+        " AND NOT EXISTS (SELECT 1 FROM %s x WHERE x.%s = t.id)" % ref
+        for ref in cr.fetchall())
+    cr.execute("SELECT t.id FROM %s t WHERE %s%s" % (table, where, unused))
+    ids = tuple(row[0] for row in cr.fetchall())
+    if ids:
+        openupgrade.logged_query(
+            cr, "DELETE FROM ir_model_data WHERE model = %s AND res_id IN %s",
+            (model, ids))
+        openupgrade.logged_query(
+            cr, "DELETE FROM mail_message WHERE model = %s AND res_id IN %s",
+            (model, ids))
+        openupgrade.logged_query(
+            cr, "DELETE FROM mail_followers WHERE res_model = %s "
+            "AND res_id IN %s", (model, ids))
+        openupgrade.logged_query(
+            cr, "DELETE FROM " + table + " WHERE id IN %s", (ids,))
+
+
+def drop_unused_default_overtime_rules(cr):
+    """Viindoo: 12.0 to_hr_overtime_payroll (renamed viin_hr_overtime_payroll)
+    ships the overtime rules as data, one per day and time band, the day in
+    `dayofweek`. 13.0 moves them to the new viin_hr_overtime: its installation
+    creates the 13.0 rules of every company (`weekday` + `holiday`, other time
+    bands, overlapping rules refused) and makes `weekday` required. Remove
+    the 12.0 rules nothing points at before that, and then the rule codes of
+    12.0 that 13.0 no longer ships (not moved by move_xmlids_between_modules)
+    and no rule uses any more; else the company has two sets of rules, and
+    the 12.0 ones without a day. Rules in use stay as they are.
+    """
+    if not openupgrade.column_exists(cr, 'hr_overtime_rule', 'dayofweek') \
+            or openupgrade.column_exists(cr, 'hr_overtime_rule', 'weekday'):
+        return
+    _delete_unreferenced(cr, 'hr_overtime_rule', 'hr.overtime.rule', """
+        t.id IN (SELECT res_id FROM ir_model_data
+                 WHERE model = 'hr.overtime.rule'
+                    AND module = 'viin_hr_overtime_payroll')""")
+    _delete_unreferenced(
+        cr, 'hr_overtime_rule_code', 'hr.overtime.rule.code', """
+        t.id IN (SELECT res_id FROM ir_model_data
+                 WHERE model = 'hr.overtime.rule.code'
+                    AND module = 'viin_hr_overtime_payroll')""")
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.remove_tables_fks(env.cr, _obsolete_tables)
@@ -878,6 +931,7 @@ def migrate(env, version):
         environment_namespec=True,
     )
     move_xmlids_between_modules(env.cr)
+    drop_unused_default_overtime_rules(env.cr)
     openupgrade.clean_transient_models(env.cr)
     openupgrade.copy_columns(env.cr, column_copies)
     openupgrade.rename_columns(env.cr, column_renames)
