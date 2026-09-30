@@ -13,11 +13,24 @@ def migrate_module(self, pkg, stage):
     state.
     """
     to_install = pkg.state == "to install"
+    hidden = {}
     if to_install:
         pkg.state = "to upgrade"
-    MigrationManager.migrate_module._original_method(self, pkg, stage)
-    if to_install:
-        pkg.state = "to install"
+        # Only the scripts of the upgrade path (openupgrade_scripts and the like)
+        # are meant for a module installed during the migration. The module's own
+        # migrations/ and upgrades/ folders are written for a module that was
+        # installed before; run on a fresh installation they fail on what the
+        # module no longer has (scripts of older series kept in the folder).
+        for key in ("module", "module_upgrades"):
+            if self.migrations.get(pkg.name, {}).get(key):
+                hidden[key] = self.migrations[pkg.name][key]
+                self.migrations[pkg.name][key] = {}
+    try:
+        MigrationManager.migrate_module._original_method(self, pkg, stage)
+    finally:
+        if to_install:
+            pkg.state = "to install"
+            self.migrations[pkg.name].update(hidden)
 
 
 def _get_files(self):
