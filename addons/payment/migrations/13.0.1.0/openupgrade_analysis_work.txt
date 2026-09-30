@@ -29,6 +29,9 @@ payment      / payment.acquirer         / image_small (binary)          : DEL at
 
 payment      / payment.acquirer         / module_state (selection)      : is now stored
 payment      / payment.acquirer         / post_msg (html)               : DEL
+# DONE: pre-migration: appended to pending_msg for the wire transfers (their payment instructions, shown by 13.0 in
+# pending_msg), with its translated terms
+
 payment      / payment.acquirer         / specific_countries (boolean)  : DEL
 payment      / payment.acquirer         / error_msg (html)              : DEL
 payment      / payment.token            / company_id (many2one)         : NEW relation: res.company, isrelated: related, stored

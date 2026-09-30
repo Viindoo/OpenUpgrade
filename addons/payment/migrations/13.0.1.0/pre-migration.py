@@ -71,8 +71,40 @@ def map_payment_acquirer_state(cr):
     )
 
 
+def move_transfer_post_msg_to_pending_msg(cr):
+    """Up to 12.0 a wire transfer acquirer keeps its payment instructions (the
+    bank accounts) in post_msg, shown under the pending message once the order
+    is placed. 13.0 drops post_msg and shows the instructions in pending_msg:
+    append post_msg to pending_msg, and its translated terms with it, or the
+    buyers no longer see where to pay."""
+    openupgrade.logged_query(
+        cr,
+        """
+        UPDATE payment_acquirer
+        SET pending_msg = COALESCE(pending_msg, '') || post_msg
+        WHERE provider = 'transfer' AND COALESCE(post_msg, '') != ''
+        """,
+    )
+    openupgrade.logged_query(
+        cr,
+        """
+        UPDATE ir_translation t
+        SET name = 'payment.acquirer,pending_msg'
+        FROM payment_acquirer a
+        WHERE t.name = 'payment.acquirer,post_msg' AND t.res_id = a.id
+            AND a.provider = 'transfer'
+            AND NOT EXISTS (
+                SELECT 1 FROM ir_translation t2
+                WHERE t2.name = 'payment.acquirer,pending_msg'
+                    AND t2.res_id = t.res_id AND t2.lang = t.lang
+                    AND t2.type = t.type AND md5(t2.src) = md5(t.src))
+        """,
+    )
+
+
 @openupgrade.migrate(use_env=True)
 def migrate(env, version):
+    move_transfer_post_msg_to_pending_msg(env.cr)
     openupgrade.copy_columns(env.cr, _column_copies)
     openupgrade.rename_tables(env.cr, _tables_rename)
     openupgrade.rename_fields(env, _field_renames)
