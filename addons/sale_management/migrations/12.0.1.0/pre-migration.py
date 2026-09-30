@@ -135,8 +135,10 @@ def fill_sale_order_template_line_sections(cr):
 @openupgrade.migrate()
 def migrate(env, version):
     cr = env.cr
-    if openupgrade.table_exists(env.cr, 'sale_quote_line'):
-        # from website_quote module
+    if openupgrade.table_exists(env.cr, 'sale_quote_template'):
+        # from website_quote module (not its leftover tables: when the module
+        # is uninstalled, sale_quote_line and sale_quote_option may stay
+        # without sale_quote_template)
         openupgrade.rename_columns(cr, _column_renames)
         openupgrade.rename_fields(env, _field_renames)
         put_in_correct_module(cr, _white_list_fields)
