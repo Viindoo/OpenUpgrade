@@ -134,6 +134,14 @@ def fork_off_system_user(env):
     openupgrade_merge_records.merge_records(
         env, 'res.users', [user_root.id], user_admin.id,
         method='sql', delete=False, exclude_columns=exclude_columns)
+    # create_uid stays on the system user, except where it is the author the
+    # website shows: the forum posts and answers the admin wrote up to 11.0
+    # would appear written by "System"
+    if openupgrade.table_exists(env.cr, 'forum_post'):
+        openupgrade.logged_query(
+            env.cr,
+            "UPDATE forum_post SET create_uid = %s WHERE create_uid = %s",
+            (user_admin.id, user_root.id))
     # Circumvent ORM when setting root user inactive, because
     # "You cannot deactivate the user you're currently logged in as."
     set_query = "SET active = FALSE, password = NULL"
