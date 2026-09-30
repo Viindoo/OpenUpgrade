@@ -43,9 +43,11 @@ def _uom_relative_uom_id_relative_factor(env):
         for uom in uoms - old_reference - with_xml_id:
             # uoms with xmlid will be updated by the migration of the module
             # providing them
-            relative_factor = (
-                uom2factor[uom] if uom2type[uom] == "bigger" else (1 / uom2factor[uom])
-            )
+            # Up to 18.0 `factor` is how many of this unit make one reference
+            # unit (a dozen: 1/12, a gram: 1000). relative_factor is how many
+            # reference units this unit is worth (a dozen: 12, a gram: 0.001):
+            # the inverse, whatever the old type of the unit.
+            relative_factor = 1 / uom2factor[uom]
 
             uom.write(
                 {

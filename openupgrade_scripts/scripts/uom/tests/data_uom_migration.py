@@ -13,7 +13,8 @@ env["uom.uom"].create(
     {
         "name": "Mm",
         "category_id": env.ref("uom.uom_categ_length").id,
-        "factor": 1000000,
+        # a bigger unit stores 1 / its size, as the 18.0 form writes it
+        "factor": 0.000001,
         "uom_type": "bigger",
     }
 )
@@ -43,7 +44,7 @@ env["uom.uom"].create(
     {
         "name": "MA",
         "category_id": uom_category.id,
-        "factor": 1000000,
+        "factor": 0.000001,
         "uom_type": "bigger",
     }
 )
