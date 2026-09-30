@@ -7,6 +7,10 @@ def migrate(env, version):
         env, ["analytic.analytic_tag_comp_rule", "analytic.analytic_group_comp_rule"]
     )
     # Define the appropriate value for the root_plan_id field. Necessary for accounts
-    # that previously had an account.analytic.group defined.
-    accounts = env["account.analytic.account"].search([("root_plan_id", "=", False)])
+    # that previously had an account.analytic.group defined, archived ones included.
+    accounts = (
+        env["account.analytic.account"]
+        .with_context(active_test=False)
+        .search([("root_plan_id", "=", False)])
+    )
     accounts._compute_root_plan()
