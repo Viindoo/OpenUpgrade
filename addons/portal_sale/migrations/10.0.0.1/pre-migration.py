@@ -1,11 +1,17 @@
 # -*- coding: utf-8 -*-
 # Copyright 2017 Eficent <http://www.eficent.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
+import logging
+
 from openupgradelib import openupgrade
+
+_logger = logging.getLogger(__name__)
 
 # The templates of portal_sale are the ones 9.0 sends (portal_sale overrides
 # the send actions of sale and account): they take over the xml ids of the
-# templates of sale and account, which stay in the database without xml id.
+# templates of sale and account. Those are deleted: 9.0 never sends them, and
+# kept without xml id they would stay next to the new ones under the same name
+# (and fail to render from 15.0: they read fields removed since).
 xmlids_renames = [
     ('portal_sale.email_template_edi_sale',
      'sale.email_template_edi_sale'),
@@ -25,7 +31,16 @@ def migrate(env, version):
             # sale / account under its xml id
             continue
         new_module, new_name = new.split('.')
-        imd.search([
+        superseded = imd.search([
             ('module', '=', new_module), ('name', '=', new_name),
-        ]).unlink()
+        ])
+        template = env['mail.template'].browse(
+            superseded.mapped('res_id')).exists()
+        superseded.unlink()
         openupgrade.rename_xmlids(env.cr, [(old, new)])
+        try:
+            with env.cr.savepoint():
+                template.unlink()
+        except Exception as error:
+            _logger.warning(
+                "Template %s kept without xml id: %s", template.ids, error)
