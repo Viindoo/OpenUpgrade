@@ -14,8 +14,25 @@ XMLID_TO_RENAME = [
 ]
 
 
+def fill_service_tracking_event(cr):
+    """17.0 marks the products that sell event registrations with
+    detailed_type 'event' (event_sale), 18.0 with service_tracking 'event'
+    (this module): without it, selling a ticket registers nobody."""
+    if openupgrade.column_exists(
+        cr, "product_template", "detailed_type"
+    ) and openupgrade.column_exists(cr, "product_template", "service_tracking"):
+        openupgrade.logged_query(
+            cr,
+            """
+            UPDATE product_template SET service_tracking = 'event'
+            WHERE detailed_type = 'event'
+            """,
+        )
+
+
 def migrate(cr, version):
     # Done without the openupgrade decorator to force its execution when this module
     # is auto-installed as dependency of event_sale
     xmlid_renames = [(f"event_sale.{x}", f"event_product.{x}") for x in XMLID_TO_RENAME]
     openupgrade.rename_xmlids(cr, xmlid_renames)
+    fill_service_tracking_event(cr)
