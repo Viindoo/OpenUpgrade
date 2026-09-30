@@ -56,11 +56,12 @@ def fork_off_system_user(env):
         "FROM res_users ru2 WHERE ru2.id = %s AND ru.id = %s",
         (user_root.id, user_admin.id),
     )
+    # the system user gets the new partner and the placeholder address of
+    # 12.0; the partner of the admin keeps its (real) email address
     user_root.write({
         'partner_id': partner_root.id,
-        'email': partner_admin.email,
     })
-    partner_admin.email = 'root@example.com'
+    partner_root.email = 'root@example.com'
     env.cr.execute(
         """ UPDATE ir_model_data SET res_id = %s
         WHERE module = 'base' AND name = 'user_admin'""", (user_admin.id,))

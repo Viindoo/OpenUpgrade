@@ -134,8 +134,10 @@ NEW mail.message.subtype: project.mt_task_rating
 DEL mail.message.subtype: rating_project.mt_project_task_rating
 DEL mail.message.subtype: rating_project.mt_task_rating
 NEW mail.template: project.mail_template_data_project_task (noupdate)
-DEL mail.template: project.mail_template_data_module_install_project (noupdate)
 # NOTHING TO DO
+
+DEL mail.template: project.mail_template_data_module_install_project (noupdate)
+# DONE: post-migration: deleted (its body calls web.planner, removed in 12.0), as crm and website_mail do for theirs
 
 NEW mail.template: project.rating_project_request_email_template (noupdate)
 DEL mail.template: rating_project.rating_project_request_email_template
