@@ -54,6 +54,17 @@ renamed_modules = {
     "viin_l10n_vn_einvoice_sale": "l10n_vn_viin_einvoice_sale",
     "viin_l10n_vn_hr_account": "l10n_vn_viin_hr_account",
     "to_loan_management_l10n_vn": "l10n_vn_viin_loan_management",
+    # old_technical_name of their 15.0 manifests
+    "viin_l10n_vn_accounting_vninvoice": "l10n_vn_viin_accounting_vninvoice",
+    "viin_l10n_vn_accounting_vninvoice_summary": "l10n_vn_viin_accounting_vninvoice_summary",  # noqa: B950
+    "l10n_vn_c200_pos": "l10n_vn_viin_c200_pos",
+    "viin_l10n_vn_foreign_trade": "l10n_vn_viin_foreign_trade",
+    "viin_l10n_vn_vat_counterpart": "l10n_vn_viin_vat_counterpart",
+    "viin_l10n_vn_hr_payroll_account_overtime": "l10n_vn_viin_hr_payroll_account_overtime",  # noqa: B950
+    "viin_l10n_vn_hr_payroll_administrative_region": "l10n_vn_viin_hr_payroll_administrative_region",  # noqa: B950
+    "viin_crm_detect_partner": "viin_crm_customer_recognition",
+    "to_equipment_partner_infor": "viin_equipment_warranty_partner_infor",
+    "to_purchase_order_lines": "viin_purchase",
     # Viindoo/odoo-tvtma
     "to_tvtma_sale_crm": "viin_sale_crm",  # moved to Viindoo/erponline-enterprise
     # Viindoo/erponline-enterprise
@@ -68,10 +79,12 @@ renamed_modules = {
     "viin_enterprise_marks_project": "viin_hide_ent_modules_project",
     "viin_enterprise_marks_sale": "viin_hide_ent_modules_sale",
     "viin_enterprise_marks_purchase": "viin_hide_ent_modules_purchase",
-    "viin_enterprise_marks_website": "viin_hide_ent_modules_websitewebsite",
+    "viin_enterprise_marks_website": "viin_hide_ent_modules_website",
     "to_l10n_vn_account_asset": "l10n_vn_viin_account_asset",
     "to_l10n_vn_account_asset_sale": "l10n_vn_viin_account_asset_sale",
     "to_account_reports_l10n_vn": "l10n_vn_viin_account_reports",
+    # old_technical_name of its 15.0 manifest
+    "to_sale_subscription": "viin_sale_subscription",
     # Viindoo/themes
     "theme_common": "theme_viin_common",
 }
