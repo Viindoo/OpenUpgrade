@@ -144,6 +144,25 @@ def release_records_of_lost_modules(cr):
     )
 
 
+def drop_report_views(cr):
+    """Drop the SQL views of the models built on one (reports, synthetic lines):
+    their module creates them again from its tables when it loads (init()).
+    Left in place, they break the openupgradelib helpers that update every table
+    holding a column of a kind (reference fields in rename_models, merge_records):
+    "cannot update view approval_synthetic_line" (a union view of viin_approval)
+    in the mail and hr_recruitment pre-migrations. Only views named after the
+    table of a model are dropped, views of other origin are left alone.
+    """
+    cr.execute("SELECT model FROM ir_model")
+    tables = {model.replace(".", "_") for (model,) in cr.fetchall()}
+    cr.execute(
+        "SELECT table_name FROM information_schema.views WHERE table_schema = 'public'"
+    )
+    for (view,) in cr.fetchall():
+        if view in tables:
+            openupgrade.logged_query(cr, f'DROP VIEW IF EXISTS "{view}" CASCADE')
+
+
 @openupgrade.migrate(use_env=False)
 def migrate(cr, version):
     openupgrade.logged_query(
@@ -154,6 +173,7 @@ def migrate(cr, version):
         """,
     )
     release_records_of_lost_modules(cr)
+    drop_report_views(cr)
     openupgrade.update_module_names(
         cr, renamed_modules.items(), environment_namespec=True
     )
