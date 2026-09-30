@@ -22,9 +22,11 @@ DEL base.action.rule: hr_contract.rule_contract_3_set_as_close (noupdate)
 DEL base.action.rule: hr_contract.rule_contract_4_set_as_close (noupdate)
 DEL ir.actions.server: hr_contract.contract_set_as_close (noupdate)
 DEL ir.actions.server: hr_contract.contract_set_as_pending (noupdate)
-NEW ir.cron: hr_contract.ir_cron_data_contract_update_state (noupdate)
 DEL ir.filters: hr_contract.contract_open (noupdate)
-# Done - post-migration: Remove these noupdate records
+# Done - end-migration: Remove these noupdate records
+
+NEW ir.cron: hr_contract.ir_cron_data_contract_update_state (noupdate)
+# Nothing to do: created by the update; it replaces the action rules above (the end-migration used to delete it with them)
 
 NEW ir.ui.view: hr_contract.hr_contract_view_kanban
 DEL ir.ui.view: hr_contract.view_base_action_rule_form_resource

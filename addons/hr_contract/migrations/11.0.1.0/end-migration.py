@@ -14,7 +14,6 @@ def remove_noupdate_records(env):
         'hr_contract.rule_contract_4_set_as_close',
         'hr_contract.contract_set_as_close',
         'hr_contract.contract_set_as_pending',
-        'hr_contract.ir_cron_data_contract_update_state',
         'hr_contract.contract_open',
     ]
     for xml_id in xml_ids:
