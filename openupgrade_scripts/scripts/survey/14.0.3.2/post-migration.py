@@ -28,3 +28,9 @@ def migrate(env, version):
     map_survey_user_input_line_answer_type(env)
     map_survey_question_question_type(env)
     openupgrade.load_data(env.cr, "survey", "14.0.3.2/noupdate_changes.xml")
+    # cron of 9.0 (noupdate) calling survey.user_input.do_clean_emptys, a method
+    # removed in 14.0: databases upgraded before the 10.0 script deleted it still
+    # have it, and it would fail at every run
+    openupgrade.delete_records_safely_by_xml_id(
+        env, ["survey.ir_cron_clean_empty_surveys"]
+    )
