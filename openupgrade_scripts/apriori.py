@@ -8,6 +8,7 @@ renamed_modules = {
     "viin_safe_field_model_selector": "viin_safe_ir_metadata_proxy",
     # Viindoo/tvtmaaddons
     "viin_hr_recruitment_approval": "viin_approval_hr_recruitment",
+    "to_hr_timesheet_approval": "viin_approval_hr_timesheet",  # old_technical_name
     # odoo
     "l10n_es_pos_tbai": "l10n_es_edi_tbai_pos",
     "mrp_subonctracting_landed_costs": "mrp_subcontracting_landed_costs",
@@ -75,6 +76,12 @@ merged_modules = {
     "viin_account_counterpart_reconciliation": "to_account_counterpart",
     # Viindoo/tvtmaaddons: absorbed by account in 18.0 (journal items and bank/cash analysis)
     "to_accounting_bi": "account",
+    # Viindoo/tvtmaaddons: coaching approvals are part of viin_approval (0d1c2a8c3e)
+    "viin_coach_approvals": "viin_approval",
+    # Viindoo/tvtmaaddons: removed in 18.0 without successor ("useless", f12b97d2a4;
+    # "absorbed by core's group channels", 123f51f217)
+    "to_accounting_entry_report_flag": "to_account_counterpart",
+    "viin_discuss_channel_privacy": "mail",
     # odoo
     "account_audit_trail": "account",
     "account_debit_note_sequence": "account_debit_note",
@@ -159,5 +166,7 @@ merged_models = {
 lost_modules = [
     "to_accounting_bi",
     "to_account_counterpart_account_update_tax_tags",
+    "to_accounting_entry_report_flag",
     "viin_account_counterpart_reconciliation",
+    "viin_discuss_channel_privacy",
 ]
