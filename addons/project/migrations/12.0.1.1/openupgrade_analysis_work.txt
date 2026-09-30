@@ -108,7 +108,6 @@ DEL ir.ui.view: project.project_planner
 DEL ir.ui.view: project.project_task_merge_wizard_form
 DEL ir.ui.view: rating_project.project_task_view_form_inherit_rating
 DEL ir.ui.view: rating_project.project_task_view_kanban_inherit_rating
-DEL ir.ui.view: rating_project.project_task_view_search
 DEL ir.ui.view: rating_project.rating_rating_view_search_project
 DEL ir.ui.view: rating_project.res_config_settings_view_form
 DEL ir.ui.view: rating_project.view_project_project_rating_form
@@ -122,6 +121,9 @@ DEL ir.ui.view: website_rating_project.project_project_view_form
 DEL ir.ui.view: website_rating_project.project_rating_data
 DEL ir.ui.view: website_rating_project.project_rating_page
 # NOTHING TO DO
+
+DEL ir.ui.view: rating_project.project_task_view_search
+# DONE: pre-migration: deleted before the views of project load (merged into project, its filter without name fails the 12.0 validation of the search view of the tasks)
 
 DEL mail.message: project.msg_task_data_14 (noupdate)
 DEL mail.message: project.msg_task_data_8 (noupdate)
