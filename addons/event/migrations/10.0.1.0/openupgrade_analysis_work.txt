@@ -9,7 +9,13 @@ NEW ir.model.access: event.access_event_event_manager
 NEW ir.model.access: event.access_event_event_user
 DEL ir.model.access: event.access_event_event
 NEW ir.ui.menu: event.menu_event_mail_schedulers
+# NOTHING TO DO: data of the event planner and of the 9.0 access rights, removed by the update
+# (the noupdate client action stays, no menu points at it)
 DEL mail.template: event.event_thanks
+# DONE: post-migration: deleted; noupdate in 9.0, so the update keeps it, and it reads event
+# fields removed since (event.event.reply_to in 15.0); used by no mail scheduler
 DEL res.groups: event.group_email_scheduling
+# NOTHING TO DO: removed by the update; the mail schedulers are open to event users in 10.0
 NEW res.users: base.default_user
 DEL web.tip: event.event_tip_1
+# NOTHING TO DO: base data / web.tip is gone with its model (web_planner)
