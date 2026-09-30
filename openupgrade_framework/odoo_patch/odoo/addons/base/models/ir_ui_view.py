@@ -86,3 +86,26 @@ check._original_method = NameManager.check
 NameManager.check = check
 _raise_view_error._original_method = View._raise_view_error
 View._raise_view_error = _raise_view_error
+
+
+def unlink(self):
+    """Remove the archived children of a view deleted with its module too.
+
+    The cascade of the core (under the module uninstall flag, which the end of
+    an update sets) goes through inherit_children_ids, which leaves out the
+    archived views (e.g. an option of the website editor turned off): their
+    foreign key then keeps the parent from being deleted, and the log shows
+    'violates foreign key constraint ir_ui_view_inherit_id_fkey'.
+    """
+    if self.env.context.get("_force_unlink"):
+        archived = (
+            self.with_context(active_test=False).inherit_children_ids
+            - self.inherit_children_ids
+        )
+        if archived:
+            archived.unlink()
+    return unlink._original_method(self)
+
+
+unlink._original_method = View.unlink
+View.unlink = unlink
