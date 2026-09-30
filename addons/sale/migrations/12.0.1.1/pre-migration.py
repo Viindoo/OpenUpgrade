@@ -120,8 +120,11 @@ def migrate(env, version):
     if openupgrade.column_exists(env.cr, 'sale_order', 'requested_date'):
         # from sale_order_dates module
         openupgrade.rename_fields(env, _field_renames_order_dates)
-    if openupgrade.table_exists(env.cr, 'sale_quote_line'):
-        # from website_quote module
+    if (openupgrade.table_exists(env.cr, 'sale_quote_line')
+            and openupgrade.column_exists(
+                env.cr, 'sale_order', 'require_payment')):
+        # from website_quote module (its tables stay when it is uninstalled,
+        # the column of sale.order goes)
         openupgrade.rename_columns(env.cr, _column_renames2)
     fill_sale_order_line_sections(env.cr)
     openupgrade.logged_query(
