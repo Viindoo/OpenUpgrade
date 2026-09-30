@@ -62,6 +62,30 @@ def _fix_company_layout_background(cr):
     )
 
 
+def _create_cron_action_xmlids(cr):
+    """Loading a record of a model with _inherits also gives its parent record an
+    external id: <xml id of the cron>_ir_actions_server for a scheduled action.
+    A cron created before that mechanism, and kept since in noupdate data, has
+    none, and a data file referencing it fails ("External ID not found":
+    stock_rule_views.xml references stock.ir_cron_scheduler_action_ir_actions_server
+    in 18.0). Create the missing ones as Odoo would have."""
+    openupgrade.logged_query(
+        cr,
+        """
+        INSERT INTO ir_model_data (module, name, model, res_id, noupdate)
+        SELECT d.module, d.name || '_ir_actions_server', 'ir.actions.server',
+            c.ir_actions_server_id, d.noupdate
+        FROM ir_model_data d
+        JOIN ir_cron c ON c.id = d.res_id
+        WHERE d.model = 'ir.cron' AND c.ir_actions_server_id IS NOT NULL
+            AND NOT EXISTS (
+                SELECT 1 FROM ir_model_data d2
+                WHERE d2.module = d.module
+                    AND d2.name = d.name || '_ir_actions_server')
+        """,
+    )
+
+
 @openupgrade.migrate(use_env=False)
 def migrate(cr, version):
     openupgrade.logged_query(
@@ -96,7 +120,6 @@ def migrate(cr, version):
     _fix_serbian_res_lang_record(cr)
     _fix_company_layout_background(cr)
     # Crons created before 11.0 lack the XML ID of their server action,
-    # referenced by the stock and mrp procurement menus since 18.0
-    openupgrade.add_inherits_parent_xmlids(
-        cr, "ir.cron", "ir.actions.server", "ir_actions_server_id"
-    )
+    # referenced by the stock and mrp procurement menus since 18.0 (the
+    # openupgradelib of this environment has no add_inherits_parent_xmlids yet)
+    _create_cron_action_xmlids(cr)
