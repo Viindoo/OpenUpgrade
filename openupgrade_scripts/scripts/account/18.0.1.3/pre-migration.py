@@ -65,9 +65,14 @@ def rename_selection_option(env):
         env.cr,
         """
         UPDATE account_report
-        SET default_opening_date_filter = 'last_' || substr(
-            default_opening_date_filter, 10)
-        WHERE left(default_opening_date_filter, 9) = 'previous_'""",
+        SET default_opening_date_filter = 'previous_' || substr(
+            default_opening_date_filter, 6)
+        WHERE left(default_opening_date_filter, 5) = 'last_'""",
+    )
+    # keep the value of 17.0: a module that still offers 'normal' (e.g. the
+    # accounting reports of Viindoo) puts it back from the legacy column
+    openupgrade.copy_columns(
+        env.cr, {"account_report_expression": [("date_scope", None, None)]}
     )
     openupgrade.logged_query(
         env.cr,

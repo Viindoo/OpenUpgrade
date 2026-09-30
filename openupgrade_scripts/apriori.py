@@ -4,6 +4,8 @@ to help the matching process
 
 # Renamed modules is a mapping from old module name to new module name
 renamed_modules = {
+    # Viindoo/tvtmaaddons: same module under a new name (f4def9bf36)
+    "viin_safe_field_model_selector": "viin_safe_ir_metadata_proxy",
     # Viindoo/tvtmaaddons
     "viin_hr_recruitment_approval": "viin_approval_hr_recruitment",
     # odoo
@@ -62,6 +64,15 @@ renamed_modules = {
 # Merged modules contain a mapping from old module names to other,
 # preexisting module names
 merged_modules = {
+    # Viindoo/tvtmaaddons: approvals of 17.0 live in viin_approval in 18.0
+    "to_approvals": "viin_approval",
+    # Viindoo/tvtmaaddons: the refund accounts are part of viin_account in 18.0
+    # (7e4a052fb4)
+    "to_refund_account": "viin_account",
+    # Viindoo/tvtmaaddons, erponline-enterprise: removed as obsolete in 18.0
+    # (a711bfced4, 7eb898a732)
+    "to_account_counterpart_account_update_tax_tags": "to_account_counterpart",
+    "viin_account_counterpart_reconciliation": "to_account_counterpart",
     # Viindoo/tvtmaaddons: absorbed by account in 18.0 (journal items and bank/cash analysis)
     "to_accounting_bi": "account",
     # odoo
@@ -147,4 +158,6 @@ merged_models = {
 # release_records_of_lost_modules in the pre-migration of base.
 lost_modules = [
     "to_accounting_bi",
+    "to_account_counterpart_account_update_tax_tags",
+    "viin_account_counterpart_reconciliation",
 ]
