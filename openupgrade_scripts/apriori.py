@@ -114,9 +114,10 @@ merged_modules = {
     "to_hr_payroll_patch1": "to_hr_payroll",
     "to_hr_timesheet_payroll_patch1": "to_hr_timesheet_payroll",
     "to_location_warehouse": "viin_stock",
-    "to_mail_notif_and_email": "mail",
     "to_sale_loyalty_patch_1": "viin_loyalty",
     "to_stock_report_common": "viin_stock",
+    # removed from 17.0 (35c195ede0) without successor
+    "to_uom_subscription": "uom",
     "to_vietnam_bank_icons": "payment",
     "to_vietnamese_number2words": "base",
     "to_website_recaptcha": "google_recaptcha",
@@ -224,4 +225,5 @@ merged_models = {
 # xml ids of records of models that go with them are detached: see
 # release_records_of_lost_modules in the pre-migration of base.
 lost_modules = [
+    "to_uom_subscription",
 ]
