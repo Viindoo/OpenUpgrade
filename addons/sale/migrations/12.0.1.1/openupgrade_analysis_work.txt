@@ -79,6 +79,8 @@ sale         / sale.order.line          / display_type (selection)      : NEW se
 sale         / sale.order.line          / layout_category_id (many2one) : DEL relation: sale.layout_category
 sale         / sale.order.line          / layout_category_sequence (integer): DEL
 # DONE: pre-migration: add a row for each section
+# DONE: the section lines also get the stored related fields of their order (company, customer, salesperson,
+# currency, state), from the other lines of the order: the company record rule hid them otherwise
 
 sale         / sale.order.line          / is_expense (boolean)          : NEW
 # DONE: post-migration: marked True when meets condition
