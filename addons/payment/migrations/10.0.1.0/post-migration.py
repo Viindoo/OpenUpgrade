@@ -16,3 +16,9 @@ def map_adquirer_auto_confirm(cr):
 @openupgrade.migrate()
 def migrate(env, version):
     map_adquirer_auto_confirm(env.cr)
+    # noupdate rules of 9.0 payment.method, which the pre-migration renames to
+    # payment.token: 10.0 has its own token rule (payment_token_user_rule)
+    openupgrade.delete_records_safely_by_xml_id(env, [
+        'payment.payment_method_user_rule',
+        'payment.payment_method_salesman_rule',
+    ])

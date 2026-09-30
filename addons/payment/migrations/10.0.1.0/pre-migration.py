@@ -27,7 +27,26 @@ xmlids_renames = [
 ]
 
 
+def rename_payment_method_to_token(env):
+    """9.0 payment.method is 10.0 payment.token (same fields). Rename the model
+    and its table: otherwise 10.0 creates an empty payment_token, the saved
+    tokens are lost with the link of their transactions, and the 9.0 table
+    stays behind, in the way of the new payment.method of 17.0 (same table
+    name)."""
+    cr = env.cr
+    if not openupgrade.table_exists(cr, 'payment_method') or \
+            openupgrade.table_exists(cr, 'payment_token'):
+        return
+    openupgrade.rename_models(cr, [('payment.method', 'payment.token')])
+    openupgrade.rename_tables(cr, [('payment_method', 'payment_token')])
+    openupgrade.rename_fields(env, [
+        ('payment.transaction', 'payment_transaction',
+         'payment_method_id', 'payment_token_id'),
+    ])
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.copy_columns(env.cr, column_copies)
     openupgrade.rename_xmlids(env.cr, xmlids_renames)
+    rename_payment_method_to_token(env)

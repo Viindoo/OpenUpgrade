@@ -14,6 +14,9 @@ payment      / payment.acquirer         / save_token (selection)        : NEW se
 # NOTHING TO DO
 
 #### NEW MODEL PAYMENT.TOKEN #####
+# DONE: pre-migration: it is 9.0 payment.method under a new name (same fields): model, table and
+# payment.transaction payment_method_id renamed, so the saved tokens and their transactions are
+# kept and no payment_method table is left in the way of the 17.0 payment.method
 payment      / payment.token            / acquirer_id (many2one)        : NEW relation: payment.acquirer, required: required
 payment      / payment.token            / acquirer_ref (char)           : NEW required: required
 payment      / payment.token            / active (boolean)              : NEW 
@@ -23,7 +26,7 @@ payment      / payment.token            / payment_ids (one2many)        : NEW re
 
 payment      / payment.transaction      / payment_method_id (many2one)  : DEL relation: payment.method
 payment      / payment.transaction      / payment_token_id (many2one)   : NEW relation: payment.token
-# NOTHING TO DO
+# DONE: pre-migration: renamed with the model
 payment      / payment.transaction      / state (selection)             : selection_keys is now '['authorized', 'cancel', 'done', 'draft', 'error', 'pending']' ('['cancel', 'done', 'draft', 'error', 'pending']')
 # NOTHING TO DO: 'authorized' value just will stay empty
 
@@ -38,6 +41,8 @@ DEL ir.actions.act_window: payment.payment_method_action
 NEW ir.rule: payment.payment_token_user_rule
 DEL ir.rule: payment.payment_method_salesman_rule
 DEL ir.rule: payment.payment_method_user_rule
+# DONE: post-migration: deleted (noupdate; their model is renamed payment.token, which has its
+# own rule in 10.0)
 DEL ir.rule: payment.payment_transaction_salesman_rule
 NEW ir.ui.menu: payment.payment_token_menu
 DEL ir.ui.menu: payment.payment_method_menu
