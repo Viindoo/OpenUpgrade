@@ -884,6 +884,19 @@ def _delete_unreferenced(cr, table, model, where):
             cr, "DELETE FROM " + table + " WHERE id IN %s", (ids,))
 
 
+def move_legacy_company_font(cr):
+    """res_company.font is still the integer many2one to res.font of 9.0 (model
+    removed in 10.0, column kept) on databases coming from there. 13.0 brings
+    back a selection of that name: move the old column away, so that the new
+    one is created with its default (Lato) instead of font_moved0 + NULL."""
+    cr.execute(
+        """SELECT data_type FROM information_schema.columns
+        WHERE table_name = 'res_company' AND column_name = 'font'""")
+    row = cr.fetchone()
+    if row and row[0] == 'integer':
+        openupgrade.rename_columns(cr, {'res_company': [('font', None)]})
+
+
 def drop_unused_default_overtime_rules(cr):
     """Viindoo: 12.0 to_hr_overtime_payroll (renamed viin_hr_overtime_payroll)
     ships the overtime rules as data, one per day and time band, the day in
@@ -932,6 +945,7 @@ def migrate(env, version):
     )
     move_xmlids_between_modules(env.cr)
     drop_unused_default_overtime_rules(env.cr)
+    move_legacy_company_font(env.cr)
     openupgrade.clean_transient_models(env.cr)
     openupgrade.copy_columns(env.cr, column_copies)
     openupgrade.rename_columns(env.cr, column_renames)
