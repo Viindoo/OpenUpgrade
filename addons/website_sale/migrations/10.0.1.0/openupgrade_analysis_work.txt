@@ -85,3 +85,6 @@ NEW product.pricelist: product.list0
 NEW res.groups: sales_team.group_sale_manager
 NEW res.groups: website_sale.group_website_multi_image
 DEL website_pricelist: website_sale.wlist0
+
+# DONE: post-migration: the 9.0 checkout stored the street in street2 (street = company name), 10.0 requires street:
+# addresses with street2 only get it moved to street, else the customer is asked for the street at the next order
