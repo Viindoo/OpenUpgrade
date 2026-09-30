@@ -86,9 +86,26 @@ def convert_html_string(env):
             view.arch_db = new_arch_db
 
 
+def keep_customized_aboutus_pages(env):
+    """14.0 no longer ships the About us page: its page and its view go. The
+    changes made to it with the website editor live in website-specific copies
+    of the view (same key), and deleting the generic view deletes them too (the
+    cascade of website on the key): the website's own About us page was lost,
+    with its URL. Give those copies a key of their own, their pages stay."""
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE ir_ui_view
+        SET key = key || '_website_' || website_id
+        WHERE key = 'website.aboutus' AND website_id IS NOT NULL
+        """,
+    )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.load_data(env.cr, "website", "14.0.1.0/noupdate_changes.xml")
+    keep_customized_aboutus_pages(env)
     openupgrade.delete_records_safely_by_xml_id(env, ["website.aboutus_page"])
     website_cookie_notice_post_migration(env)
     convert_html_string(env)
