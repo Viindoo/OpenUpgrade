@@ -60,6 +60,10 @@ renamed_modules = {
 
 merged_modules = {
     # Odoo
+    # makmur: both removed from 11.0 (Enterprise, OCA) while other modules
+    # of 10.0 depend on them; no data at the customer
+    'account_accountant': 'account',
+    'marketing_campaign': 'base',
     'account_tax_cash_basis': 'account',
     # Odoo: removed without a successor on our addons paths. Merging them into
     # the module they extended lets the update remove their views, fields and
