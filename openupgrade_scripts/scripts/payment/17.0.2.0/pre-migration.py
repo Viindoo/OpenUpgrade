@@ -187,9 +187,23 @@ _noupdate_xmlids = [
 ]
 
 
+def _move_legacy_payment_method_table(env):
+    """9.0 payment.method (renamed payment.token in 10.0) left its table behind
+    on databases whose 10.0 migration did not rename it: move it out of the way
+    of payment_icon, which becomes payment_method now."""
+    cr = env.cr
+    if openupgrade.column_exists(
+        cr, "payment_method", "acquirer_ref"
+    ) and openupgrade.table_exists(cr, "payment_icon"):
+        openupgrade.rename_tables(
+            cr, [("payment_method", openupgrade.get_legacy_name("payment_method"))]
+        )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.rename_models(env.cr, _model_renames)
+    _move_legacy_payment_method_table(env)
     openupgrade.rename_tables(env.cr, _table_renames)
     openupgrade.rename_columns(env.cr, _column_renames)
     openupgrade.rename_fields(env, _field_renames)
