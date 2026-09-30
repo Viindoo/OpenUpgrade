@@ -55,6 +55,47 @@ def fill_hr_attendance_overtime_hours(env):
     attendances._compute_overtime_hours()
 
 
+def _drop_links_the_target_group_has(env, old_xmlid, new_xmlid):
+    """rename_xmlids(allow_merge=True) merges the groups in SQL: one UPDATE per
+    many2many table (members, implied groups...) moves the links of the old group
+    to the new one, and the unique pair of the table stops it when both groups
+    have the same user, which happens with these two groups. openupgradelib then
+    deletes the links of the old group left behind: its other members lost the
+    access. Drop the links the new group already has, the UPDATE then goes through.
+    """
+    old = env.ref(old_xmlid, raise_if_not_found=False)
+    new = env.ref(new_xmlid, raise_if_not_found=False)
+    if not old or not new or old == new:
+        return
+    env.cr.execute(
+        """SELECT cl.relname, a.attname
+        FROM pg_constraint c
+        JOIN pg_class cl ON cl.oid = c.conrelid
+        JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = c.conkey[1]
+        WHERE c.contype = 'f' AND c.confrelid = 'res_groups'::regclass
+            AND array_length(c.conkey, 1) = 1
+            AND (SELECT count(*) FROM pg_attribute a2
+                 WHERE a2.attrelid = c.conrelid AND a2.attnum > 0
+                    AND NOT a2.attisdropped) = 2"""
+    )
+    for table, column in env.cr.fetchall():
+        env.cr.execute(
+            """SELECT attname FROM pg_attribute
+            WHERE attrelid = %s::regclass AND attnum > 0
+                AND NOT attisdropped AND attname != %s""",
+            ('"%s"' % table, column),
+        )
+        other = env.cr.fetchone()[0]
+        openupgrade.logged_query(
+            env.cr,
+            f"""DELETE FROM "{table}" t
+            WHERE t."{column}" = %(old)s AND EXISTS (
+                SELECT 1 FROM "{table}" t2
+                WHERE t2."{column}" = %(new)s AND t2."{other}" = t."{other}")""",
+            {"old": old.id, "new": new.id},
+        )
+
+
 def hr_attendance_menus(env):
     group_hr_attendance = env.ref("hr_attendance.group_hr_attendance")
     group_hr_attendance_kiosk = env.ref("hr_attendance.group_hr_attendance_kiosk")
@@ -66,6 +107,11 @@ def hr_attendance_menus(env):
                 Command.unlink(group_hr_attendance_kiosk.id),
             ]
         }
+    )
+    _drop_links_the_target_group_has(
+        env,
+        "hr_attendance.group_hr_attendance",
+        "hr_attendance.group_hr_attendance_own_reader",
     )
     openupgrade.rename_xmlids(
         env.cr,
@@ -84,6 +130,11 @@ def hr_attendance_menus(env):
                 Command.unlink(group_hr_attendance_kiosk.id),
             ]
         }
+    )
+    _drop_links_the_target_group_has(
+        env,
+        "hr_attendance.group_hr_attendance_kiosk",
+        "hr_attendance.group_hr_attendance_own_reader",
     )
     openupgrade.rename_xmlids(
         env.cr,
