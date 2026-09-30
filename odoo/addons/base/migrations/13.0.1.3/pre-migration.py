@@ -840,6 +840,22 @@ def release_records_of_lost_modules(cr):
     )
 
 
+def move_xmlids_between_modules(cr):
+    """apriori.moved_xmlids: records that move to a module the migration
+    installs (see there)."""
+    for (old_module, new_module), names in getattr(
+            apriori, 'moved_xmlids', {}).items():
+        cr.execute(
+            """SELECT name FROM ir_model_data
+            WHERE module = %s AND name IN %s""",
+            (old_module, tuple(names)))
+        existing = [row[0] for row in cr.fetchall()]
+        if existing:
+            openupgrade.rename_xmlids(cr, [
+                ('%s.%s' % (old_module, name), '%s.%s' % (new_module, name))
+                for name in existing])
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.remove_tables_fks(env.cr, _obsolete_tables)
@@ -861,6 +877,7 @@ def migrate(env, version):
         merge_modules=True,
         environment_namespec=True,
     )
+    move_xmlids_between_modules(env.cr)
     openupgrade.clean_transient_models(env.cr)
     openupgrade.copy_columns(env.cr, column_copies)
     openupgrade.rename_columns(env.cr, column_renames)

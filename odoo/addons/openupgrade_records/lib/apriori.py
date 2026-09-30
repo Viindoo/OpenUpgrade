@@ -267,3 +267,57 @@ lost_modules = [
     'crm_project',
     'website_hr',
 ]
+
+# Records of a module that 13.0 moves to another module, the new one being
+# installed by the migration (its own scripts do not run): their xml ids are
+# moved before it loads its data, or it creates them a second time (unique
+# constraints fail, e.g. the overtime rule codes).
+# {(module of 12.0 after the renames above, module of 13.0): [xml id names]}
+moved_xmlids = {
+    # Viindoo/tvtmaaddons: overtime rules, codes and reasons moved from
+    # to_hr_overtime_payroll (renamed viin_hr_overtime_payroll) to the new
+    # viin_hr_overtime
+    ("viin_hr_overtime_payroll", "viin_hr_overtime"): [
+        'access_hr_overtime_reason_employee',
+        'access_hr_overtime_rule_code_employee',
+        'access_hr_overtime_rule_employee',
+        'action_hr_overtime_reason',
+        'action_hr_overtime_rule_codes',
+        'action_hr_overtime_rules',
+        'hr_overtime_config_menu',
+        'hr_overtime_reason_form_view',
+        'hr_overtime_reason_menu',
+        'hr_overtime_reason_tree_view',
+        'hr_overtime_rule_code_menu',
+        'hr_overtime_rule_code_tree_view',
+        'hr_overtime_rule_form_view',
+        'hr_overtime_rule_menu',
+        'hr_overtime_rule_tree_view',
+        'menu_hr_overtime_report_main',
+        'rule_code_ot0006',
+        'rule_code_ot0618',
+        'rule_code_ot1822',
+        'rule_code_ot2224',
+        'rule_code_othol0006',
+        'rule_code_othol0618',
+        'rule_code_othol1822',
+        'rule_code_othol2224',
+        'rule_code_otholsat0006',
+        'rule_code_otholsat0612',
+        'rule_code_otholsat1218',
+        'rule_code_otholsat1822',
+        'rule_code_otholsat2224',
+        'rule_code_otholsun0006',
+        'rule_code_otholsun1822',
+        'rule_code_otholsun2224',
+        'rule_code_otsat0006',
+        'rule_code_otsat0612',
+        'rule_code_otsat1218',
+        'rule_code_otsat1822',
+        'rule_code_otsat2224',
+        'rule_code_otsun0006',
+        'rule_code_otsun1822',
+        'rule_code_otsun2224',
+        'view_employee_form',
+    ],
+}
