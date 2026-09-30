@@ -19,6 +19,9 @@ website      / res.users                / website_id (many2one)         : NEW re
 # NOTHING TO DO: there's no way to guess if the user was created from v11 website (signed up)
 
 website      / website                  / auth_signup_uninvited (selection): NEW selection_keys: ['b2b', 'b2c']
+# DONE: post-migration: 'b2c' on all websites when the 11.0 parameter auth_signup.allow_uninvited allowed the free
+# sign up (the website setting is read before the parameter and defaults to 'b2b')
+
 website      / website                  / country_group_ids (many2many) : NEW relation: res.country.group
 website      / website                  / google_maps_api_key (char)    : NEW
 website      / website                  / social_default_image (binary) : NEW attachment: True
