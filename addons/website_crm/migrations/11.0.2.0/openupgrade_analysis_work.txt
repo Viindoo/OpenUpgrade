@@ -1,6 +1,8 @@
 ---Fields in module 'website_crm'---
 website_crm  / website                  / crm_default_team_id (many2one): NEW relation: crm.team
 website_crm  / website                  / crm_default_user_id (many2one): NEW relation: res.users
+# DONE: post-migration: the superuser and the superuser's default sales team, which the leads of the contact form
+# got up to 10.0 (created as the superuser); the defaults (first team by name, nobody) sent them elsewhere
 
 ---XML records in module 'website_crm'---
 DEL crm.team: sales_team.salesteam_website_sales (noupdate)
