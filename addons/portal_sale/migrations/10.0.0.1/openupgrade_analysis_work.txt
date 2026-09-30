@@ -30,4 +30,6 @@ DEL mail.template: portal_sale.email_template_edi_invoice
 DEL mail.template: portal_sale.email_template_edi_sale
 # Done. Pre-migration: deleted xmlids from account/sale and changing names of
 # portal_sale xmlids to account/sale (only when the portal_sale template
-# exists: the xml id of account/sale is never left without a template)
+# exists: the xml id of account/sale is never left without a template); the
+# superseded account/sale templates are deleted (9.0 never sends them; kept
+# without xml id they would stay beside the new ones under the same name)
