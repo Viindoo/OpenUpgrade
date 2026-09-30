@@ -49,6 +49,17 @@ def archive_frozen_website_views(env):
         )
         archived |= built_on
     archived.write({"active": False})
+    # a generic page is served only while its view has no website-specific
+    # copy, archived ones included (ir.http._serve_page): give the archived
+    # copies of page views a key of their own, or their pages answer 404
+    page_keys = set(
+        env["website.page"]
+        .with_context(active_test=False)
+        .search([("website_id", "=", False)])
+        .view_id.mapped("key")
+    )
+    for view in archived.filtered(lambda v: v.key in page_keys):
+        view.key = "%s_frozen_%s" % (view.key, view.id)
     if archived:
         _logger.warning(
             "%s website-specific views archived: they froze templates of an old "
