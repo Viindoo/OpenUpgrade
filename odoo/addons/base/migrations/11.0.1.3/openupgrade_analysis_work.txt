@@ -397,3 +397,6 @@ NEW res.partner.industry: base.res_partner_industry_S (noupdate)
 NEW res.partner.industry: base.res_partner_industry_T (noupdate)
 NEW res.partner.industry: base.res_partner_industry_U (noupdate)
 # NOTHING TO DO
+
+# DONE: end-migration: favorites (ir.filters) whose action a module removed are unbound from it before
+# disable_invalid_filters, which would disable them (9.0 mail.action_contacts: 12 saved searches of V3Tech)
