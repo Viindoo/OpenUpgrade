@@ -6,6 +6,9 @@ DEL ir.actions.client: survey.action_client_survey_menu
 NEW ir.actions.server: survey.survey_action_server_clean_test_answers
 DEL ir.actions.todo: base.open_menu
 DEL ir.cron: survey.ir_cron_clean_empty_surveys
+# DONE: post-migration: deleted; noupdate in 9.0, so the update keeps it, and it
+# would run do_clean_emptys next to the ir.autovacuum hook that replaces it (the
+# method is gone in 14.0, where the cron fails every day)
 NEW ir.ui.view: survey.survey_survey_view_search
 NEW ir.values: survey.survey_values_action_clean_test_answers
 # NOTHING TO DO
