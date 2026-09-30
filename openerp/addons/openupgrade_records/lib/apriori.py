@@ -70,6 +70,9 @@ renamed_modules = {
 
 merged_modules = [
     ('account_chart', 'account'),
+    # makmur: removed in 9.0, but every accounting module of 8.0 depends on it,
+    # so it cannot be uninstalled before the migration
+    ('edi', 'base'),
     ('account_followup', 'account_credit_control'),
     # We convert deprecated Odoo module into OCA one - The rest of
     # the migration is in the module in OCA/sale-workflow
