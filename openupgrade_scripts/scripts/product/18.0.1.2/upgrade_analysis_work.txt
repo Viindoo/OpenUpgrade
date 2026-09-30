@@ -120,4 +120,5 @@ DEL res.groups: product.group_discount_per_so_line [renamed to sale module]
 # DONE: pre-migration: moved xmlid to sale
 
 DEL res.groups: product.group_sale_pricelist
-# NOTHING TO DO
+# DONE: post-migration: the groups implying it (base.group_user when the pricelists were on) and its users get
+# product.group_product_pricelist, else the settings show the pricelists off and archive them all on save

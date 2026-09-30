@@ -65,6 +65,38 @@ def res_partner_specific_property_product_pricelist(env):
     env["ir.default"].search([("field_id", "=", new_field.id)]).unlink()
 
 
+def keep_pricelists_of_advanced_pricelists(env):
+    """17.0 'Advanced Pricelists' (product.group_sale_pricelist, which implies
+    'Basic Pricelists') is gone in 18.0, where product.group_product_pricelist
+    alone enables the pricelists. Give the groups implying the advanced one
+    (base.group_user when the setting was on) and its users the remaining one:
+    else the feature shows as off in the settings, which warn that every
+    active pricelist will be archived, and archive them all on save."""
+    advanced = env.ref("product.group_sale_pricelist", raise_if_not_found=False)
+    if not advanced:
+        return
+    pricelist = env.ref("product.group_product_pricelist")
+    openupgrade.logged_query(
+        env.cr,
+        """
+        INSERT INTO res_groups_implied_rel (gid, hid)
+        SELECT gid, %(new)s FROM res_groups_implied_rel
+        WHERE hid = %(old)s AND gid != %(new)s
+        ON CONFLICT DO NOTHING
+        """,
+        {"old": advanced.id, "new": pricelist.id},
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        INSERT INTO res_groups_users_rel (gid, uid)
+        SELECT %(new)s, uid FROM res_groups_users_rel WHERE gid = %(old)s
+        ON CONFLICT DO NOTHING
+        """,
+        {"old": advanced.id, "new": pricelist.id},
+    )
+
+
 def delete_combo_items_without_combo(env):
     env["product.combo.item"].search([("combo_id", "=", False)]).unlink()
 
@@ -75,4 +107,5 @@ def migrate(env, version):
     product_template_is_favorite(env)
     res_partner_specific_property_product_pricelist(env)
     delete_combo_items_without_combo(env)
+    keep_pricelists_of_advanced_pricelists(env)
     openupgrade_180.convert_company_dependent(env, "product.product", "standard_price")
