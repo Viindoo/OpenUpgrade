@@ -146,8 +146,53 @@ def _adjust_res_partner_category_colors(env):
     )
 
 
+def fill_company_report_header_footer(cr):
+    """11.0 renames the tagline and the footer of the printed documents:
+    rml_header1 -> report_header, rml_footer -> report_footer (the text a
+    company wrote itself, when custom_footer was on; else 10.0 computed it from
+    the company data, which 11.0 prints by itself). Carry them over, with the
+    translations of the footer, or the documents lose them."""
+    if not openupgrade.column_exists(cr, 'res_company', 'rml_header1'):
+        return
+    openupgrade.logged_query(
+        cr,
+        """
+        UPDATE res_company
+        SET report_header = rml_header1
+        WHERE COALESCE(report_header, '') = ''
+            AND COALESCE(rml_header1, '') != ''
+        """,
+    )
+    if not openupgrade.column_exists(cr, 'res_company', 'custom_footer'):
+        return
+    openupgrade.logged_query(
+        cr,
+        """
+        UPDATE res_company
+        SET report_footer = rml_footer
+        WHERE custom_footer AND COALESCE(report_footer, '') = ''
+            AND COALESCE(rml_footer, '') != ''
+        """,
+    )
+    openupgrade.logged_query(
+        cr,
+        """
+        UPDATE ir_translation t
+        SET name = 'res.company,report_footer'
+        FROM res_company c
+        WHERE t.name = 'res.company,rml_footer' AND t.res_id = c.id
+            AND c.custom_footer
+            AND NOT EXISTS (
+                SELECT 1 FROM ir_translation t2
+                WHERE t2.name = 'res.company,report_footer'
+                    AND t2.res_id = t.res_id AND t2.lang = t.lang)
+        """,
+    )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
+    fill_company_report_header_footer(env.cr)
     map_ir_actions_server_fields(env.cr)
     merge_default_ir_values(env.cr)
     fill_cron_action_server_post(env)

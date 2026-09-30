@@ -150,7 +150,8 @@ base         / res.company              / paperformat_id (many2one)     : previo
 
 base         / res.company              / report_footer (text)          : NEW 
 base         / res.company              / report_header (text)          : NEW 
-# NOTHING TO DO
+# DONE: post-migration: renamed fields: report_header from rml_header1 (tagline), report_footer from rml_footer when
+# custom_footer was on (the footer the company wrote; else it was computed from the company data), with translations
 
 base         / res.company              / rml_footer (text)             : DEL 
 base         / res.company              / rml_header (text)             : DEL required: required, req_default: function
