@@ -55,6 +55,20 @@ def map_payment_acquirer_state(cr):
             sql.Identifier(openupgrade.get_legacy_name('environment'))
         )
     )
+    # The environment of a wire transfer acquirer did nothing up to 12.0 (it
+    # only shows payment instructions); as a state, 'test' puts a "Test Mode"
+    # badge next to it on the checkout. A published one was in use: enable it.
+    openupgrade.logged_query(
+        cr,
+        sql.SQL(
+            """UPDATE payment_acquirer
+            SET state = 'enabled'
+            WHERE provider = 'transfer' AND {} AND {} = 'test'"""
+        ).format(
+            sql.Identifier(openupgrade.get_legacy_name('website_published')),
+            sql.Identifier(openupgrade.get_legacy_name('environment'))
+        )
+    )
 
 
 @openupgrade.migrate(use_env=True)

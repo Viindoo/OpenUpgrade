@@ -18,6 +18,8 @@ payment      / payment.acquirer         / website_published (boolean)   : DEL
 payment      / payment.acquirer         / environment (selection)       : DEL required, selection_keys: ['prod', 'test'], req_default: function
 payment      / payment.acquirer         / state (selection)             : NEW required, selection_keys: ['disabled', 'enabled', 'test'], req_default: function, hasdefault
 # DONE: Pre-migration renamed 'environment' to 'state'. Set enabled/disabled if website_published is True/False.
+# Published wire transfer acquirers in 'test' become 'enabled': their environment did nothing up to 12.0, the
+# 'test' state shows a "Test Mode" badge on the checkout.
 
 payment      / payment.acquirer         / image (binary)                : DEL attachment: True
 payment      / payment.acquirer         / image_128 (binary)            : NEW attachment: True
