@@ -1,11 +1,16 @@
 # Copyright 2024 Viindoo Technology Joint Stock Company (Viindoo)
 # Copyright 2024 Tecnativa - Pedro M. Baeza
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+import csv
 import logging
+import os
 
+from lxml import etree
 from openupgradelib import openupgrade
 
 from odoo import tools
+from odoo.modules.module import get_manifest
+from odoo.tools.misc import file_path
 
 from odoo.addons.openupgrade_scripts.apriori import (  # pylint: disable=odoo-addons-relative-import
     merged_modules,
@@ -277,6 +282,93 @@ def _fix_address_format_placeholders(cr):
     )
 
 
+# created noupdate by base_data.sql, before any data file
+_SQL_CREATED_XMLIDS = {
+    ("base", "USD"),
+    ("base", "main_company"),
+    ("base", "main_partner"),
+    ("base", "user_root"),
+    ("base", "group_user"),
+}
+
+
+def _xml_declarations(node, noupdate, declared):
+    """(XML-ID, noupdate) of the records of an XML data file, in order."""
+    for child in node:
+        if not isinstance(child.tag, str):
+            continue
+        if child.tag == "data":
+            child_noupdate = child.get("noupdate", "0") in ("1", "True", "true")
+            _xml_declarations(child, child_noupdate, declared)
+        elif child.get("id") and child.tag not in ("function", "delete"):
+            declared.append((child.get("id"), noupdate))
+    return declared
+
+
+def _first_declarations(module):
+    """{name: noupdate} of the XML-IDs of ``module`` declared in its data files,
+    with the noupdate flag of their first declaration (manifest order): the flag
+    of a new database, as Odoo never changes the flag of an existing XML-ID."""
+    first = {}
+    for fname in get_manifest(module).get("data", []):
+        try:
+            path = file_path(os.path.join(module, fname))
+        except FileNotFoundError:
+            continue
+        if fname.endswith(".xml"):
+            root = etree.parse(path).getroot()
+            noupdate = root.get("noupdate", "0") in ("1", "True", "true")
+            declared = _xml_declarations(root, noupdate, [])
+        elif fname.endswith(".csv"):
+            with open(path, encoding="utf-8") as f:
+                rows = csv.DictReader(f)
+                declared = [(row["id"], False) for row in rows if row.get("id")]
+        else:
+            continue
+        for xmlid, noupdate in declared:
+            owner, _dot, name = xmlid.rpartition(".")
+            if owner in ("", module):
+                first.setdefault(name, noupdate)
+    return first
+
+
+def _reset_stale_noupdate(cr):
+    """XML-IDs that a database upgraded from old versions has noupdate while
+    their module declares them updatable (e.g. the groups of base, noupdate since
+    8.0 in some databases): the module updates never write them, they keep their
+    old name, category, implied groups, arch... Their flag is set as in a new
+    database, so that the update writes them."""
+    cr.execute(
+        "SELECT name FROM ir_module_module WHERE state IN ('installed', 'to upgrade')"
+    )
+    for (module,) in cr.fetchall():
+        if not get_manifest(module):
+            continue
+        names = [
+            name
+            for name, noupdate in _first_declarations(module).items()
+            if not noupdate and (module, name) not in _SQL_CREATED_XMLIDS
+        ]
+        if not names:
+            continue
+        cr.execute(
+            """
+            UPDATE ir_model_data SET noupdate = FALSE
+            WHERE module = %s AND name IN %s AND noupdate
+              AND model NOT IN ('ir.module.category', 'ir.module.module')
+            RETURNING name
+            """,
+            (module, tuple(names)),
+        )
+        reset = [name for (name,) in cr.fetchall()]
+        if reset:
+            _logger.info(
+                "%s: noupdate reset on %s, declared updatable by the module",
+                module,
+                ", ".join(sorted(reset)),
+            )
+
+
 @openupgrade.migrate(use_env=False)
 def migrate(cr, version):
     """
@@ -300,3 +392,4 @@ def migrate(cr, version):
     _fill_empty_country_codes(cr)
     _handle_partner_private_type(cr)
     _fix_address_format_placeholders(cr)
+    _reset_stale_noupdate(cr)
