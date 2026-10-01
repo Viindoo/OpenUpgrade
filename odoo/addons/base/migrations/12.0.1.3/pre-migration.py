@@ -124,6 +124,41 @@ def eliminate_duplicate_translations(cr):
         )""")
 
 
+def fix_multiple_reference_uoms(env):
+    """12.0 accepts one reference unit per category (new uom module,
+    _check_category_reference_uniqueness), older series accepted several: the
+    data of uom fails to load ("UoM category Unit should only have one
+    reference unit of measure"). Keep one reference per category (a unit with
+    a real xml id first, then an active one, then the most used, then the
+    lowest id); the others become units 'bigger' of the same factor 1.0, so
+    every conversion stays the same."""
+    if not openupgrade.table_exists(env.cr, 'uom_uom'):
+        return
+    env.cr.execute("""
+        SELECT category_id, array_agg(id ORDER BY id)
+        FROM uom_uom WHERE uom_type = 'reference'
+        GROUP BY category_id HAVING count(*) > 1""")
+    for category_id, uom_ids in env.cr.fetchall():
+        env.cr.execute("""
+            SELECT u.id FROM uom_uom u
+            WHERE u.id = ANY(%s)
+            ORDER BY NOT EXISTS (
+                    SELECT 1 FROM ir_model_data d
+                    WHERE d.model IN ('uom.uom', 'product.uom')
+                    AND d.res_id = u.id AND d.module != '__export__'),
+                u.active DESC,
+                (SELECT count(*) FROM product_template t
+                 WHERE t.uom_id = u.id OR t.uom_po_id = u.id) DESC,
+                u.id
+            LIMIT 1""", (uom_ids, ))
+        keep = env.cr.fetchone()[0]
+        openupgrade.logged_query(
+            env.cr, """
+            UPDATE uom_uom SET uom_type = 'bigger', factor = 1.0
+            WHERE id = ANY(%s) AND id != %s""", (uom_ids, keep),
+        )
+
+
 def fix_lang_constraints(env):
     """Avoid error on normal update process due to the removal + re-addition of
     constraints.
@@ -225,6 +260,7 @@ def migrate(env, version):
     if openupgrade.table_exists(env.cr, 'product_uom'):
         openupgrade.rename_models(env.cr, model_renames_product)
         openupgrade.rename_tables(env.cr, table_renames_product)
+    fix_multiple_reference_uoms(env)
     if openupgrade.table_exists(env.cr, 'stock_incoterms'):
         openupgrade.rename_models(env.cr, model_renames_stock)
         openupgrade.rename_tables(env.cr, table_renames_stock)
