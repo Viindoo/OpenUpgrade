@@ -1,6 +1,6 @@
 ---Fields in module 'website'---
 website      / website                  / favicon (binary)              : NEW
-# NOTHING TO DO
+# DONE: post-migration: the websites of 9.0 get the favicon they showed (website_data.xml is noupdate)
 ---XML records in module 'website'---
 DEL ir.actions.act_url: website.action_website_tutorial
 NEW ir.actions.client: website.backend_dashboard
