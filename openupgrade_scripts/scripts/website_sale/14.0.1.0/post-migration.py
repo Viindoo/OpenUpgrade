@@ -1,8 +1,35 @@
 # Copyright (C) 2021 Open Source Integrators <https://www.opensourceintegrators.com/>
 # Copyright 2021 ForgeFlow S.L.  <https://www.forgeflow.com>
+# Copyright 2023 Tecnativa - Pilar Vargas
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+import re
 
 from openupgradelib import openupgrade
+
+
+def extract_custom_product_page_term_conditions(env):
+    """Replace Terms and Conditions content in the new v14 template so as not to lose
+    content from previous versions if it has been customised."""
+    product_custom_text_view = env.ref("website_sale.product_custom_text")
+    product_custom_text_arch = product_custom_text_view.arch_db
+    product_custom_text_pattern = r'<p class="text-muted">(.*?)<\/p>'
+    product_custom_text_content, *_ = re.findall(
+        product_custom_text_pattern, product_custom_text_arch, re.DOTALL
+    )
+    product_views = env["ir.ui.view"].search(
+        [("key", "=", "website_sale.product"), ("website_id", "!=", False)]
+    )
+    for view in product_views:
+        product_arch = view.arch_db
+        product_pattern = r'<hr\s*/>\s*<p\s+class="text-muted">(.*?)</p>'
+        product_matches = re.findall(product_pattern, product_arch, re.DOTALL)
+        if product_matches:
+            new_arch = product_custom_text_arch.replace(
+                product_custom_text_content, product_matches[0]
+            )
+            product_custom_text_view.with_context(
+                website_id=view.website_id.id
+            ).arch_db = new_arch
 
 
 @openupgrade.migrate()
@@ -50,4 +77,11 @@ def migrate(env, version):
         WHERE pt.id = sub.product_template_id AND pt.website_ribbon_id IS NULL""",
     )
     openupgrade.load_data(env.cr, "website_sale", "14.0.1.0/noupdate_changes.xml")
-    openupgrade.delete_records_safely_by_xml_id(env, ["website_sale.image_full"])
+    openupgrade.logged_query(
+        env.cr,
+        """
+        DELETE FROM ir_model_data
+        WHERE module = 'website_sale' and name = 'image_full'
+        """,
+    )
+    extract_custom_product_page_term_conditions(env)

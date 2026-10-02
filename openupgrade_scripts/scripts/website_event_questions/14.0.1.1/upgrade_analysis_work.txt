@@ -24,7 +24,7 @@ website_event_questions / event.registration.answer / question_id (many2one)    
 website_event_questions / event.registration.answer / registration_id (many2one)    : NEW relation: event.registration, required
 website_event_questions / event.registration.answer / value_answer_id (many2one)    : NEW relation: event.question.answer
 website_event_questions / event.registration.answer / value_text_box (text)         : NEW
-# DONE: pre-migration: field renamed
+# DONE: pre-migration: field renamed and fill value
 
 ---XML records in module 'website_event_questions'---
 NEW ir.actions.act_window: website_event_questions.action_event_registration_report

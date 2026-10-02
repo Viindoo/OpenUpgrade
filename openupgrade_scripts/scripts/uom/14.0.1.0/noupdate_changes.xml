@@ -1,8 +1,10 @@
 <?xml version='1.0' encoding='utf-8'?>
 <odoo>
+  <!--
   <record id="product_uom_day" model="uom.uom">
     <field name="uom_type">reference</field>
   </record>
+  -->
   <record id="product_uom_floz" model="uom.uom">
     <field name="name">fl oz (US)</field>
   </record>
@@ -16,19 +18,21 @@
     <field name="name">in</field>
   </record>
   <record id="product_uom_kgm" model="uom.uom">
-    <field name="rounding" eval="0.01"/>
-    <field name="uom_type">reference</field>
+    <!-- <field name="rounding"/> -->
+    <!-- <field name="uom_type">reference</field> -->
   </record>
   <record id="product_uom_lb" model="uom.uom">
     <field name="name">lb</field>
   </record>
   <record id="product_uom_litre" model="uom.uom">
     <field name="name">L</field>
-    <field name="uom_type">reference</field>
+    <!-- <field name="uom_type">reference</field> -->
   </record>
+  <!--
   <record id="product_uom_meter" model="uom.uom">
     <field name="uom_type">reference</field>
   </record>
+  -->
   <record id="product_uom_mile" model="uom.uom">
     <field name="name">mi</field>
   </record>
@@ -39,7 +43,7 @@
     <field name="name">qt (US)</field>
   </record>
   <record id="product_uom_unit" model="uom.uom">
-    <field name="rounding" eval="0.01"/>
-    <field name="uom_type">reference</field>
+    <!-- <field name="rounding"/> -->
+    <!-- <field name="uom_type">reference</field> -->
   </record>
 </odoo>

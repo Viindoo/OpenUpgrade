@@ -92,6 +92,7 @@ def fill_payment_id_and_statement_line_id_fields(env):
         SET payment_id = am.payment_id
         FROM account_move am
         WHERE am.id = aml.move_id AND am.payment_id IS NOT NULL
+            AND aml.payment_id IS NULL
         """,
     )
     openupgrade.logged_query(
@@ -101,12 +102,13 @@ def fill_payment_id_and_statement_line_id_fields(env):
         SET statement_line_id = am.statement_line_id
         FROM account_move am
         WHERE am.id = aml.move_id AND am.statement_line_id IS NOT NULL
+            AND aml.statement_line_id IS NULL
         """,
     )
 
 
 def fill_partial_reconcile_debit_and_credit_amounts(env):
-    # compute debit and credit amount when currencies are the same
+    # both journal items are in the company currency
     openupgrade.logged_query(
         env.cr,
         """
@@ -120,6 +122,8 @@ def fill_partial_reconcile_debit_and_credit_amounts(env):
             AND r.credit_currency_id = c.currency_id
        """,
     )
+    # only one of the journal items is in the company currency: amount_currency
+    # is the amount in the currency of the other one
     openupgrade.logged_query(
         env.cr,
         """
@@ -141,6 +145,21 @@ def fill_partial_reconcile_debit_and_credit_amounts(env):
             AND (
                 r.credit_currency_id = c.currency_id
                 OR r.debit_currency_id = c.currency_id)
+       """,
+    )
+    # both journal items are in the same foreign currency and were reconciled in
+    # that currency: amount_currency is the amount in that currency
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE account_partial_reconcile
+        SET debit_amount_currency = amount_currency,
+            credit_amount_currency = amount_currency
+        WHERE debit_amount_currency IS NULL
+            AND credit_amount_currency IS NULL
+            AND credit_currency_id = debit_currency_id
+            AND currency_id = debit_currency_id
+            AND NULLIF(amount_currency, 0.0) IS NOT NULL
        """,
     )
     # compute debit and credit amount when currencies are different
@@ -357,7 +376,9 @@ def create_account_tax_report_lines(env):
             break
 
 
-def post_statements_with_unreconciled_lines(env):
+def post_statements(env):
+    """These 2 inconsistent use cases require to put the statement as posted."""
+    # Confirmed statements that have unreconciled items
     openupgrade.logged_query(
         env.cr,
         """
@@ -368,6 +389,24 @@ def post_statements_with_unreconciled_lines(env):
             AND bstl.is_reconciled IS DISTINCT FROM TRUE
         """,
     )
+    # New statements with reconciled items
+    openupgrade.logged_query(
+        env.cr,
+        """SELECT bst.id FROM account_bank_statement bst
+        JOIN account_bank_statement_line bstl ON bstl.statement_id = bst.id
+        WHERE bst.state = 'open' AND bstl.is_reconciled IS TRUE
+        """,
+    )
+    stmt_ids = list({x[0] for x in env.cr.fetchall()})
+    # calling .button_post() on all statements together fails with:
+    # File "/odoo_env/src/odoo/addons/account/models/account_move.py", line 1842, in _check_unique_sequence_number  # noqa: B950
+    #     raise ValidationError(_('Posted journal entry must have an unique sequence number per company.\n'  # noqa: B950
+    # odoo.exceptions.ValidationError: Posted journal entry must have an unique sequence number per company.  # noqa: B950
+    # Problematic numbers: 198/100, 198/100, 198/104, 198/104, 198/101, 198/101, 198/102, 198/103, 198/103, 198/102  # noqa: B950
+    # instead, call it one by one.
+    stmts = env["account.bank.statement"].browse(stmt_ids)
+    for stmt in stmts:
+        stmt.button_post()
 
 
 def pass_bank_statement_line_note_to_journal_entry_narration(env):
@@ -433,80 +472,6 @@ def fill_company_account_cash_basis_base_account_id(env):
     )
 
 
-def populate_account_groups(env):
-    """Generate the generic account groups for each company. Later code will
-    do it for manually created groups.
-    """
-    companies = env["res.company"].with_context(active_test=False).search([])
-    for company in companies.filtered("chart_template_id"):
-        company.chart_template_id.generate_account_groups(company)
-
-
-def unfold_manual_account_groups(env):
-    """For manually created groups, we check if such group is used in more than
-    one company. If so, we unfold it. We also assure proper company for existing one.
-    """
-
-    def _get_all_children(groups):
-        children = env["account.group"].search([("parent_id", "in", groups.ids)])
-        if children:
-            children |= _get_all_children(children)
-        return children
-
-    def _get_all_parents(groups):
-        parents = groups.mapped("parent_id")
-        if parents:
-            parents |= _get_all_parents(parents)
-        return parents
-
-    AccountGroup = env["account.group"]
-    AccountGroup._parent_store_compute()
-    env.cr.execute(
-        """SELECT ag.id FROM account_group ag
-        LEFT JOIN ir_model_data imd
-            ON ag.id = imd.res_id AND imd.model = 'account.group'
-                AND imd.module != '__export__'
-        WHERE imd.id IS NULL"""
-    )
-    all_groups = AccountGroup.browse([x[0] for x in env.cr.fetchall()])
-    all_groups = all_groups | _get_all_parents(all_groups)
-    relation_dict = {}
-    for group in all_groups.sorted(key="parent_path"):
-        subgroups = group | _get_all_children(group)
-        accounts = env["account.account"].search([("group_id", "in", subgroups.ids)])
-        companies = accounts.mapped("company_id").sorted()
-        for i, company in enumerate(companies):
-            if company not in relation_dict:
-                relation_dict[company] = {}
-            if i == 0:
-                if group.company_id != company:
-                    group.company_id = company.id
-                relation_dict[company][group] = group
-                continue
-            # Done by SQL for avoiding ORM derived problems
-            env.cr.execute(
-                """INSERT INTO account_group (parent_id, parent_path, name,
-                code_prefix_start, code_prefix_end, company_id,
-                create_uid, write_uid, create_date, write_date)
-            SELECT {parent_id}, parent_path, name, code_prefix_start,
-                code_prefix_end, {company_id}, create_uid,
-                write_uid, create_date, write_date
-            FROM account_group
-            WHERE id = {id}
-            RETURNING id
-            """.format(
-                    id=group.id,
-                    company_id=company.id,
-                    parent_id=group.parent_id
-                    and relation_dict[company][group.parent_id].id
-                    or "NULL",
-                )
-            )
-            new_group = AccountGroup.browse(env.cr.fetchone())
-            relation_dict[company][group] = new_group
-    AccountGroup._parent_store_compute()
-
-
 def fill_company_account_journal_suspense_account_id(env):
     companies = env["res.company"].search([("chart_template_id", "!=", False)])
     for company in companies:
@@ -562,15 +527,40 @@ def fill_statement_lines_with_no_move(env):
             [("deprecated", "=", True), ("company_id", "=", st_line.company_id.id)]
         )
         deprecated_accounts.deprecated = False
-        move.write(
-            {
-                "line_ids": [
-                    (0, 0, line_vals)
-                    for line_vals in st_line._prepare_move_line_default_vals()
+        try:
+            st_line._synchronize_to_moves(
+                [
+                    "payment_ref",
+                    "amount",
+                    "amount_currency",
+                    "foreign_currency_id",
+                    "currency_id",
+                    "partner_id",
                 ]
-            }
-        )
+            )
+        except Exception as e:
+            _logger.error("Failed for statement line with id %s: %s", st_line.id, e)
+            raise
         deprecated_accounts.deprecated = True
+        to_write = {
+            "line_ids": [
+                (
+                    0,
+                    0,
+                    st_line._prepare_move_line_default_vals(
+                        counterpart_account_id=False
+                    )[0],
+                )
+            ]
+        }
+        st_line.move_id.with_context(skip_account_move_synchronization=True).write(
+            to_write
+        )
+    # The ORM still holds pending values for these lines' stored computed fields
+    # (e.g. is_reconciled, computed while the moves had no suspense line yet). Write
+    # them now, so the SQL of fill_account_bank_statement_line_reconciliation is not
+    # overwritten by a later flush.
+    env["account.bank.statement.line"].flush()
 
     openupgrade.logged_query(
         env.cr,
@@ -631,7 +621,7 @@ def fill_account_journal_payment_credit_debit_account_id(env):
         )
 
 
-def create_new_counterpar_account_payment_transfer(env):
+def create_new_counterpart_account_payment_transfer(env):
     # Create new counterpart payment with account payment transfer
     openupgrade.logged_query(
         env.cr,
@@ -639,14 +629,14 @@ def create_new_counterpar_account_payment_transfer(env):
         INSERT INTO account_payment (move_id, is_internal_transfer, partner_type,
             payment_type,
             amount, currency_id,
-            destination_account_id, partner_id, journal_id,
+            destination_account_id, partner_id,
             create_uid, create_date, write_uid, write_date)
         SELECT move.id, true, ap.partner_type,
             CASE
             WHEN journal.id = ap.destination_journal_id THEN 'inbound' ELSE 'outbound'
             END,
             ap.amount, ap.currency_id,
-            ap.destination_account_id, ap.partner_id, move.journal_id,
+            ap.destination_account_id, ap.partner_id,
             ap.create_uid, ap.create_date, ap.write_uid, ap.write_date
         FROM account_payment ap
         JOIN account_move move
@@ -658,7 +648,7 @@ def create_new_counterpar_account_payment_transfer(env):
 
 
 def map_account_payment_transfer(env):
-    # map payment_type from transfer to 'outbound'
+    # map payment_type from transfer to 'inbound'/'outbound'
     # and set is_internal_transfer as true on account payment transfer
     openupgrade.logged_query(
         env.cr,
@@ -670,6 +660,70 @@ def map_account_payment_transfer(env):
     )
 
 
+def fill_account_payment_reconciliation(env):
+    openupgrade.logged_query(
+        env.cr,
+        """
+            UPDATE account_payment ap
+            SET is_reconciled = True,
+                is_matched = True
+            FROM res_currency rcur
+            WHERE rcur.id = ap.currency_id
+                AND ROUND(ap.amount, rcur.decimal_places) = 0
+        """,
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+            WITH matched_payments as (
+                SELECT ap.id,
+                    CASE WHEN aj.default_account_id IS NOT NULL
+                            AND bool_or(aj.default_account_id = aml.account_id)
+                        THEN TRUE
+                    ELSE
+                        ROUND(SUM(CASE
+                            WHEN aml.account_id in (
+                                aj.default_account_id,
+                                aj.payment_debit_account_id,
+                                aj.payment_credit_account_id
+                            ) THEN CASE
+                                WHEN rc.currency_id = rcur.id THEN aml.amount_residual
+                                ELSE aml.amount_residual_currency END
+                            ELSE 0 END
+                        ), rcur.decimal_places) = 0
+                    END as is_matched,
+                    ROUND(
+                        SUM(CASE
+                            WHEN NOT aa.reconcile THEN 0
+                            WHEN aml.account_id not in (
+                                aj.default_account_id,
+                                aj.payment_debit_account_id,
+                                aj.payment_credit_account_id
+                            ) THEN CASE
+                                WHEN rc.currency_id = rcur.id THEN aml.amount_residual
+                                ELSE aml.amount_residual_currency END
+                            ELSE 0 END
+                        ),
+                        rcur.decimal_places
+                    ) = 0 as is_reconciled
+                FROM account_payment ap
+                JOIN account_move am ON am.id = ap.move_id
+                JOIN account_move_line aml ON aml.move_id = am.id
+                JOIN account_account aa ON aa.id = aml.account_id
+                JOIN res_company rc ON rc.id = am.company_id
+                JOIN account_journal aj ON aj.id = am.journal_id
+                JOIN res_currency rcur ON rcur.id = ap.currency_id
+                GROUP BY ap.id, rcur.decimal_places, aj.default_account_id
+            )
+            UPDATE account_payment ap
+            SET is_matched = matched_payments.is_matched,
+                is_reconciled = matched_payments.is_reconciled
+            FROM matched_payments
+            where ap.id = matched_payments.id
+        """,
+    )
+
+
 def fill_account_payment_with_no_move(env):
     p_data = {}
     p_dates_by_company = {}
@@ -677,13 +731,14 @@ def fill_account_payment_with_no_move(env):
         """
         SELECT ap.id, ap.%s, ap.%s, ap.%s, ap.state, aj.company_id
         FROM account_payment ap
-        JOIN account_journal aj ON ap.journal_id = aj.id
+        JOIN account_journal aj ON ap.%s = aj.id
         WHERE ap.move_id IS NULL
         """
         % (
             openupgrade.get_legacy_name("journal_id"),
             openupgrade.get_legacy_name("name"),
             openupgrade.get_legacy_name("payment_date"),
+            openupgrade.get_legacy_name("journal_id"),
         )
     )
     for (
@@ -697,7 +752,8 @@ def fill_account_payment_with_no_move(env):
         p_data[p_id] = {
             "journal_id": p_journal_id,
             "name": p_name,
-            "state": p_state,
+            # Switch to cancel when no linked move, but the payment was validated
+            "state": "cancelled" if p_state not in {"draft", "cancelled"} else p_state,
             "payment_date": p_payment_date,
         }
         if p_company in p_dates_by_company:
@@ -856,8 +912,149 @@ def _switch_default_account_and_outstanding_account(env):
     )
 
 
+def fill_account_bank_statement_line_reconciliation(env):
+    openupgrade.logged_query(
+        env.cr,
+        """
+        WITH absl_residual AS (
+            SELECT absl.id,
+                CASE
+                    WHEN am.to_check
+                        AND absl.foreign_currency_id IS NOT NULL
+                        THEN -absl.amount_currency
+                    WHEN am.to_check THEN -absl.amount
+                    ELSE SUM(
+                        CASE
+                            WHEN aa.reconcile AND aa.id != aj.default_account_id
+                                AND aa.id = aj.suspense_account_id
+                                THEN aml.amount_residual_currency
+                            WHEN aa.id != aj.default_account_id
+                                AND aa.id = aj.suspense_account_id
+                                THEN aml.amount_currency
+                            ELSE 0.
+                        END
+                    )
+                END as amount_residual,
+                MIN(CASE
+                    WHEN aa.id != aj.default_account_id
+                        AND aa.id = aj.suspense_account_id
+                        THEN aml.currency_id
+                    ELSE NULL END) as suspense_currency_id
+            FROM account_bank_statement_line absl
+                JOIN account_move am ON am.id = absl.move_id
+                JOIN account_move_line aml ON aml.move_id = am.id
+                JOIN account_journal aj ON aj.id = am.journal_id
+                JOIN account_account aa ON aa.id = aml.account_id
+                JOIN res_company rc ON rc.id = aj.company_id
+            GROUP BY
+                absl.id,
+                am.to_check,
+                absl.foreign_currency_id,
+                absl.amount_currency,
+                absl.amount
+        )
+        UPDATE account_bank_statement_line absl
+        SET amount_residual = absl_residual.amount_residual,
+            is_reconciled = CASE
+                WHEN suspense_currency_id IS NULL THEN TRUE
+                ELSE ROUND(absl_residual.amount_residual, rcur.decimal_places) = 0
+            END
+        FROM absl_residual
+            LEFT JOIN res_currency rcur ON rcur.id = absl_residual.suspense_currency_id
+        WHERE absl_residual.id = absl.id
+        """,
+    )
+
+
+def update_payment_state_partial(env):
+    """As the 'Partially paid' didn't exist before, invoices with this condition are
+    still marked as 'Not paid', so we should update them as if they were partially paid
+    in this new version.
+    """
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE account_move
+        SET payment_state='partial'
+        WHERE move_type IN ('out_invoice', 'out_refund', 'in_invoice', 'in_refund')
+            AND amount_residual > 0
+            AND amount_residual < amount_total
+            AND payment_state != 'partial'
+        """,
+    )
+
+
+def cash_rounding_fields_to_company_dependent(env):
+    """Usually for such cases, openupgrade.convert_to_company_dependent() should
+    normally be used, but that function does not seem to support converting
+    a field to company-dependent without changing its name at the same time.
+    moreover, it stores boolean values even when they are false (what odoo
+    does not), and it creates values for all companies, which does not make
+    sense when a record is linked to a particular company only.
+    """
+    field_names = ["profit_account_id"]
+    if openupgrade.column_exists(env.cr, "account_cash_rounding", "loss_account_id"):
+        # loss_account_id comes from pos_cash_rounding
+        field_names += ["loss_account_id"]
+    for field_name in field_names:
+        field_id = (env.ref(f"account.field_account_cash_rounding__{field_name}").id,)
+        # this many2one property stores its value in the value_reference column
+        openupgrade.logged_query(
+            env.cr,
+            f"""
+            insert into ir_property (
+                company_id, fields_id, value_reference, name, res_id, type
+            )
+            select
+                aa.company_id,
+                %(field_id)s,
+                'account.account,' || acr.{field_name},
+                '{field_name}',
+                'account.cash.rounding,' || acr.id,
+                'many2one'
+            from account_cash_rounding acr
+            join account_account aa ON acr.profit_account_id = aa.id
+            where
+                acr.{field_name} is not null
+            order by acr.id
+            """,
+            {"field_id": field_id},
+        )
+        if field_name == "loss_account_id":
+            # for account.cash.rounding records that are not linked to
+            # a company (i.e, to a profit_account_id), create an
+            # ir.property record for each company.
+            openupgrade.logged_query(
+                env.cr,
+                """
+                insert into ir_property (
+                    company_id,
+                    fields_id,
+                    value_reference,
+                    name,
+                    res_id,
+                    type
+                )
+                select
+                    rc.id,
+                    %(field_id)s,
+                    'account.account,' || acr.loss_account_id,
+                    'loss_account_id',
+                    'account.cash.rounding,' || acr.id,
+                    'many2one'
+                from account_cash_rounding acr
+                inner join res_company as rc on
+                    acr.profit_account_id is null
+                    and acr.loss_account_id is not null
+                order by acr.id, rc.id
+                """,
+                {"field_id": field_id},
+            )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
+    cash_rounding_fields_to_company_dependent(env)
     fill_account_journal_posted_before(env)
     fill_code_prefix_end_field(env)
     fill_default_account_id_field(env)
@@ -866,7 +1063,6 @@ def migrate(env, version):
     create_account_reconcile_model_lines(env)
     create_account_reconcile_model_template_lines(env)
     create_account_tax_report_lines(env)
-    post_statements_with_unreconciled_lines(env)
     pass_bank_statement_line_note_to_journal_entry_narration(env)
     pass_payment_to_journal_entry_narration(env)
     fill_company_account_cash_basis_base_account_id(env)
@@ -875,17 +1071,17 @@ def migrate(env, version):
     openupgrade.load_data(env.cr, "account", "14.0.1.1/noupdate_changes.xml")
     try_delete_noupdate_records(env)
     _create_hooks(env)
-    populate_account_groups(env)
-    unfold_manual_account_groups(env)
-    # Launch a recomputation of the account groups after previous changes
-    env["account.account"].search([])._compute_account_group()
     fill_company_account_journal_suspense_account_id(env)
     fill_statement_lines_with_no_move(env)
     fill_account_journal_payment_credit_debit_account_id(env)
-    create_new_counterpar_account_payment_transfer(env)
+    create_new_counterpart_account_payment_transfer(env)
     map_account_payment_transfer(env)
+    fill_account_payment_reconciliation(env)
     fill_account_payment_with_no_move(env)
+    fill_account_bank_statement_line_reconciliation(env)
+    post_statements(env)
     _delete_hooks(env)
+    update_payment_state_partial(env)
     openupgrade.delete_record_translations(
         env.cr,
         "account",

@@ -7,12 +7,16 @@ name: Test OpenUpgrade migration
 
 on:
   push:
-    branches: ["14.0*"]
+    branches:
+      - "14.0"
+      - "14.0-ocabot-*"
   pull_request:
+    branches:
+      - "14.0*"
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       DB: "openupgrade"
       DB_HOST: "localhost"
@@ -24,9 +28,10 @@ jobs:
       PGHOST: "localhost"
       PGPASSWORD: "odoo"
       PGUSER: "odoo"
+      OPENUPGRADE_USE_DEMO: "yes"
     steps:
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: 3.7
       - name: Configure Postgres
@@ -58,14 +63,14 @@ jobs:
           # - git reset -q --hard $TRAVIS_COMMIT
           # Install Python requirements of target release
       - name: Check out Odoo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           repository: odoo/odoo
           ref: "14.0"
           fetch-depth: 1
           path: odoo
       - name: Check out OpenUpgrade
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           path: openupgrade
       - name: Configuration
@@ -86,8 +91,7 @@ jobs:
               python3-serial \
               python3-simplejson \
               python3-werkzeug \
-              python3-yaml \
-              unixodbc-dev
+              python3-yaml
       - name: Requirements Installation
         run: |
           sudo npm install -g less less-plugin-clean-css

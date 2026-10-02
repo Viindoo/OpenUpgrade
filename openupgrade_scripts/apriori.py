@@ -8,6 +8,8 @@ renamed_modules = {
     "account_facturx": "account_edi_facturx",
     "sale_coupon": "coupon",
     "website_rating": "portal_rating",
+    # OCA/account-consolidation
+    "account_consolidation": "account_consolidation_oca",
     # OCA/account-invoice-reporting
     "account_invoice_comment_template": "account_comment_template",
     # OCA/bank-statement-import
@@ -15,14 +17,15 @@ renamed_modules = {
     "account_bank_statement_import_bypass_check": "account_statement_import_bypass_check",  # noqa: B950
     "account_bank_statement_clear_partner": "account_statement_clear_partner",
     "account_bank_statement_import_camt_details": "account_statement_import_camt_details",  # noqa: B950
-    "account_bank_statement_import_camt_oca": "account_statement_import_camt_oca",
+    "account_bank_statement_import_camt_oca": "account_statement_import_camt",
     "account_bank_statement_import_move_line": "account_statement_import_move_line",
     "account_bank_statement_import_mt940_base": "account_statement_import_mt940_base",
-    "account_bank_statement_import_oca_camt54": "account_statement_import_oca_camt54",
+    "account_bank_statement_import_oca_camt54": "account_statement_import_camt54",
     "account_bank_statement_import_ofx": "account_statement_import_ofx",
     "account_bank_statement_import_online": "account_statement_import_online",
     "account_bank_statement_import_online_paypal": "account_statement_import_online_paypal",  # noqa: B950
     "account_bank_statement_import_online_ponto": "account_statement_import_online_ponto",  # noqa: B950
+    "account_bank_statement_import_online_qonto": "account_statement_import_online_qonto",  # noqa: B950
     "account_bank_statement_import_online_transferwise": "account_statement_import_online_transferwise",  # noqa: B950
     "account_bank_statement_import_paypal": "account_statement_import_paypal",
     "account_bank_statement_import_qif": "account_statement_import_qif",
@@ -30,6 +33,10 @@ renamed_modules = {
     "account_bank_statement_import_save_file": "account_statement_import_save_file",
     "account_bank_statement_import_transfer_move": "account_statement_import_transfer_move",  # noqa: B950
     "account_bank_statement_import_txt_xlsx": "account_statement_import_txt_xlsx",
+    # OCA/e-commerce
+    "website_sale_attribute_filter_category": "website_sale_product_attribute_filter_category",  # noqa: B950
+    # OCA/event
+    "website_event_crm": "website_event_crm_invitation",
     # OCA/edi
     "account_e-invoice_generate": "account_einvoice_generate",
     "edi": "edi_oca",
@@ -37,12 +44,38 @@ renamed_modules = {
     "edi_backend_partner": "edi_backend_partner_oca",
     "edi_exchange_template": "edi_exchange_template_oca",
     "edi_storage": "edi_storage_oca",
+    "edi_voxel": "edi_voxel_oca",
+    "edi_voxel_account_invoice": "edi_voxel_account_invoice_oca",
+    "edi_voxel_sale_order_import": "edi_voxel_sale_order_import_oca",
+    "edi_voxel_sale_secondary_unit": "edi_voxel_sale_secondary_unit_oca",
+    "edi_voxel_secondary_unit": "edi_voxel_secondary_unit_oca",
+    "edi_voxel_stock_picking": "edi_voxel_stock_picking_oca",
+    "edi_voxel_stock_picking_secondary_unit": "edi_voxel_stock_picking_secondary_unit_oca",  # noqa: B950
     "edi_webservice": "edi_webservice_oca",
     "edi_xml": "edi_xml_oca",
+    # OCA/hr-holidays
+    "hr_leave_hour": "hr_leave_custom_hour_interval",
+    # OCA/l10n-belgium
+    "account_bank_statement_import_coda": "account_statement_import_coda",
     # OCA/l10n-spain
     "l10n_es_account_bank_statement_import_n43": "l10n_es_account_statement_import_n43",
+    # OCA/manufacture
+    "account_move_line_manufacture_info": "account_move_line_mrp_info",
+    # OCA/pos
+    "pos_picking_load": "pos_sale_order_load",
     # OCA/server-tools
+    "base_jsonify": "jsonifier",
     "openupgrade_records": "upgrade_analysis",
+    # OCA/website
+    "website_analytics_piwik": "website_analytics_matomo",
+    # OCA/l10n-italy
+    "l10n_it_account_balance_report": "l10n_it_financial_statements_report",
+    "l10n_it_causali_pagamento": "l10n_it_payment_reason",
+    "l10n_it_codici_carica": "l10n_it_appointment_code",
+    "l10n_it_dichiarazione_intento": "l10n_it_declaration_of_intent",
+    "l10n_it_withholding_tax_causali": "l10n_it_withholding_tax_reason",
+    # OCA/l10n-france
+    "account_bank_statement_import_fr_cfonb": "account_statement_import_fr_cfonb",
     # OCA/...
     # Viindoo/tvtmaaddons
     "to_print_payment_vi": "viin_l10n_vn_payment_print",
@@ -88,20 +121,53 @@ merged_modules = {
     "pos_kitchen_printer": "pos_restaurant",
     "pos_reprint": "point_of_sale",
     "website_theme_install": "website",
+    # odoo/design-themes
+    "theme_graphene_blog": "theme_graphene",
+    # odoo/enterprise
+    "hr_holidays_gantt_calendar": "hr_holidays_gantt",
+    # OCA/helpdesk
+    "helpdesk_mgmt_timesheet_time_control": "helpdesk_mgmt_timesheet",
+    # OCA/hr -> OCA/payroll:
+    "hr_period": "hr_payroll_period",
+    # OCA/intrastat-extrastat
+    "hs_code_link": "product_harmonized_system_delivery",
+    # OCA/event
+    "website_event_questions_free_text": "website_event_questions",
+    # OCA/e-commerce
+    "website_sale_product_style_badge": "website_sale",
+    "website_snippet_carousel_product": "website_sale",
+    # OCA/l10n-netherlands
+    "l10n_nl_tax_invoice_basis": "l10n_nl_tax_statement",
+    # OCA/margin-analysis
+    "sale_order_margin_percent": "sale_margin",
     # OCA/partner-contact
     "base_vat_sanitized": "base_vat",
     "partner_bank_active": "base",
-    # OCA/stock-logistics-warehouse
-    "stock_inventory_include_exhausted": "stock",
+    # OCA/pos
+    "pos_ticket_logo": "point_of_sale",
     # OCA/project
     "project_description": "project",
     "project_stage_closed": "project",
-    # OCA/survey
-    "survey_description": "survey",
+    # OCA/purchase-workflow
+    "purchase_tier_validation_forward": "base_tier_validation_forward",
+    # OCA/reporting-engine
+    "bi_sql_editor_aggregate": "bi_sql_editor",
+    # OCA/sale-reporting
+    "report_qweb_pdf_fixed_column": "web",
+    # OCA/sale-workflow
+    "sale_mrp_link": "sale_mrp",
+    "sale_order_price_recalculation": "sale",
+    "sale_order_pricelist_tracking": "sale",
+    # OCA/stock-logistics-warehouse
+    "stock_inventory_include_exhausted": "stock",
     # OCA/web
     "web_editor_background_color": "web_editor",
     # OCA/website
     "website_cookie_notice": "website",
+    "website_form_recaptcha": "website_form",
+    "website_crm_recaptcha": "website_form",
+    # OCA/web
+    "web_confirm_duplicate": "web_copy_confirm",
     # OCA/...
     # Viindoo/tvtmaaddons
     "to_l10n_vn_qweb_layout": "l10n_vn_common",

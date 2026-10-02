@@ -4,4 +4,4 @@
 NEW ir.ui.view: sale_purchase.purchase_order_inherited_form_sale
 NEW ir.ui.view: sale_purchase.sale_order_inherited_form_purchase
 DEL ir.ui.view: sale_purchase.sale_order_form_view_inherit
-# NOTHING TO DO: noupdate="0" records
+# View refactoring, nothing to do.

@@ -10,6 +10,7 @@ from odoo import tools
 _logger = logging.getLogger(__name__)
 
 try:
+    # pylint: disable=odoo-addons-relative-import
     from odoo.addons.openupgrade_scripts.apriori import merged_modules, renamed_modules
 except ImportError:
     renamed_modules = {}
@@ -87,6 +88,20 @@ def deduplicate_ir_properties(cr):
     )
 
 
+def uninstall_conflicting_it_edi(cr):
+    it_edi_conflicting_modules = ("l10n_it_edi", "l10n_it_fatturapa")
+    if all(openupgrade.is_module_installed(cr, m) for m in it_edi_conflicting_modules):
+        # Mark as 'to_remove' to avoid raising a conflict; it will be installed anyway,
+        # but we will uninstall it for good in end-migration.
+        openupgrade.logged_query(
+            cr,
+            """
+            UPDATE ir_module_module
+            SET state='to remove'
+            WHERE name = 'l10n_it_edi'""",
+        )
+
+
 def merge_web_diagram_if_unused(cr):
     """web_diagram is gone in 14.0 and nothing replaces it: merge it into web as long
     as no view uses the diagram type any more, the module has to be dealt with by hand
@@ -137,8 +152,22 @@ def migrate(cr, version):
     """
     )
     # Perform module renames and merges
-    openupgrade.update_module_names(cr, renamed_modules.items())
-    openupgrade.update_module_names(cr, merged_modules.items(), merge_modules=True)
+
+    # edi_oca has been merged into oca/edi 12.0, so move the rename of edi
+    # to merged in case it already exists at this point (we still need the
+    # rename when migrating just a v13 db
+    cr.execute("SELECT 1 FROM ir_module_module WHERE name='edi_oca'")
+    if cr.fetchall():
+        merged_modules["edi"] = renamed_modules.pop("edi")
+
+    openupgrade.update_module_names(
+        cr, renamed_modules.items(), environment_namespec=True
+    )
+    openupgrade.update_module_names(
+        cr, merged_modules.items(), merge_modules=True, environment_namespec=True
+    )
+    openupgrade.clean_transient_models(cr)
+    uninstall_conflicting_it_edi(cr)
     merge_web_diagram_if_unused(cr)
     # Migrate partners from Fil to Tagalog
     # See https://github.com/odoo/odoo/commit/194ed76c5cc9
@@ -146,3 +175,25 @@ def migrate(cr, version):
         cr, "UPDATE res_partner SET lang = 'tl_PH' WHERE lang = 'fil_PH'"
     )
     deduplicate_ir_properties(cr)
+    # Now Odoo supports disabling data exports, which is the main feature that
+    # the module web_disable_export_group provided. Although the module isn't completly
+    # merged into core as it allows to differentiate which type of export users can use.
+    # This might be unnecessary for some module users that would drop the module while
+    # others might want to keep it. To make the transition transparent for both cases,
+    # we put this migration script here.
+    cr.execute(
+        """
+            SELECT id FROM ir_model_data
+            WHERE module='web_disable_export_group' AND name='group_export_data'
+        """
+    )
+    if cr.fetchone():
+        openupgrade.rename_xmlids(
+            cr,
+            [
+                (
+                    "web_disable_export_group.group_export_data",
+                    "base.group_allow_export",
+                )
+            ],
+        )
