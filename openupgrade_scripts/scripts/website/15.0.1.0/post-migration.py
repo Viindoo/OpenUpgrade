@@ -35,10 +35,12 @@ def extract_footer_copyright_company_name(env):
             )
             new_arch = re.sub(
                 main_copyright_pattern,
-                website_layout_matches[0]
-                if website_layout_matches
-                else f'<span class="o_footer_copyright_name mr-2">'
-                f"Copyright © {Markup.escape(website.company_id.name)}</span>",
+                (
+                    website_layout_matches[0]
+                    if website_layout_matches
+                    else f'<span class="o_footer_copyright_name mr-2">'
+                    f"Copyright © {Markup.escape(website.company_id.name)}</span>"
+                ),
                 main_copyright_arch,
             )
             main_copyright_view.with_context(website_id=website.id).arch = new_arch

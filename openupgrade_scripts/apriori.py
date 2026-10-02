@@ -1,4 +1,4 @@
-""" Encode any known changes to the database here
+"""Encode any known changes to the database here
 to help the matching process
 """
 
@@ -17,6 +17,8 @@ renamed_modules = {
     "l10n_eu_oss": "l10n_eu_oss_oca",
     # OCA/account-invoice-reporting
     "account_invoice_report_utm_campaign": "account_invoice_report_utm",
+    # OCA/commission
+    "sale_commission_formula": "commission_formula",
     # OCA/e-commerce
     "website_sale_attribute_filter_order": "website_sale_product_attribute_filter_order",
     # OCA/project
@@ -97,6 +99,8 @@ merged_modules = {
     "stock_barcode_mobile": "stock_barcode",
     # OCA/account-financial-tools
     "stock_account_prepare_anglo_saxon_out_lines_hook": "stock_account",
+    # OCA/account-payment
+    "account_payment_paired_internal_transfer": "account",
     # OCA/e-commerce
     "website_sale_product_attribute_filter_visibility": "website_sale",
     # OCA/account-invoicing
@@ -111,6 +115,9 @@ merged_modules = {
     # OCA/e-commerce
     "website_sale_attribute_filter_price": "website_sale",
     "website_sale_stock_available_display": "website_sale_stock",
+    # OCA/fleet
+    "fleet_vehicle_notebook": "fleet",
+    "fleet_vehicle_pivot_graph": "fleet",
     # OCA/hr-attendance
     "hr_attendance_user_list": "hr_attendance",
     # OCA/l10n-germany
@@ -118,6 +125,7 @@ merged_modules = {
     # OCA/l10n-spain
     "l10n_es_extra_data": "l10n_es",
     # OCA/manufacture
+    "mrp_production_byproduct_cost_share": "mrp_account",
     "mrp_subcontracting_resupply_link": "mrp_subcontracting_purchase",
     # OCA/pos
     "pos_invoicing": "point_of_sale",
@@ -127,8 +135,11 @@ merged_modules = {
     "pos_sale_order_load": "pos_sale",
     # OCA/product-attribute
     "stock_account_product_cost_security": "product_cost_security",
+    "product_sale_tax_price_included": "account",
     # OCA/server-tools
     "base_jsonify": "jsonifier",
+    # OCA/server-ux
+    "mass_operation_abstract": "base",
     # OCA/stock-logistics-reporting
     "stock_inventory_valuation_pivot": "stock_account",
     # OCA/stock-logistics-warehouse

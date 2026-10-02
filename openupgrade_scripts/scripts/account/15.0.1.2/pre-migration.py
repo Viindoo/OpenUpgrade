@@ -185,7 +185,7 @@ def _fast_fill_account_move_line_tax_tag_invert(env):
                 ON aml.id = tax_rel.account_move_line_id
             LEFT JOIN account_account_tag_account_move_line_rel tag_rel
                 ON aml.id = tag_rel.account_move_line_id
-            WHERE am.move_type = 'entry' AND aml.tax_repartition_line_id IS NULL
+            WHERE am.move_type != 'entry' AND aml.tax_repartition_line_id IS NULL
                 AND tax_rel.account_move_line_id IS NULL
         ) sub
         WHERE sub.id = aml.id""",

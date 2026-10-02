@@ -148,6 +148,22 @@ def _migrate_if(string):
     return re.sub(pattern, repl_if, string, flags=re.MULTILINE)
 
 
+def repl_elif(match):
+    """Aux. method. We declare it globally so we don't have scope issues from shell"""
+    (elif_expression,) = match.groups()
+    elif_expression = html.escape(elif_expression)
+    return f'</t>\n<t t-elif="{elif_expression}">'
+
+
+def _migrate_elif(string):
+    """
+    Replace mako elif blocks (while closing previous [el]if block)
+    Example : '% elif (boolean expression):' -> '</t>\n<t t-elif="(boolean expression)">'
+    """
+    pattern = r"%\s?elif\s(.+)\s?:"
+    return re.sub(pattern, repl_elif, string, flags=re.MULTILINE)
+
+
 def repl_for(match):
     """Aux. method. We declare it globally so we don't have scope issues from shell"""
     var_name, loop_expression = match.groups()
@@ -211,6 +227,7 @@ def mako_html_to_qweb(string):
     string = _migrate_if(string)
     string = _migrate_for(string)
     string = _migrate_else(string)
+    string = _migrate_elif(string)
     string = _migrate_end(string)
     string = _migrate_set(string)
     return string

@@ -185,13 +185,12 @@ def migration_to_mail_group(env):
             ("mail_channel_moderator_rel", "mail_group_moderator_rel"),
         ],
     )
-    openupgrade.rename_columns(
+    openupgrade.logged_query(
         env.cr,
-        {
-            "mail_group_moderator_rel": [
-                ("mail_channel_id", "mail_group_id"),
-            ]
-        },
+        """
+        ALTER TABLE mail_group_moderator_rel
+        ADD COLUMN mail_group_id integer
+        """,
     )
     # fill mail_group table
     sql.create_model_table(
@@ -249,7 +248,21 @@ def migration_to_mail_group(env):
         UPDATE mail_group_moderator_rel rel
         SET mail_group_id = mg.id
         FROM mail_group mg
-        WHERE mg.old_channel_id = rel.mail_group_id""",
+        WHERE mg.old_channel_id = rel.mail_channel_id""",
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        ALTER TABLE mail_group_moderator_rel
+        DROP COLUMN mail_channel_id
+        """,
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        DELETE FROM mail_group_moderator_rel
+        WHERE mail_group_id IS NULL
+        """,
     )
     # fill mail_group_moderation.mail_group_id (field is required)
     openupgrade.logged_query(

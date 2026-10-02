@@ -129,8 +129,12 @@ def migrate(cr, version):
         )
 
     # Perform module renames and merges
-    openupgrade.update_module_names(cr, renamed_modules.items())
-    openupgrade.update_module_names(cr, merged_modules.items(), merge_modules=True)
+    openupgrade.update_module_names(
+        cr, renamed_modules.items(), environment_namespec=True
+    )
+    openupgrade.update_module_names(
+        cr, merged_modules.items(), merge_modules=True, environment_namespec=True
+    )
 
     openupgrade.rename_xmlids(cr, rename_xmlids_l10n_ec)
     openupgrade.rename_xmlids(cr, rename_xmlids_mail)

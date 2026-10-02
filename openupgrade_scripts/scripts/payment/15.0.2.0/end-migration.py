@@ -22,7 +22,9 @@ def create_account_payment_method_line(env):
         FROM account_payment_method apm
         JOIN payment_acquirer pa ON pa.provider = apm.code
         JOIN account_journal aj ON aj.type = 'bank' AND aj.id = pa.journal_id
-        WHERE apm.code NOT IN ('manual', 'check_printing')
+        LEFT JOIN account_payment_method_line apml ON (
+            apml.payment_method_id = apm.id AND apml.journal_id = aj.id)
+        WHERE apm.code NOT IN ('manual', 'check_printing') AND apml.id IS NULL
         """,
     )
 
