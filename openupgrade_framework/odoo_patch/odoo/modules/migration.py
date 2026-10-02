@@ -21,6 +21,11 @@ def migrate_module(self, pkg, stage):
     module_scripts = {}
     if to_install:
         pkg.state = "to upgrade"
+    # end scripts: the state Odoo looks at is the one the module was loaded with
+    load_state_to_install = getattr(pkg, "load_state", False)
+    if load_state_to_install == "to install":
+        pkg.load_state = "to upgrade"
+    if to_install or load_state_to_install == "to install":
         for key in ("module", "module_upgrades"):
             if key in self.migrations[pkg.name]:
                 module_scripts[key] = self.migrations[pkg.name][key]
@@ -32,6 +37,9 @@ def migrate_module(self, pkg, stage):
     finally:
         if to_install:
             pkg.state = "to install"
+        if load_state_to_install == "to install":
+            pkg.load_state = "to install"
+        if module_scripts:
             self.migrations[pkg.name].update(module_scripts)
 
 

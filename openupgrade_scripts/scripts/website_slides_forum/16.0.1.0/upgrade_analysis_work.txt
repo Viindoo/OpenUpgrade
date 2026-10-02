@@ -6,4 +6,4 @@ DEL ir.ui.menu: website_slides_forum.website_slides_menu_report_forum
 NEW ir.ui.view: website_slides_forum.forum_forum_view_tree_slides
 NEW ir.ui.view: website_slides_forum.res_config_settings_view_form
 NEW ir.ui.view: website_slides_forum.snippet_options
-# NOTHING TODO
+# NOTHING TO DO: ir noupdate=0 stuff

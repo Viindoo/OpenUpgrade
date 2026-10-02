@@ -34,6 +34,11 @@ renamed_modules = {
     "knowledge": "document_knowledge",
     # OCA/multi-company
     "res_partner_category_multi_company": "partner_category_multi_company",
+    # OCA/pos
+    "pos_cashback_warning": "pos_cashback",
+    "pos_sale_order_load": "pos_picking_load",
+    # OCA/product-attribute
+    "product_packaging_type": "product_packaging_level",
     # OCA/project
     "project_stage_mgmt": "project_task_stage_mgmt",
     # OCA/sale-promotion
@@ -51,12 +56,14 @@ renamed_modules = {
     "sale_coupon_partner": "sale_loyalty_partner",
     "website_sale_coupon_page": "website_sale_loyalty_page",
     "website_sale_coupon_selection_wizard": "website_sale_loyalty_suggestion_wizard",
+    # OCA/sale-workflow
+    "sale_by_packaging": "sell_only_by_packaging",
     # OCA/server-ux
     "mass_editing": "server_action_mass_edit",
     # OCA/l10n-italy
     "assets_management": "l10n_it_asset_management",
     "l10n_it_account_balance_eu": "l10n_it_financial_statement_eu",
-    "l10n_it_ricevute_bancarie": "l10n_it_riba",
+    "l10n_it_ricevute_bancarie": "l10n_it_riba_oca",
     # OCA/...
     # Viindoo/tvtmaaddons
     "to_affiliate": "viin_affiliate",
@@ -122,6 +129,8 @@ merged_modules = {
     "account_invoice_search_by_reference": "account",
     # OCA/account-invoice-reporting
     "account_invoice_report_due_list": "account",
+    # OCA/account-reconcile
+    "account_bank_statement_reopen_skip_undo_reconciliation": "account_statement_base",
     # OCA/e-commerce
     "website_sale_require_login": "website_sale",
     # OCA/l10n-spain
@@ -141,6 +150,8 @@ merged_modules = {
     "product_form_purchase_link": "purchase",
     "purchase_order_line_price_history": "purchase",
     "purchase_picking_state": "purchase_stock",
+    # OCA/queue
+    "queue_job_context": "queue_job",
     # OCA/sale-promotion
     "coupon_commercial_partner_applicability": "loyalty_partner_applicability",
     "sale_coupon_selection_wizard": "sale_loyalty_order_suggestion",
@@ -151,6 +162,8 @@ merged_modules = {
     "mail_preview_base": "mail",
     # OCA/stock-logistics-workflow
     "stock_picking_backorder_strategy": "stock",
+    # OCA/survey
+    "survey_placeholder": "survey",
     # OCA/web
     "web_drop_target": "web",
     "web_ir_actions_act_view_reload": "web",
@@ -250,7 +263,7 @@ renamed_models = {
     "coupon.rule": "loyalty.rule",
     "mail.channel.partner": "mail.channel.member",
     "payment.acquirer": "payment.provider",
-    "payment.acquirer.onboarding.wizard ": "payment.provider.onboarding.wizard",
+    "payment.acquirer.onboarding.wizard": "payment.provider.onboarding.wizard",
     "sale.coupon.apply.code": "sale.loyalty.coupon.wizard",
     "sale.payment.acquirer.onboarding.wizard": "sale.payment.provider.onboarding.wizard",
     "stock.location.route": "stock.route",

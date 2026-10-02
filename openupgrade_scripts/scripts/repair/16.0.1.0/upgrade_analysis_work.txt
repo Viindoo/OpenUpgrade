@@ -2,7 +2,7 @@
 ---Fields in module 'repair'---
 repair       / repair.fee               / price_total (float)           : is now stored
 repair       / repair.line              / price_total (float)           : is now stored
-# DONE: recomputed in post_migration
+# NOTIHING TO DO: handled by ORM
 
 repair       / repair.line              / lot_id (many2one)             : relation is now 'stock.lot' ('stock.production.lot') [nothing to do]
 repair       / repair.order             / lot_id (many2one)             : relation is now 'stock.lot' ('stock.production.lot') [nothing to do]

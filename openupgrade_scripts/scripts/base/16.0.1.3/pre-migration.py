@@ -185,14 +185,22 @@ def migrate(cr, version):
         )
     login_or_registration_required_at_checkout(cr)
     enable_coupon_sharing_within_entity(cr)
-    openupgrade.update_module_names(cr, renamed_modules.items())
-    openupgrade.update_module_names(cr, merged_modules.items(), merge_modules=True)
+    openupgrade.update_module_names(
+        cr, renamed_modules.items(), environment_namespec=True
+    )
+    openupgrade.update_module_names(
+        cr, merged_modules.items(), merge_modules=True, environment_namespec=True
+    )
     openupgrade.clean_transient_models(cr)
     # restricting inherited views to groups isn't allowed anymore
     cr.execute(
         "DELETE FROM ir_ui_view_group_rel r "
         "USING ir_ui_view v "
         "WHERE r.view_id=v.id AND v.inherit_id IS NOT NULL AND v.mode != 'primary'"
+    )
+    # pre-create res.partner~company_registry
+    openupgrade.logged_query(
+        cr, "ALTER TABLE res_partner ADD IF NOT EXISTS company_registry VARCHAR"
     )
     # Renamed model in ir_translation
     changed_models = dict(**apriori.renamed_models, **apriori.merged_models)
