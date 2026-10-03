@@ -21,15 +21,25 @@ def unlink(self):
     """
     if not self.env.context.get(MODULE_UNINSTALL_FLAG):
         return BaseModel.unlink._original_method(self)
-    savepoint = str(uuid4)
+    savepoint = str(uuid4())
     try:
         self.env.cr.execute(  # pylint: disable=sql-injection
             'SAVEPOINT "%s"' % savepoint
         )
-        return BaseModel.unlink._original_method(self)
+        result = BaseModel.unlink._original_method(self)
+        # release it: a savepoint left open per deleted record keeps a
+        # transactionid lock until the end of the update, enough to exhaust
+        # the lock table of the cluster on a large update
+        self.env.cr.execute(  # pylint: disable=sql-injection
+            'RELEASE SAVEPOINT "%s"' % savepoint
+        )
+        return result
     except Exception as e:
         self.env.cr.execute(  # pylint: disable=sql-injection
             'ROLLBACK TO SAVEPOINT "%s"' % savepoint
+        )
+        self.env.cr.execute(  # pylint: disable=sql-injection
+            'RELEASE SAVEPOINT "%s"' % savepoint
         )
         _logger.warning(
             "Could not delete obsolete record with ids %s of model %s: %s",

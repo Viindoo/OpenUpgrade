@@ -91,8 +91,10 @@ account      / account.analytic.line    / partner_id (False)            : previo
 # NOTHING TO DO
 
 account      / account.bank.statement   / _order                        : _order is now 'first_line_index desc' ('date desc, name desc, id desc')
-account      / account.bank.statement   / attachment_ids (many2many)    : NEW relation: ir.attachment
 # NOTHING TO DO
+
+account      / account.bank.statement   / attachment_ids (many2many)    : NEW relation: ir.attachment
+# DONE: post-migration: fill this field with the existing chatter attachments
 
 account      / account.bank.statement   / cashbox_end_id (many2one)     : DEL relation: account.bank.statement.cashbox
 account      / account.bank.statement   / cashbox_start_id (many2one)   : DEL relation: account.bank.statement.cashbox

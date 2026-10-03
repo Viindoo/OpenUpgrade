@@ -170,6 +170,64 @@ def update_translatable_fields(cr):
         )
 
 
+_TECHNICAL_MODELS = (
+    "ir.actions.act_url",
+    "ir.actions.act_window",
+    "ir.actions.client",
+    "ir.actions.report",
+    "ir.actions.server",
+    "ir.actions.todo",
+    "ir.cron",
+    "ir.filters",
+    "ir.model.access",
+    "ir.property",
+    "ir.rule",
+    "ir.ui.menu",
+    "ir.ui.view",
+    "mail.template",
+    "website.menu",
+)
+
+
+def release_records_of_lost_modules(cr):
+    """A module that is removed without a successor is merged into the module
+    it extended (apriori.lost_modules), and the update of that module deletes
+    the records it no longer finds in the data files, except the noupdate
+    ones: release the technical records, so that they are deleted too, and
+    detach the xml ids of the records of models that go with the module (the
+    rows stay). Business records stay.
+    """
+    from odoo.addons.openupgrade_scripts import apriori as _apriori
+
+    lost_modules = tuple(getattr(_apriori, "lost_modules", []))
+    if not lost_modules:
+        return
+    openupgrade.logged_query(
+        cr,
+        """
+        UPDATE ir_model_data SET noupdate = FALSE
+        WHERE noupdate AND module IN %s AND model IN %s
+        """,
+        (lost_modules, _TECHNICAL_MODELS),
+    )
+    openupgrade.logged_query(
+        cr,
+        """
+        DELETE FROM ir_model_data d
+        WHERE d.module IN %s AND d.model IN (
+            SELECT m.model
+            FROM ir_model m
+            JOIN ir_model_data md ON md.model = 'ir.model'
+                AND md.res_id = m.id AND md.module IN %s
+            WHERE NOT EXISTS (
+                SELECT 1 FROM ir_model_data o
+                WHERE o.model = 'ir.model' AND o.res_id = m.id
+                    AND o.module NOT IN %s))
+        """,
+        (lost_modules,) * 3,
+    )
+
+
 @openupgrade.migrate(use_env=False)
 def migrate(cr, version):
     """
@@ -185,14 +243,23 @@ def migrate(cr, version):
         )
     login_or_registration_required_at_checkout(cr)
     enable_coupon_sharing_within_entity(cr)
-    openupgrade.update_module_names(cr, renamed_modules.items())
-    openupgrade.update_module_names(cr, merged_modules.items(), merge_modules=True)
+    release_records_of_lost_modules(cr)
+    openupgrade.update_module_names(
+        cr, renamed_modules.items(), environment_namespec=True
+    )
+    openupgrade.update_module_names(
+        cr, merged_modules.items(), merge_modules=True, environment_namespec=True
+    )
     openupgrade.clean_transient_models(cr)
     # restricting inherited views to groups isn't allowed anymore
     cr.execute(
         "DELETE FROM ir_ui_view_group_rel r "
         "USING ir_ui_view v "
         "WHERE r.view_id=v.id AND v.inherit_id IS NOT NULL AND v.mode != 'primary'"
+    )
+    # pre-create res.partner~company_registry
+    openupgrade.logged_query(
+        cr, "ALTER TABLE res_partner ADD IF NOT EXISTS company_registry VARCHAR"
     )
     # Renamed model in ir_translation
     changed_models = dict(**apriori.renamed_models, **apriori.merged_models)

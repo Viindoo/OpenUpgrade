@@ -16,10 +16,10 @@ def create_work_contact(env):
     res.user as a work_contact_id.
 
     If the employee is not linked to a res.user. Then we try to match an
-    existing partner with the same email address and mobile (when the employee
-    has one of them). If one is found, then we assign it as work_contact_id.
-    If several are found, we raise a warning and we link the first one found.
-    If none are found, then we create a new partner.
+    existing partner with the same email address. If one is found, then
+    we assign it as work_contact_id. If several are found, we raise a
+    warning and we link the first one found. If none are found, then we
+    create a new partner.
     """
     employees = env["hr.employee"].search([])
 
@@ -44,18 +44,16 @@ def create_work_contact(env):
                     partner.id,
                 )
         else:
-            # Without email nor mobile, the search would match every partner
-            # that has neither of them, and an unrelated contact would become
-            # the work contact (the private address is merged into it in 17.0)
-            matching_partner = env["res.partner"]
-            if employee.work_email or employee.mobile_phone:
-                matching_partner = matching_partner.search(
+            if employee.work_email and employee.mobile_phone:
+                matching_partner = env["res.partner"].search(
                     [
                         ("email", "=", employee.work_email),
                         ("mobile", "=", employee.mobile_phone),
                     ]
                 )
-            nb_matching_partner = len(matching_partner)
+                nb_matching_partner = len(matching_partner)
+            else:
+                nb_matching_partner = 0
             if nb_matching_partner == 1:
                 employee.work_contact_id = matching_partner
                 _logger.info(
@@ -77,7 +75,7 @@ def create_work_contact(env):
                     partner.id,
                     employee.id,
                 )
-            else:
+            elif employee.work_email or employee.mobile_phone:
                 partner_vals = {
                     "name": employee.name,
                     "email": employee.work_email,

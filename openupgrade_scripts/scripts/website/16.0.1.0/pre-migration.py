@@ -148,3 +148,4 @@ def migrate(env, version):
     _reset_customize_show_in_website_views(env)
     _fill_homepage_url(env)
     _mig_s_progress_steps_contents(env)
+    openupgrade.cow_templates_mark_if_equal_to_upstream(env.cr)
