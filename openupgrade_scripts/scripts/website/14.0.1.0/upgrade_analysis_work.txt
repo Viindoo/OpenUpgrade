@@ -326,3 +326,5 @@ NEW website.snippet.filter: website.dynamic_snippet_data_source_country
 
 DEL website.page: website.aboutus_page (noupdate)
 # DONE: post-migration: deleted xmlid safely
+# website-specific copies of website.aboutus (changes made with the website editor) get a key of their
+# own first (post-migration), so that the deletion of the generic view does not take them and their pages

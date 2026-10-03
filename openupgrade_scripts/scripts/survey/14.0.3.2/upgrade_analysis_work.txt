@@ -277,3 +277,7 @@ NEW ir.ui.view: survey.user_input_session_manage
 NEW ir.ui.view: survey.user_input_session_manage_content
 NEW ir.ui.view: survey.user_input_session_open
 # NOTHING TO DO
+
+# Not in the analysis (no 13.0 module ships it): survey.ir_cron_clean_empty_surveys, noupdate
+# cron of 9.0 calling survey.user_input.do_clean_emptys, removed in 14.0.
+# DONE: post-migration: deleted (databases upgraded before the 10.0 script deleted it)

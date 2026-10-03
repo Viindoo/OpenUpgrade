@@ -3,7 +3,20 @@
 from openupgradelib import openupgrade
 
 
-def rename_fields(env):
+def convert_fields(env):
+    if openupgrade.column_exists(env.cr, "account_move", "move_type"):
+        # see account_tax_balance of OCA
+        openupgrade.rename_fields(
+            env,
+            [
+                (
+                    "account.move",
+                    "account_move",
+                    "move_type",
+                    openupgrade.get_legacy_name("move_type"),
+                ),
+            ],
+        )
     openupgrade.rename_fields(
         env,
         [
@@ -87,6 +100,30 @@ def rename_fields(env):
             ),
         ],
     )
+    openupgrade.rename_columns(
+        env.cr,
+        {
+            "account_journal": [
+                ("default_credit_account_id", None),
+                ("default_debit_account_id", None),
+            ],
+            "account_bank_statement_line": [
+                ("date", None),
+            ],
+            "account_payment": [
+                ("name", None),
+                ("payment_date", None),
+            ],
+        },
+    )
+    openupgrade.copy_columns(
+        env.cr,
+        {
+            "account_payment": [
+                ("currency_id", None, None),
+            ],
+        },
+    )
 
 
 def m2m_tables_account_journal_renamed(env):
@@ -125,45 +162,6 @@ def remove_constrains_reconcile_models(env):
     )
 
 
-def copy_fields(env):
-    openupgrade.rename_columns(
-        env.cr,
-        {
-            "account_journal": [
-                ("default_credit_account_id", None),
-                ("default_debit_account_id", None),
-            ],
-        },
-    )
-    if openupgrade.column_exists(env.cr, "account_move", "move_type"):
-        # see account_tax_balance of OCA
-        openupgrade.rename_fields(
-            env,
-            [
-                (
-                    "account.move",
-                    "account_move",
-                    "move_type",
-                    openupgrade.get_legacy_name("move_type"),
-                ),
-            ],
-        )
-    openupgrade.copy_columns(
-        env.cr,
-        {
-            "account_bank_statement_line": [
-                ("date", None, None),
-            ],
-            "account_payment": [
-                ("journal_id", None, None),
-                ("name", None, None),
-                ("payment_date", None, None),
-                ("currency_id", None, None),
-            ],
-        },
-    )
-
-
 def _mark_move_line_statement_unreconciled(env):
     # 1. create legacy_statement column in account_move_line table
     openupgrade.logged_query(
@@ -192,10 +190,7 @@ def add_move_id_field_account_bank_statement_line(env):
     ):
         openupgrade.logged_query(
             env.cr,
-            """
-            ALTER TABLE account_bank_statement_line
-            ADD COLUMN currency_id integer
-            """,
+            "ALTER TABLE account_bank_statement_line ADD COLUMN currency_id integer",
         )
     openupgrade.logged_query(
         env.cr,
@@ -208,82 +203,27 @@ def add_move_id_field_account_bank_statement_line(env):
         WHERE absl.statement_id = bs.id
         """,
     )
+    # Set the move in the statement line from the link in the aml
     if not openupgrade.column_exists(env.cr, "account_bank_statement_line", "move_id"):
         openupgrade.logged_query(
-            env.cr,
-            """
-            ALTER TABLE account_bank_statement_line
-            ADD COLUMN move_id integer
-            """,
+            env.cr, "ALTER TABLE account_bank_statement_line ADD COLUMN move_id integer"
         )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE account_bank_statement_line absl
+        SET move_id = aml.move_id
+        FROM account_move_line aml
+        WHERE aml.statement_line_id = absl.id AND absl.move_id IS NULL
+        """,
+    )
+    # Assign the reverse link from move to statement line
     if not openupgrade.column_exists(env.cr, "account_move", "statement_line_id"):
-        # In v10 existed that field
+        # In v10, the fields exists
         openupgrade.logged_query(
             env.cr,
-            """
-            ALTER TABLE account_move
-            ADD COLUMN statement_line_id integer
-            """,
+            "ALTER TABLE account_move ADD COLUMN statement_line_id integer",
         )
-    openupgrade.logged_query(
-        env.cr,
-        """
-        UPDATE account_move am
-        SET statement_line_id = aml.statement_line_id
-        FROM account_move_line aml
-        WHERE aml.move_id = am.id AND aml.statement_line_id IS NOT NULL
-        """,
-    )
-    # 1. set move_id from moves where statement_line_id is defined
-    openupgrade.logged_query(
-        env.cr,
-        """
-        UPDATE account_bank_statement_line absl
-        SET move_id = am.id
-        FROM account_move am
-        WHERE am.statement_line_id = absl.id
-        """,
-    )
-    # 2. try to match on statement move_name or payment_ref (if move_name empty)
-    openupgrade.logged_query(
-        env.cr,
-        """
-        UPDATE account_bank_statement_line absl
-        SET move_id = am.id
-        FROM account_move am, account_bank_statement bs
-        WHERE absl.statement_id = bs.id
-            AND absl.move_id IS NULL
-            AND am.name NOT IN ('', '/')
-            AND COALESCE(NULLIF(absl.move_name, ''), absl.payment_ref) = am.name
-            AND am.company_id = bs.company_id
-        """,
-    )
-    # 3. match on statement payment_ref with payment communication
-    openupgrade.logged_query(
-        env.cr,
-        """
-        UPDATE account_bank_statement_line absl
-        SET move_id = ap.move_id
-        FROM account_payment ap
-        JOIN account_journal aj ON ap.journal_id = aj.id,
-            account_bank_statement bs
-        WHERE absl.statement_id = bs.id AND aj.company_id = bs.company_id
-            AND absl.move_id IS NULL AND absl.payment_ref NOT IN ('', '/')
-            AND absl.payment_ref = ap.communication
-        """,
-    )
-    # 4. match on statement account number and move ref
-    openupgrade.logged_query(
-        env.cr,
-        """
-        UPDATE account_bank_statement_line absl
-        SET move_id = am.id
-        FROM account_move am, account_bank_statement bs
-        WHERE absl.statement_id = bs.id AND am.company_id = bs.company_id
-            AND absl.move_id IS NULL AND absl.account_number NOT IN ('', '/')
-            AND absl.account_number = am.ref
-        """,
-    )
     openupgrade.logged_query(
         env.cr,
         """
@@ -304,6 +244,15 @@ def add_move_id_field_account_payment(env):
             ADD COLUMN move_id integer
             """,
         )
+    # Set move_id from move lines where payment_id is defined
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE account_payment ap
+        SET move_id = aml.move_id
+        FROM account_move_line aml
+        WHERE aml.payment_id = ap.id AND ap.move_id IS NULL""",
+    )
     if not openupgrade.column_exists(env.cr, "account_move", "payment_id"):
         openupgrade.logged_query(
             env.cr,
@@ -316,58 +265,26 @@ def add_move_id_field_account_payment(env):
         env.cr,
         """
         UPDATE account_move am
-        SET payment_id = aml.payment_id
-        FROM account_move_line aml
-        WHERE aml.move_id = am.id AND aml.payment_id IS NOT NULL
-        """,
-    )
-    # 1. set move_id from moves where payment_id is defined
-    openupgrade.logged_query(
-        env.cr,
-        """
-        UPDATE account_payment ap
-        SET move_id = am.id
-        FROM account_move am
-        WHERE ap.move_id IS NULL
-            AND am.payment_id = ap.id
-            AND ap.state NOT IN ('draft', 'cancelled')""",
-    )
-    # 2. try to match on payment move_name or payment_reference (if move_name empty)
-    openupgrade.logged_query(
-        env.cr,
-        """
-        UPDATE account_payment ap
-        SET move_id = am.id
-        FROM account_move am, account_journal aj
-        WHERE ap.journal_id = aj.id
-            AND ap.move_id IS NULL
-            AND am.name NOT IN ('', '/')
-            AND COALESCE(NULLIF(ap.move_name, ''), ap.payment_reference) = am.name
-            AND am.company_id = aj.company_id
-            AND ap.state NOT IN ('draft', 'cancelled')""",
-    )
-    # 3. match on payment communication with move payment_reference, ref or name
-    openupgrade.logged_query(
-        env.cr,
-        """
-        UPDATE account_payment ap
-        SET move_id = am.id
-        FROM account_move am, account_journal aj
-        WHERE ap.journal_id = aj.id AND am.company_id = aj.company_id AND
-            ap.state NOT IN ('draft', 'cancelled') AND
-            ap.move_id IS NULL AND ap.communication NOT IN ('', '/') AND
-            am.ref = ap.communication
-        """,
-    )
-    openupgrade.logged_query(
-        env.cr,
-        """
-        UPDATE account_move am
         SET payment_id = ap.id
         FROM account_payment ap
         WHERE am.id = ap.move_id AND am.payment_id IS NULL
         """,
     )
+    # An internal transfer of v13 is one payment with two journal entries. Link
+    # the other entry to the payment as well: post-migration needs it for creating
+    # the counterpart payment (create_new_counterpart_account_payment_transfer)
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE account_move am
+        SET payment_id = aml.payment_id
+        FROM account_move_line aml
+        JOIN account_payment ap ON ap.id = aml.payment_id
+        WHERE aml.move_id = am.id AND am.payment_id IS NULL
+            AND ap.payment_type = 'transfer'
+        """,
+    )
+    # fix currency
     openupgrade.logged_query(
         env.cr,
         """
@@ -512,8 +429,44 @@ def fill_account_move_line_currency_id(env):
         env.cr,
         """
         UPDATE account_move_line
-        SET currency_id = company_currency_id
+        SET currency_id = company_currency_id,
+            amount_residual_currency = amount_residual
         WHERE currency_id IS NULL
+        """,
+    )
+
+
+def fill_account_move_line_matching_number(env):
+    openupgrade.add_fields(
+        env,
+        [
+            (
+                "matching_number",
+                "account.move.line",
+                "account_move_line",
+                "char",
+                False,
+                "account",
+            ),
+        ],
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE account_move_line aml
+        SET matching_number = afr.name
+        FROM account_full_reconcile afr
+        WHERE afr.id = aml.full_reconcile_id
+        """,
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE account_move_line aml
+        SET matching_number = 'P'
+        FROM account_partial_reconcile apr
+        WHERE aml.full_reconcile_id IS NULL AND
+            (apr.credit_move_id = aml.id OR apr.debit_move_id = aml.id)
         """,
     )
 
@@ -527,6 +480,336 @@ def fill_account_payment_partner_id(env):
         FROM account_journal aj
         JOIN res_company rc ON aj.company_id = rc.id
         WHERE ap.payment_type = 'transfer'
+            AND aj.id = ap.journal_id
+        """,
+    )
+
+
+def fill_account_payment_data(env):
+    openupgrade.add_fields(
+        env,
+        [
+            (
+                "is_internal_transfer",
+                "account.payment",
+                "account_payment",
+                "boolean",
+                False,
+                "account",
+            ),
+            (
+                "destination_account_id",
+                "account.payment",
+                "account_payment",
+                "many2one",
+                False,
+                "account",
+            ),
+            (
+                "partner_bank_id",
+                "account.payment",
+                "account_payment",
+                "many2one",
+                False,
+                "account",
+            ),
+        ],
+    )
+    # Set data for internal transfers
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE account_payment ap
+        SET is_internal_transfer = TRUE,
+            destination_account_id = rc.transfer_account_id
+        FROM account_journal aj,
+            account_move am,
+            res_company rc
+        WHERE am.journal_id = aj.id
+            AND ap.move_id = am.id
+            AND aj.company_id = rc.id
+            AND ap.partner_id = rc.partner_id
+        """,
+    )
+    # Set data for customer/supplier transfers
+    query = """
+        UPDATE account_payment ap
+        SET destination_account_id = substring(ip.value_reference, 17)::int
+        FROM account_journal aj,
+            ir_property ip,
+            ir_model_fields imf
+        WHERE ap.partner_type IN ('customer', 'supplier')
+            AND ap.destination_account_id IS NULL
+            AND ap.journal_id = aj.id
+            AND ip.fields_id = imf.id
+            AND imf.name = CASE
+                WHEN partner_type = 'customer' THEN 'property_account_receivable_id'
+                ELSE 'property_account_payable_id'
+            END
+            AND imf.model = 'res.partner'
+            AND ip.company_id = aj.company_id"""
+    # with partner with specific AR/AP account
+    openupgrade.logged_query(
+        env.cr,
+        query
+        + """
+        AND ap.partner_id IS NOT NULL
+        AND ip.res_id = 'res.partner,' || ap.partner_id::VARCHAR
+        """,
+    )
+    # and without partner or without specific AR/AP account
+    openupgrade.logged_query(env.cr, query + " AND ip.res_id IS NULL")
+    # Set Partner Bank ID
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE account_payment ap
+        SET partner_bank_id = aj.bank_account_id
+        FROM account_journal aj
+        WHERE payment_type = 'inbound'
+            AND ap.journal_id = aj.id
+        """,
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE account_payment ap
+        SET partner_bank_id = rpb.id
+        FROM res_partner_bank rpb,
+            account_journal aj
+        WHERE payment_type != 'inbound'
+            AND ap.partner_id IS NOT NULL
+            AND ap.partner_id = rpb.partner_id
+            AND ap.journal_id = aj.id
+            AND (rpb.company_id is NULL or rpb.company_id = aj.company_id)
+        """,
+    )
+
+
+def create_account_payment_reconciliation(env):
+    openupgrade.add_fields(
+        env,
+        [
+            (
+                "is_reconciled",
+                "account.payment",
+                "account_payment",
+                "boolean",
+                False,
+                "account",
+                False,
+            ),
+            (
+                "is_matched",
+                "account.payment",
+                "account_payment",
+                "boolean",
+                False,
+                "account",
+                False,
+            ),
+        ],
+    )
+
+
+def fill_account_bank_statement_data(env):
+    openupgrade.add_fields(
+        env,
+        [
+            (
+                "is_valid_balance_start",
+                "account.bank.statement",
+                "account_bank_statement",
+                "boolean",
+                False,
+                "account",
+            ),
+            (
+                "previous_statement_id",
+                "account.bank.statement",
+                "account_bank_statement",
+                "many2one",
+                False,
+                "account",
+            ),
+        ],
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        WITH previous_statement as (
+            SELECT abst.id,
+                CASE
+                WHEN abst.journal_id = LAG(abst.journal_id, 1) OVER (
+                        ORDER BY abst.journal_id, abst.date, abst.id)
+                    THEN LAG(abst.id, 1) OVER (
+                        ORDER BY abst.journal_id, abst.date, abst.id)
+                ELSE NULL
+                END as previous_statement_id,
+            CASE
+                WHEN abst.journal_id = LAG(abst.journal_id, 1) OVER (
+                        ORDER BY abst.journal_id, abst.date, abst.id)
+                    THEN ROUND(LAG(abst.balance_end, 1) OVER (
+                        ORDER BY abst.journal_id, abst.date, abst.id)
+                        - abst.balance_start, rcur.decimal_places) = 0
+                ELSE TRUE
+                END as is_valid_balance_start
+            FROM account_bank_statement abst
+            LEFT JOIN account_journal aj ON aj.id = abst.journal_id
+            LEFT JOIN res_company rc ON rc.id = aj.company_id
+            LEFT JOIN res_currency rcur
+                ON rcur.id = aj.currency_id
+                    OR (aj.currency_id IS NULL and rcur.id = rc.currency_id)
+            )
+        UPDATE account_bank_statement abst
+        SET is_valid_balance_start = previous_statement.is_valid_balance_start,
+            previous_statement_id = previous_statement.previous_statement_id
+        FROM previous_statement
+        WHERE abst.id = previous_statement.id
+        """,
+    )
+
+
+def create_account_bank_statement_line_reconciliation(env):
+    openupgrade.add_fields(
+        env,
+        [
+            (
+                "amount_residual",
+                "account.bank.statement.line",
+                "account_bank_statement_line",
+                "float",
+                False,
+                "account",
+            ),
+            (
+                "is_reconciled",
+                "account.bank.statement.line",
+                "account_bank_statement_line",
+                "boolean",
+                False,
+                "account",
+            ),
+        ],
+    )
+
+
+def delete_xmlid_existing_groups(env):
+    env.cr.execute(
+        """DELETE FROM ir_model_data imd
+        USING account_group ag
+        WHERE ag.id = imd.res_id AND imd.model = 'account.group'
+            AND imd.module != '__export__'
+        RETURNING imd.res_id"""
+    )
+    # end-migration script will:
+    # - populate account groups from the templates
+    # - unfold manual groups per company + proper company assignation
+    # - merge repeated groups
+
+
+def fill_sequence_mixin_fields(env):
+    openupgrade.add_fields(
+        env,
+        [
+            (
+                "sequence_prefix",
+                "account.move",
+                "account_move",
+                "char",
+                False,
+                "account",
+            ),
+            (
+                "sequence_number",
+                "account.move",
+                "account_move",
+                "integer",
+                False,
+                "account",
+            ),
+            (
+                "sequence_prefix",
+                "account.bank.statement",
+                "account_bank_statement",
+                "char",
+                False,
+                "account",
+            ),
+            (
+                "sequence_number",
+                "account.bank.statement",
+                "account_bank_statement",
+                "integer",
+                False,
+                "account",
+            ),
+        ],
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE account_move
+        SET sequence_prefix = substring(
+                name, '^(.*?)(?:\\d{0,9})(?:\\D*?)$'),
+            sequence_number = CAST(COALESCE(NULLIF(substring(
+                name, '^(?:.*?)(\\d{0,9})(?:\\D*?)$'),''), '0') as int)
+    """,
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE account_bank_statement
+        SET sequence_prefix = substring(
+                name, '^(.*?)(?:\\d{0,9})(?:\\D*?)$'),
+            sequence_number = CAST(COALESCE(NULLIF(substring(
+                name, '^(?:.*?)(\\d{0,9})(?:\\D*?)$'),''), '0') as int)
+    """,
+    )
+
+
+def fill_partial_reconcile_currency(env):
+    openupgrade.add_fields(
+        env,
+        [
+            (
+                "debit_currency_id",
+                "account.partial.reconcile",
+                "account_partial_reconcile",
+                "many2one",
+                False,
+                "account",
+            ),
+            (
+                "credit_currency_id",
+                "account.partial.reconcile",
+                "account_partial_reconcile",
+                "many2one",
+                False,
+                "account",
+            ),
+        ],
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE account_partial_reconcile apr
+        SET debit_currency_id = COALESCE(aml.currency_id, rc.currency_id)
+        FROM account_move_line aml,
+            res_company rc
+        WHERE aml.id = apr.debit_move_id
+            AND rc.id = aml.company_id
+        """,
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE account_partial_reconcile apr
+        SET credit_currency_id = COALESCE(aml.currency_id, rc.currency_id)
+        FROM account_move_line aml,
+            res_company rc
+        WHERE aml.id = apr.credit_move_id
+            AND rc.id = aml.company_id
         """,
     )
 
@@ -565,8 +848,7 @@ def migrate(env, version):
         env, "account", ["account_analytic_line_rule_billing_user"], True
     )
     _mark_move_line_statement_unreconciled(env)
-    copy_fields(env)
-    rename_fields(env)
+    convert_fields(env)
     m2m_tables_account_journal_renamed(env)
     remove_constrains_reconcile_models(env)
     add_move_id_field_account_payment(env)
@@ -574,21 +856,25 @@ def migrate(env, version):
     add_edi_state_field_account_move(env)
     fill_empty_partner_type_account_payment(env)
     fill_account_move_line_currency_id(env)
+    fill_account_move_line_matching_number(env)
     fill_account_payment_partner_id(env)
+    fill_account_payment_data(env)
+    create_account_payment_reconciliation(env)
+    fill_account_bank_statement_data(env)
+    create_account_bank_statement_line_reconciliation(env)
+    delete_xmlid_existing_groups(env)
+    fill_sequence_mixin_fields(env)
+    fill_partial_reconcile_currency(env)
     _update_reconciliation_date(env)
-    # Disappeared constraint
-    openupgrade.logged_query(
-        env.cr,
-        """ALTER TABLE account_move_line
-           DROP CONSTRAINT IF EXISTS
-           account_move_line_check_amount_currency_balance_sign""",
-    )
-    openupgrade.delete_records_safely_by_xml_id(
-        env, ["account.constraint_account_move_line_check_amount_currency_balance_sign"]
-    )
     openupgrade.remove_tables_fks(
         env.cr, ["account_bank_statement_import_ir_attachment_rel"]
     )
     openupgrade.lift_constraints(
         env.cr, "account_bank_statement_line", "partner_account_id"
+    )
+    # Do this at the end for not having to use all time the get_legacy_name method
+    openupgrade.rename_columns(env.cr, {"account_payment": [("journal_id", None)]})
+    # Remove SQL view account_invoice_report not used anymore in Odoo v14.0
+    openupgrade.logged_query(
+        env.cr, "DROP VIEW IF EXISTS account_invoice_report CASCADE"
     )

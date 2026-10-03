@@ -2,4 +2,4 @@
 ---Fields in module 'iap_mail'---
 ---XML records in module 'iap_mail'---
 NEW ir.ui.view: iap_mail.enrich_company
-# NOTHING TO DO: noupdate="0" records
+# NOTHING TO DO

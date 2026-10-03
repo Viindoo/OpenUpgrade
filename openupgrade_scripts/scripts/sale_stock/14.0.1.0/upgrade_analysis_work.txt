@@ -18,4 +18,4 @@ NEW ir.ui.view: sale_stock.res_users_view_form_preferences
 NEW ir.ui.view: sale_stock.res_users_view_simple_form
 NEW ir.ui.view: sale_stock.sale_order_cancel_view_form_inherit
 NEW ir.ui.view: sale_stock.sale_report_product_product_replenishment
-# NOTHING TO DO
+# NOTHING TO DO: noupdate=0 ir records

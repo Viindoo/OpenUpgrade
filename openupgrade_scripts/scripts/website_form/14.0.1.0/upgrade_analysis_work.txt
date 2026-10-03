@@ -13,4 +13,4 @@ DEL ir.ui.view: website_form.assets_frontend
 DEL ir.ui.view: website_form.register_s_website_form
 DEL ir.ui.view: website_form.res_config_settings_view_form
 DEL ir.ui.view: website_form.snippet_options
-# NOTHING TO DO: noupdate="0" records
+# NOTHING TO DO

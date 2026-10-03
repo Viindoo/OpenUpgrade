@@ -91,10 +91,12 @@ NEW ir.ui.view: website_slides.website_slides_tests
 DEL ir.ui.view: website_slides.slide_social_media
 DEL ir.ui.view: website_slides.slides_share
 NEW mail.activity.type: website_slides.mail_activity_data_access_request (noupdate)
-NEW res.groups: website_slides.group_website_slides_manager
-NEW res.groups: website_slides.group_website_slides_officer
 NEW slide.channel.tag: website_slides.slide_channel_tag_level_advanced (noupdate)
 NEW slide.channel.tag: website_slides.slide_channel_tag_level_basic (noupdate)
 NEW slide.channel.tag: website_slides.slide_channel_tag_level_intermediate (noupdate)
 NEW slide.channel.tag.group: website_slides.slide_channel_tag_group_level (noupdate)
 # NOTHING TO DO
+
+NEW res.groups: website_slides.group_website_slides_manager
+NEW res.groups: website_slides.group_website_slides_officer
+# DONE: post-migration: set group_website_slides_officer on the root menu (website_slides_menu_root)

@@ -2,4 +2,4 @@
 ---Fields in module 'sale_product_configurator'---
 ---XML records in module 'sale_product_configurator'---
 NEW ir.model.access: sale_product_configurator.access_sale_product_configurator
-# NOTHING TO DO: noupdate="0" records
+# NOTHING TO DO
