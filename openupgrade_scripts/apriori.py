@@ -11,6 +11,10 @@ renamed_modules = {
     # odoo/enterprise
     # OCA/delivery-carrier
     "delivery_carrier_customer_info": "partner_delivery_info",
+    # OCA/l10n-spain
+    "l10n_es_pos": "l10n_es_pos_oca",
+    # OCA/server-tools
+    "mail_template_attachment_i18n": "mail_template_attachment_per_lang",
     # OCA/social
     "mail_activity_unlink_log": "mail_activity_cancel_tracking",
     # Viindoo/tvtmaaddons
@@ -56,6 +60,8 @@ merged_modules = {
     "website_sale_digital": "website_sale",
     "website_sale_loyalty_delivery": "website_sale_loyalty",
     "website_sale_stock_product_configurator": "website_sale_product_configurator",
+    # OCA/account-financial-tools
+    "base_vat_optional_vies": "base_vat",
     # OCA/account-invoicing
     "account_invoice_fiscal_position_update": "account",
     # OCA/e-commerce
@@ -78,6 +84,8 @@ merged_modules = {
     # OCA/product-attribute
     "product_catalog": "product",
     "product_catalog_sale": "sale",
+    # OCA/project
+    "project_list": "project",
     # OCA/purchase-workflow
     "purchase_discount": "purchase",
     # OCA/sale-promotion
@@ -88,6 +96,7 @@ merged_modules = {
     # OCA/social
     "mail_activity_plan": "mail",
     "mass_mailing_custom_unsubscribe_event": "mass_mailing",
+    "mail_template_multi_attachment": "mail",
     # OCA/stock-logistics-warehouse
     "stock_lot_filter_available": "stock",
     # OCA/web
@@ -105,9 +114,10 @@ merged_modules = {
     "to_hr_payroll_patch1": "to_hr_payroll",
     "to_hr_timesheet_payroll_patch1": "to_hr_timesheet_payroll",
     "to_location_warehouse": "viin_stock",
-    "to_mail_notif_and_email": "mail",
     "to_sale_loyalty_patch_1": "viin_loyalty",
     "to_stock_report_common": "viin_stock",
+    # removed from 17.0 (35c195ede0) without successor
+    "to_uom_subscription": "uom",
     "to_vietnam_bank_icons": "payment",
     "to_vietnamese_number2words": "base",
     "to_website_recaptcha": "google_recaptcha",
@@ -207,3 +217,13 @@ merged_models = {
     "repair.line": "stock.move",
     # OCA/...
 }
+
+# Modules of merged_modules that are not merged into anything: they are
+# removed without a successor on our addons paths. The technical records they
+# own (record rules, scheduled and server actions, views, menus, mail
+# templates...) are deleted by the update even when they are noupdate, and the
+# xml ids of records of models that go with them are detached: see
+# release_records_of_lost_modules in the pre-migration of base.
+lost_modules = [
+    "to_uom_subscription",
+]

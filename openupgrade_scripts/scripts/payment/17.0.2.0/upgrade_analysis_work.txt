@@ -350,3 +350,7 @@ NEW payment.method: payment.payment_method_zalopay (noupdate)
 NEW payment.method: payment.payment_method_zip (noupdate)
 NEW payment.provider: payment.payment_provider_xendit (noupdate)
 # NOTHING TO DO: new payment methods / provider
+
+# Not in the analysis: the table of 9.0 payment.method (renamed payment.token in 10.0) is still there
+# on databases whose 10.0 migration did not rename it, and has the name payment_icon gets now.
+# DONE: pre-migration: moved to its legacy name first

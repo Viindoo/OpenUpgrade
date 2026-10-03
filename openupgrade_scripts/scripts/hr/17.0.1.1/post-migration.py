@@ -24,6 +24,7 @@ def _transfer_employee_private_data(env):
         "street2",
         "email",
         "phone",
+        "mobile",
         "zip",
         "country_id",
         "state_id",
@@ -44,48 +45,48 @@ def _transfer_employee_private_data(env):
     # Build query parts dynamically
     set_parts = ["lang = rp.lang"]
 
+    # On the private phone, we transfer the phone from the partner, and if not
+    # filled, the mobile
     field_mapping = {
-        "private_city": "city",
-        "private_street": "street",
-        "private_street2": "street2",
-        "private_email": "email",
-        "private_phone": "phone",
-        "private_zip": "zip",
-        "private_country_id": "country_id",
-        "private_state_id": "state_id",
+        "private_city": ["city"],
+        "private_street": ["street"],
+        "private_street2": ["street2"],
+        "private_email": ["email"],
+        "private_phone": ["phone", "mobile"],
+        "private_zip": ["zip"],
+        "private_country_id": ["country_id"],
+        "private_state_id": ["state_id"],
     }
 
-    for emp_field, partner_field in field_mapping.items():
-        if partner_field in translated_fields:
-            # For translated fields, extract value from JSONB
-            # Try en_US first, then fallback to first available key
-            # Handle NULL fields safely
-            set_parts.append(
-                f"""{emp_field} = COALESCE(
-                he.{emp_field},
-                CASE WHEN rpp.{partner_field} IS NOT NULL
-                     THEN rpp.{partner_field}->>'en_US' END,
-                CASE WHEN rpp.{partner_field} IS NOT NULL
-                     THEN (SELECT rpp.{partner_field}->>k
-                            FROM jsonb_object_keys(rpp.{partner_field}) k
-                            LIMIT 1) END,
-                CASE WHEN rp.{partner_field} IS NOT NULL
-                     THEN rp.{partner_field}->>'en_US' END,
-                CASE WHEN rp.{partner_field} IS NOT NULL
-                     THEN (SELECT rp.{partner_field}->>k
-                            FROM jsonb_object_keys(rp.{partner_field}) k
-                            LIMIT 1) END
-            )"""
-            )
-        else:
+    def _partner_values(table_alias, partner_field):
+        column = f"{table_alias}.{partner_field}"
+        if partner_field not in translated_fields:
             # For non-translated fields, use direct value
-            set_parts.append(
-                f"""{emp_field} = COALESCE(
-                he.{emp_field},
-                rpp.{partner_field},
-                rp.{partner_field}
+            return [column]
+        # For translated fields, extract value from JSONB
+        # Try en_US first, then fallback to first available key
+        # Handle NULL fields safely
+        return [
+            f"""CASE WHEN {column} IS NOT NULL
+                     THEN {column}->>'en_US' END""",
+            f"""CASE WHEN {column} IS NOT NULL
+                     THEN (SELECT {column}->>k
+                            FROM jsonb_object_keys({column}) k
+                            LIMIT 1) END""",
+        ]
+
+    for emp_field, emp_partner_fields in field_mapping.items():
+        values = [f"he.{emp_field}"]
+        # First the copy containing private data, then res.partner
+        for table_alias in ("rpp", "rp"):
+            for partner_field in emp_partner_fields:
+                values += _partner_values(table_alias, partner_field)
+        values_str = ",\n                ".join(values)
+        set_parts.append(
+            f"""{emp_field} = COALESCE(
+                {values_str}
             )"""
-            )
+        )
 
     set_parts_str = ",\n            ".join(set_parts)
     query = f"""
@@ -100,8 +101,30 @@ def _transfer_employee_private_data(env):
     openupgrade.logged_query(cr, query)
 
 
+def _transfer_private_address_typed_as_name(env):
+    """A private address is often entered as a contact whose name is the
+    address itself ("12 Main Street, Springfield"), with no address field
+    filled. Nothing above picks it up, and the end-migration merges that
+    contact into the work contact, which keeps its own name: the address is
+    lost. Keep it as the private street of the employee."""
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE hr_employee he
+        SET private_street = rp.name
+        FROM res_partner rp
+        WHERE he.address_home_id = rp.id
+            AND he.private_street IS NULL AND he.private_street2 IS NULL
+            AND he.private_city IS NULL AND he.private_zip IS NULL
+            AND rp.name IS NOT NULL AND rp.name != he.name
+            AND NOT COALESCE(rp.is_company, FALSE)
+        """,
+    )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     _transfer_employee_private_data(env)
+    _transfer_private_address_typed_as_name(env)
     openupgrade.load_data(env, "hr", "17.0.1.1/noupdate_changes.xml")
     openupgrade.delete_records_safely_by_xml_id(env, _deleted_xml_records)
