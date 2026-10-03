@@ -35,10 +35,12 @@ def extract_footer_copyright_company_name(env):
             )
             new_arch = re.sub(
                 main_copyright_pattern,
-                website_layout_matches[0]
-                if website_layout_matches
-                else f'<span class="o_footer_copyright_name mr-2">'
-                f"Copyright © {Markup.escape(website.company_id.name)}</span>",
+                (
+                    website_layout_matches[0]
+                    if website_layout_matches
+                    else f'<span class="o_footer_copyright_name mr-2">'
+                    f"Copyright © {Markup.escape(website.company_id.name)}</span>"
+                ),
                 main_copyright_arch,
             )
             main_copyright_view.with_context(website_id=website.id).arch = new_arch
@@ -114,6 +116,11 @@ def handle_domain_protocol(env):
     """We need to ensure the website protocol prefix to ensure each site correct
     redirection"""
     for website in env["website"].search([("domain", "!=", False)]):
+        if not website.domain.strip():
+            # an empty domain is no domain: "https://" alone (stored as
+            # "https:") became the base of every link of the website e-mails
+            website.domain = False
+            continue
         if website.domain.startswith("http"):
             continue
         website.domain = f"https://{website.domain.rstrip('/')}"

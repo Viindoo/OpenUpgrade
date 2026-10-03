@@ -43,7 +43,15 @@ def _fill_payment_state(env):
                 new_pmt_state = move._get_invoice_in_payment_state()
         elif currency.compare_amounts(total_to_pay, total_residual) != 0:
             new_pmt_state = "partial"
-        move.payment_state = new_pmt_state
+        openupgrade.logged_query(
+            env.cr,
+            """
+            UPDATE account_move
+            SET payment_state = %s
+            WHERE id = %s
+            """,
+            (new_pmt_state, move.id),
+        )
 
 
 @openupgrade.migrate()

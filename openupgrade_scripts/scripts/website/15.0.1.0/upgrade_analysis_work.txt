@@ -343,3 +343,6 @@ NEW website.page: website.contactus_thanks [renamed from website_form module]
 DEL website.page: website_form.contactus_thanks [renamed to website module]
 DEL website.snippet.filter: website.dynamic_snippet_data_source_country
 # NOTHING TO DO
+
+# DONE: post-migration handle_domain_protocol: an empty domain is set to no domain (it became "https:", the base of
+# every link in the website e-mails, e.g. "https:/mail/view?access_token=...")

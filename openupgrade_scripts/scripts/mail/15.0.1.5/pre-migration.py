@@ -44,6 +44,7 @@ def _rename_fields(env):
             ),
             ("mail.message", "mail_message", "no_auto_thread", "reply_to_force_new"),
             ("mail.notification", "mail_notification", "mail_id", "mail_mail_id"),
+            ("mail.mail", "mail_mail", "notification", "is_notification"),
         ],
     )
 
@@ -185,13 +186,12 @@ def migration_to_mail_group(env):
             ("mail_channel_moderator_rel", "mail_group_moderator_rel"),
         ],
     )
-    openupgrade.rename_columns(
+    openupgrade.logged_query(
         env.cr,
-        {
-            "mail_group_moderator_rel": [
-                ("mail_channel_id", "mail_group_id"),
-            ]
-        },
+        """
+        ALTER TABLE mail_group_moderator_rel
+        ADD COLUMN mail_group_id integer
+        """,
     )
     # fill mail_group table
     sql.create_model_table(
@@ -249,7 +249,21 @@ def migration_to_mail_group(env):
         UPDATE mail_group_moderator_rel rel
         SET mail_group_id = mg.id
         FROM mail_group mg
-        WHERE mg.old_channel_id = rel.mail_group_id""",
+        WHERE mg.old_channel_id = rel.mail_channel_id""",
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        ALTER TABLE mail_group_moderator_rel
+        DROP COLUMN mail_channel_id
+        """,
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        DELETE FROM mail_group_moderator_rel
+        WHERE mail_group_id IS NULL
+        """,
     )
     # fill mail_group_moderation.mail_group_id (field is required)
     openupgrade.logged_query(
@@ -333,8 +347,10 @@ def migration_to_mail_group(env):
 @openupgrade.migrate()
 def migrate(env, version):
     _copy_columns(env)
-    _rename_fields(env)
+    # the tables first: mail_notification is the renamed
+    # mail_message_res_partner_needaction_rel, whose column mail_id is renamed
     _rename_tables(env)
+    _rename_fields(env)
     _add_follwers_from_mail_channel(env)
     _delete_channel_follower_records(env)
     delete_obsolete_constraints(env)

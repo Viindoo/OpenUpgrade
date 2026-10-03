@@ -101,3 +101,7 @@ NEW res.groups: event.group_event_registration_desk
 
 DEL report.paperformat: event.paperformat_euro_lowmargin
 # DONE: post-migration: deleted ir.model.data to avoid the record getting deleted
+
+# Not in the analysis (no 14.0 module ships it): event.event_thanks, noupdate mail template
+# of 9.0 reading event.event.reply_to, removed in 15.0.
+# DONE: post-migration: deleted (databases upgraded before the 10.0 script deleted it)

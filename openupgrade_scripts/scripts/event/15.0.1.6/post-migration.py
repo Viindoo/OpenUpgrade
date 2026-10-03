@@ -92,3 +92,6 @@ def migrate(env, version):
         WHERE module = 'event' AND name = 'paperformat_euro_lowmargin'
         """,
     )
+    # 9.0 noupdate template no later version ships: it reads event.event.reply_to,
+    # removed in 15.0 (databases upgraded before the 10.0 script deleted it)
+    openupgrade.delete_records_safely_by_xml_id(env, ["event.event_thanks"])

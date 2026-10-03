@@ -11,6 +11,29 @@ def _convert_project_task_assigned_users(env):
     )
 
 
+def _assign_tasks_without_project(env):
+    """From 15.0 a task without project nor parent task is private: only its
+    assignees see it, project managers included. Assign such a task with
+    nobody to the user who created it (to the admin when that user is not an
+    active internal user anymore), or nobody would see it again: e.g. the
+    issues without project that became tasks in 11.0."""
+    admin = env.ref("base.user_admin", raise_if_not_found=False)
+    openupgrade.logged_query(
+        env.cr,
+        """
+        INSERT INTO project_task_user_rel (task_id, user_id)
+        SELECT t.id, CASE WHEN u.active AND NOT u.share THEN u.id ELSE %s END
+        FROM project_task t
+        LEFT JOIN res_users u ON u.id = t.create_uid
+        WHERE t.project_id IS NULL AND t.parent_id IS NULL
+            AND NOT EXISTS (
+                SELECT 1 FROM project_task_user_rel r WHERE r.task_id = t.id)
+            AND ((u.active AND NOT u.share) OR %s IS NOT NULL)
+        """,
+        (admin.id if admin else None, admin.id if admin else None),
+    )
+
+
 def _add_followers_to_project_for_allowed_internal_users(env):
     openupgrade.logged_query(
         env.cr,
@@ -73,6 +96,7 @@ def _fill_project_task_display_project_id(env):
 @openupgrade.migrate()
 def migrate(env, version):
     _convert_project_task_assigned_users(env)
+    _assign_tasks_without_project(env)
     _add_followers_to_project_for_allowed_internal_users(env)
     _add_followers_to_project_for_allowed_portal_users(env)
     _add_followers_to_task_for_allowed_users(env)

@@ -1,4 +1,4 @@
-""" Encode any known changes to the database here
+"""Encode any known changes to the database here
 to help the matching process
 """
 
@@ -17,6 +17,8 @@ renamed_modules = {
     "l10n_eu_oss": "l10n_eu_oss_oca",
     # OCA/account-invoice-reporting
     "account_invoice_report_utm_campaign": "account_invoice_report_utm",
+    # OCA/commission
+    "sale_commission_formula": "commission_formula",
     # OCA/e-commerce
     "website_sale_attribute_filter_order": "website_sale_product_attribute_filter_order",
     # OCA/project
@@ -52,6 +54,17 @@ renamed_modules = {
     "viin_l10n_vn_einvoice_sale": "l10n_vn_viin_einvoice_sale",
     "viin_l10n_vn_hr_account": "l10n_vn_viin_hr_account",
     "to_loan_management_l10n_vn": "l10n_vn_viin_loan_management",
+    # old_technical_name of their 15.0 manifests
+    "viin_l10n_vn_accounting_vninvoice": "l10n_vn_viin_accounting_vninvoice",
+    "viin_l10n_vn_accounting_vninvoice_summary": "l10n_vn_viin_accounting_vninvoice_summary",  # noqa: B950
+    "l10n_vn_c200_pos": "l10n_vn_viin_c200_pos",
+    "viin_l10n_vn_foreign_trade": "l10n_vn_viin_foreign_trade",
+    "viin_l10n_vn_vat_counterpart": "l10n_vn_viin_vat_counterpart",
+    "viin_l10n_vn_hr_payroll_account_overtime": "l10n_vn_viin_hr_payroll_account_overtime",  # noqa: B950
+    "viin_l10n_vn_hr_payroll_administrative_region": "l10n_vn_viin_hr_payroll_administrative_region",  # noqa: B950
+    "viin_crm_detect_partner": "viin_crm_customer_recognition",
+    "to_equipment_partner_infor": "viin_equipment_warranty_partner_infor",
+    "to_purchase_order_lines": "viin_purchase",
     # Viindoo/odoo-tvtma
     "to_tvtma_sale_crm": "viin_sale_crm",  # moved to Viindoo/erponline-enterprise
     # Viindoo/erponline-enterprise
@@ -66,10 +79,12 @@ renamed_modules = {
     "viin_enterprise_marks_project": "viin_hide_ent_modules_project",
     "viin_enterprise_marks_sale": "viin_hide_ent_modules_sale",
     "viin_enterprise_marks_purchase": "viin_hide_ent_modules_purchase",
-    "viin_enterprise_marks_website": "viin_hide_ent_modules_websitewebsite",
+    "viin_enterprise_marks_website": "viin_hide_ent_modules_website",
     "to_l10n_vn_account_asset": "l10n_vn_viin_account_asset",
     "to_l10n_vn_account_asset_sale": "l10n_vn_viin_account_asset_sale",
     "to_account_reports_l10n_vn": "l10n_vn_viin_account_reports",
+    # old_technical_name of its 15.0 manifest
+    "to_sale_subscription": "viin_sale_subscription",
     # Viindoo/themes
     "theme_common": "theme_viin_common",
 }
@@ -97,6 +112,8 @@ merged_modules = {
     "stock_barcode_mobile": "stock_barcode",
     # OCA/account-financial-tools
     "stock_account_prepare_anglo_saxon_out_lines_hook": "stock_account",
+    # OCA/account-payment
+    "account_payment_paired_internal_transfer": "account",
     # OCA/e-commerce
     "website_sale_product_attribute_filter_visibility": "website_sale",
     # OCA/account-invoicing
@@ -111,6 +128,9 @@ merged_modules = {
     # OCA/e-commerce
     "website_sale_attribute_filter_price": "website_sale",
     "website_sale_stock_available_display": "website_sale_stock",
+    # OCA/fleet
+    "fleet_vehicle_notebook": "fleet",
+    "fleet_vehicle_pivot_graph": "fleet",
     # OCA/hr-attendance
     "hr_attendance_user_list": "hr_attendance",
     # OCA/l10n-germany
@@ -118,6 +138,7 @@ merged_modules = {
     # OCA/l10n-spain
     "l10n_es_extra_data": "l10n_es",
     # OCA/manufacture
+    "mrp_production_byproduct_cost_share": "mrp_account",
     "mrp_subcontracting_resupply_link": "mrp_subcontracting_purchase",
     # OCA/pos
     "pos_invoicing": "point_of_sale",
@@ -127,8 +148,11 @@ merged_modules = {
     "pos_sale_order_load": "pos_sale",
     # OCA/product-attribute
     "stock_account_product_cost_security": "product_cost_security",
+    "product_sale_tax_price_included": "account",
     # OCA/server-tools
     "base_jsonify": "jsonifier",
+    # OCA/server-ux
+    "mass_operation_abstract": "base",
     # OCA/stock-logistics-reporting
     "stock_inventory_valuation_pivot": "stock_account",
     # OCA/stock-logistics-warehouse
@@ -193,3 +217,12 @@ merged_models = {
     "stock.inventory": "stock.quant",
     "stock.inventory.line": "stock.move.line",
 }
+
+# Modules of merged_modules that are not merged into anything: they are
+# removed without a successor on our addons paths. The technical records they
+# own (record rules, scheduled and server actions, views, menus, mail
+# templates...) are deleted by the update even when they are noupdate, and the
+# xml ids of records of models that go with them are detached: see
+# release_records_of_lost_modules in the pre-migration of base.
+lost_modules = [
+]

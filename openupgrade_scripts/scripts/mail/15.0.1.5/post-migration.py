@@ -148,6 +148,22 @@ def _migrate_if(string):
     return re.sub(pattern, repl_if, string, flags=re.MULTILINE)
 
 
+def repl_elif(match):
+    """Aux. method. We declare it globally so we don't have scope issues from shell"""
+    (elif_expression,) = match.groups()
+    elif_expression = html.escape(elif_expression)
+    return f'</t>\n<t t-elif="{elif_expression}">'
+
+
+def _migrate_elif(string):
+    """
+    Replace mako elif blocks (while closing previous [el]if block)
+    Example : '% elif (boolean expression):' -> '</t>\n<t t-elif="(boolean expression)">'
+    """
+    pattern = r"%\s?elif\s(.+)\s?:"
+    return re.sub(pattern, repl_elif, string, flags=re.MULTILINE)
+
+
 def repl_for(match):
     """Aux. method. We declare it globally so we don't have scope issues from shell"""
     var_name, loop_expression = match.groups()
@@ -211,6 +227,7 @@ def mako_html_to_qweb(string):
     string = _migrate_if(string)
     string = _migrate_for(string)
     string = _migrate_else(string)
+    string = _migrate_elif(string)
     string = _migrate_end(string)
     string = _migrate_set(string)
     return string
@@ -222,12 +239,46 @@ def _migrate_mail_templates(env):
     for template in templates:
         for field in MAIL_TEMPLATE_MAKO_CHAR_FIELDS:
             template[field] = _migrate_placeholder_char(template[field])
-        # Address tranlated fields with each installed language context
-        for lang in env["res.lang"].search([]).mapped("code"):
-            tmpl_lang = template.with_context(lang=lang)
-            tmpl_lang.report_name = _migrate_placeholder_char(tmpl_lang.report_name)
-            tmpl_lang.subject = _migrate_placeholder_char(tmpl_lang.subject)
-            tmpl_lang.body_html = mako_html_to_qweb(tmpl_lang.body_html)
+    # The translated fields are converted in place, in SQL: the source column and
+    # each translation. Writing them through the ORM in each language created an
+    # en_US translation of every template with its 14.0 content, and rewrote the
+    # other translations without their module. The noupdate changes and the
+    # delete_record_translations of the modules loaded afterwards (calendar,
+    # event, sale...) then no longer reached them, and the templates kept
+    # rendering their 14.0 content in every language (e.g. calls to methods
+    # removed in 15.0).
+    converters = {
+        "report_name": _migrate_placeholder_char,
+        "subject": _migrate_placeholder_char,
+        "body_html": mako_html_to_qweb,
+    }
+    for field, convert in converters.items():
+        env.cr.execute(
+            "SELECT id, {field} FROM mail_template WHERE {field} IS NOT NULL".format(
+                field=field
+            )
+        )
+        for template_id, value in env.cr.fetchall():
+            new_value = convert(value)
+            if new_value != value:
+                env.cr.execute(
+                    "UPDATE mail_template SET {field} = %s WHERE id = %s".format(
+                        field=field
+                    ),
+                    (new_value, template_id),
+                )
+        env.cr.execute(
+            "SELECT id, src, value FROM ir_translation WHERE name = %s",
+            ("mail.template,%s" % field,),
+        )
+        for translation_id, src, value in env.cr.fetchall():
+            new_src, new_value = convert(src), convert(value)
+            if (new_src, new_value) != (src, value):
+                env.cr.execute(
+                    "UPDATE ir_translation SET src = %s, value = %s WHERE id = %s",
+                    (new_src, new_value, translation_id),
+                )
+    templates.invalidate_cache()
 
 
 def _pin_mail_channel_partners(env):

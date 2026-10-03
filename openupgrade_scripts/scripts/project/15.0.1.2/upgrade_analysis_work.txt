@@ -138,6 +138,8 @@ NEW ir.model.access: project.access_project_update_user
 NEW ir.model.constraint: project.constraint_project_collaborator_unique_collaborator
 NEW ir.model.constraint: project.constraint_project_task_user_rel_project_personal_stage_unique
 NEW ir.rule: project.ir_rule_private_task (noupdate)
+# DONE: post-migration: a task without project nor parent is now visible to its assignees only; those with nobody
+# assigned are assigned to their creator (the admin when not an active internal user), else nobody would see them
 NEW ir.rule: project.ir_rule_project_personal_stage_my (noupdate)
 NEW ir.rule: project.milestone_comp_rule (noupdate)
 NEW ir.rule: project.milestone_visibility_project_admin (noupdate)

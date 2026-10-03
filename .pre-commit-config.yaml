@@ -28,23 +28,23 @@ repos:
         language: fail
         files: "\\.rej$"
   - repo: https://github.com/oca/maintainer-tools
-    rev: 7d8a9f9ad73db0976fb03cbee43d953bc29b89e9
+    rev: 7a4cec2599267d03bcea6f7502c3abee8f42259f
     hooks:
       # update the NOT INSTALLABLE ADDONS section above
       - id: oca-update-pre-commit-excluded-addons
       - id: oca-fix-manifest-website
         args: ["https://github.com/OCA/OpenUpgrade"]
   - repo: https://github.com/myint/autoflake
-    rev: v1.4
+    rev: v2.3.1
     hooks:
       - id: autoflake
         args: ["-i", "--ignore-init-module-imports"]
   - repo: https://github.com/psf/black
-    rev: 22.3.0
+    rev: 25.1.0
     hooks:
       - id: black
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.6.2
+    rev: v4.0.0-alpha.8
     hooks:
       - id: prettier
         name: prettier (with plugin-xml)
@@ -55,7 +55,7 @@ repos:
           - --plugin=@prettier/plugin-xml
         files: \.(css|htm|html|js|json|jsx|less|md|scss|toml|ts|xml|yaml|yml)$
   - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v8.15.0
+    rev: v9.25.1
     hooks:
       - id: eslint
         verbose: true
@@ -85,7 +85,7 @@ repos:
       - id: mixed-line-ending
         args: ["--fix=lf"]
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.32.1
+    rev: v3.19.1
     hooks:
       - id: pyupgrade
         args: ["--keep-percent-format"]
@@ -98,23 +98,23 @@ repos:
           - --settings=.
         exclude: /__init__\.py$
   - repo: https://github.com/acsone/setuptools-odoo
-    rev: 3.1.0
+    rev: "3.3.2"
     hooks:
       - id: setuptools-odoo-make-default
   - repo: https://github.com/PyCQA/flake8
-    rev: 3.9.2
+    rev: 7.2.0
     hooks:
       - id: flake8
         name: flake8 except __init__.py
         exclude: /__init__\.py$
-        additional_dependencies: ["flake8-bugbear==21.9.2"]
+        additional_dependencies: ["flake8-bugbear==20.1.4"]
       - id: flake8
         name: flake8 only __init__.py
         args: ["--extend-ignore=F401"] # ignore unused imports in __init__.py
         files: /__init__\.py$
-        additional_dependencies: ["flake8-bugbear==21.9.2"]
+        additional_dependencies: ["flake8-bugbear==20.1.4"]
   - repo: https://github.com/PyCQA/pylint
-    rev: v2.11.1
+    rev: v3.3.6
     hooks:
       - id: pylint
         name: pylint with optional checks
@@ -123,7 +123,7 @@ repos:
           - --exit-zero
         verbose: true
         additional_dependencies: &pylint_deps
-          - pylint-odoo==5.0.5
+          - pylint-odoo==9.3.2
       - id: pylint
         name: pylint with mandatory checks
         args:
