@@ -135,8 +135,23 @@ def binary_conversion_for_db_attachments(env):
             )
 
 
+def partner_barcode_to_company_dependent(env):
+    """The barcodes of the contacts (column moved aside in pre-migrate) become
+    the value of the company dependent field for every company: up to 13.0 a
+    contact had one barcode whatever the company."""
+    legacy = openupgrade.get_legacy_name("barcode")
+    if not openupgrade.column_exists(env.cr, "res_partner", legacy):
+        return
+    openupgrade.logged_query(
+        env.cr,
+        "UPDATE res_partner SET {col} = NULL WHERE {col} = ''".format(col=legacy),
+    )
+    openupgrade.convert_to_company_dependent(env, "res.partner", legacy, "barcode")
+
+
 @openupgrade.migrate()
 def migrate(env, version):
+    partner_barcode_to_company_dependent(env)
     fix_module_category_parent_id(env)
     assign_module_category_parent(env)
     users_should_export(env)

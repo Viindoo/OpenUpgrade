@@ -234,6 +234,16 @@ def migrate(cr, version):
         cr, "UPDATE res_partner SET lang = 'tl_PH' WHERE lang = 'fil_PH'"
     )
     deduplicate_ir_properties(cr)
+    # res.partner.barcode is a plain column up to 13.0 (point_of_sale) and a
+    # company dependent field of base from 14.0, which reads ir.property and
+    # ignores the column. The column is moved aside here and its values become
+    # the properties of every company in post-migrate. Left in place, the
+    # barcodes of the contacts were lost, and 18.0, which gives company dependent
+    # fields a jsonb column of the same name, converted the old column in place:
+    # "invalid input syntax for type json" on a barcode with a leading zero, a
+    # JSON number instead of the dictionary per company otherwise.
+    if openupgrade.column_exists(cr, "res_partner", "barcode"):
+        openupgrade.rename_columns(cr, {"res_partner": [("barcode", None)]})
     # Now Odoo supports disabling data exports, which is the main feature that
     # the module web_disable_export_group provided. Although the module isn't completly
     # merged into core as it allows to differentiate which type of export users can use.
