@@ -76,11 +76,56 @@ def rename_utm(env):
         ])
 
 
+_TECHNICAL_MODELS = (
+    'ir.actions.act_url', 'ir.actions.act_window', 'ir.actions.client',
+    'ir.actions.report.xml', 'ir.actions.server', 'ir.actions.todo',
+    'ir.cron', 'ir.filters', 'ir.model.access', 'ir.property', 'ir.rule',
+    'ir.ui.menu', 'ir.ui.view', 'ir.values', 'email.template',
+    'mail.template', 'workflow', 'workflow.activity', 'workflow.transition',
+)
+
+
+def release_records_of_lost_modules(cr):
+    """A module that is removed without a successor is merged into the module
+    it extended (apriori.lost_modules), and the update of that module deletes
+    the records it no longer finds in the data files, except the noupdate
+    ones: release the technical records, so that they are deleted too, and
+    detach the xml ids of the records of the models that go with the module
+    (the rows stay). Same rule as in the 10.0-13.0 branches."""
+    lost_modules = tuple(getattr(apriori, 'lost_modules', {}))
+    if not lost_modules:
+        return
+    openupgrade.logged_query(
+        cr,
+        """
+        UPDATE ir_model_data SET noupdate = FALSE
+        WHERE noupdate AND module IN %s AND model IN %s
+        """, (lost_modules, _TECHNICAL_MODELS))
+    openupgrade.logged_query(
+        cr,
+        """
+        DELETE FROM ir_model_data d
+        WHERE d.module IN %s AND d.model IN (
+            SELECT m.model
+            FROM ir_model m
+            JOIN ir_model_data md ON md.model = 'ir.model'
+                AND md.res_id = m.id AND md.module IN %s
+            WHERE NOT EXISTS (
+                SELECT 1 FROM ir_model_data o
+                WHERE o.model = 'ir.model' AND o.res_id = m.id
+                    AND o.module NOT IN %s))
+        """, (lost_modules, ) * 3)
+
+
 def cleanup_modules(cr):
     """Don't report as missing these modules, as they are integrated in
     other modules."""
+    lost_modules = getattr(apriori, 'lost_modules', {})
     openupgrade.update_module_names(
-        cr, apriori.merged_modules, merge_modules=True,
+        cr, lost_modules.items() + [
+            merge for merge in apriori.merged_modules
+            if merge[0] not in lost_modules],
+        merge_modules=True,
     )
 
 
@@ -165,6 +210,9 @@ def migrate(env, version):
     if not has_recurring_contracts(cr):
         # Don't install contract module without any recurring invoicing
         del module_renames['account_analytic_analysis']
+    release_records_of_lost_modules(cr)
+    for module in getattr(apriori, 'lost_modules', {}):
+        module_renames.pop(module, None)
     openupgrade.update_module_names(
         cr, module_renames.iteritems()
     )

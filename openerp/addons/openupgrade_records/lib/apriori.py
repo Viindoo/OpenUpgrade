@@ -150,3 +150,29 @@ renamed_models = {
     "crm.tracking.medium": "utm.medium",
     "crm.tracking.source": "utm.source",
 }
+
+# makmur: modules of 8.0 the customer has installed but never used (no row in
+# their tables), whose successor is not on the upgrade path: an OCA module
+# (account_payment_order, account/sale_analytic_distribution, sale_order_type,
+# report_xlsx), nothing at all (knowledge, multi_company, google_drive from
+# 16.0), or Viindoo modules that are not available up to 19.0 (payroll, assets,
+# budgets). They are merged into the module they extended, whatever
+# renamed_modules and merged_modules say, so that the update removes their
+# views, menus, fields and access rights and no module stays 'to upgrade' for
+# ever. Tables and columns are kept. See release_records_of_lost_modules in the
+# pre-migration of base.
+lost_modules = {
+    'account_analytic_plans': 'account',
+    'sale_analytic_plans': 'sale',
+    'account_payment': 'account',
+    'sale_journal': 'sale',
+    'knowledge': 'base',
+    'multi_company': 'base',
+    'report_xls': 'report',
+    'to_hr_payroll_leave_type_code': 'hr_holidays',
+    'hr_payroll_account': 'account',
+    'hr_payroll': 'hr',
+    'account_asset': 'account',
+    'account_budget': 'account',
+    'google_drive': 'base',
+}
