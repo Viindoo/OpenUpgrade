@@ -164,6 +164,26 @@ def drop_report_views(cr):
 
 
 @openupgrade.migrate(use_env=False)
+def _move_stale_partner_barcode_column(cr):
+    """res.partner.barcode is company dependent since 14.0 and has no column up
+    to 17.0; 18.0 gives it a jsonb column and converts an existing column of
+    that name in place. A database that went through 14.0 before its migration
+    kept the barcodes (see base 14.0) still has the plain column of 13.0 there:
+    "invalid input syntax for type json" on a barcode with a leading zero. Move
+    it aside, as stock does for product_template.responsible_id; post-migration
+    takes the barcodes that never became properties from it."""
+    cr.execute(
+        """
+        SELECT data_type FROM information_schema.columns
+        WHERE table_schema = current_schema()
+            AND table_name = 'res_partner' AND column_name = 'barcode'
+        """
+    )
+    row = cr.fetchone()
+    if row and row[0] != "jsonb":
+        openupgrade.rename_columns(cr, {"res_partner": [("barcode", None)]})
+
+
 def migrate(cr, version):
     openupgrade.logged_query(
         cr,
@@ -172,6 +192,7 @@ def migrate(cr, version):
             } AS (SELECT name, state FROM ir_module_module);
         """,
     )
+    _move_stale_partner_barcode_column(cr)
     release_records_of_lost_modules(cr)
     drop_report_views(cr)
     openupgrade.update_module_names(
