@@ -12,8 +12,6 @@ renamed_modules = {
     # odoo
     "l10n_es_pos_tbai": "l10n_es_edi_tbai_pos",
     "mrp_subonctracting_landed_costs": "mrp_subcontracting_landed_costs",
-    "spreadsheet_dashboard_purchase": "spreadsheet_dashboard_purchase_oca",
-    "spreadsheet_dashboard_purchase_stock": "spreadsheet_dashboard_purchase_stock_oca",
     "website_sale_picking": "website_sale_collect",
     "website_form_project": "website_project",
     # odoo/enterprise
@@ -65,6 +63,11 @@ renamed_modules = {
 # Merged modules contain a mapping from old module names to other,
 # preexisting module names
 merged_modules = {
+    # makmur: dashboards removed from Odoo 18.0 (OCA has spreadsheet_dashboard_purchase*_oca,
+    # not on our addons paths). They came in by auto-install at 16.0 and hold no data of
+    # the customer: retired (lost_modules).
+    "spreadsheet_dashboard_purchase": "spreadsheet_dashboard",
+    "spreadsheet_dashboard_purchase_stock": "spreadsheet_dashboard",
     # Viindoo/tvtmaaddons: approvals of 17.0 live in viin_approval in 18.0
     "to_approvals": "viin_approval",
     # Viindoo/tvtmaaddons: the refund accounts are part of viin_account in 18.0
@@ -164,6 +167,8 @@ merged_models = {
 # xml ids of records of models that go with them are detached: see
 # release_records_of_lost_modules in the pre-migration of base.
 lost_modules = [
+    "spreadsheet_dashboard_purchase",
+    "spreadsheet_dashboard_purchase_stock",
     "to_accounting_bi",
     "to_account_counterpart_account_update_tax_tags",
     "to_accounting_entry_report_flag",
