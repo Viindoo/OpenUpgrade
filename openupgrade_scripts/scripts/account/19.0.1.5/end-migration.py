@@ -25,6 +25,10 @@ def res_company(env):
             lang="en_US",
             chart_template_load=True,
         )
+        if not company.chart_template:
+            # a chart of accounts not loaded from a template: nothing to take
+            # from a localization
+            continue
         if company.chart_template not in AccountChartTemplate._template_register:
             openupgrade.logger.error(
                 "chart template %s unknown (not yet migrated?)",
