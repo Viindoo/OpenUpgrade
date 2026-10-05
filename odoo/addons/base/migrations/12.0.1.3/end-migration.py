@@ -56,11 +56,12 @@ def fork_off_system_user(env):
         "FROM res_users ru2 WHERE ru2.id = %s AND ru.id = %s",
         (user_root.id, user_admin.id),
     )
+    # the system user gets the new partner and the placeholder address of
+    # 12.0; the partner of the admin keeps its (real) email address
     user_root.write({
         'partner_id': partner_root.id,
-        'email': partner_admin.email,
     })
-    partner_admin.email = 'root@example.com'
+    partner_root.email = 'root@example.com'
     env.cr.execute(
         """ UPDATE ir_model_data SET res_id = %s
         WHERE module = 'base' AND name = 'user_admin'""", (user_admin.id,))
@@ -94,9 +95,53 @@ def fork_off_system_user(env):
         ('res_company_users_rel', 'user_id'),
     ]
 
+    # many2many relation tables: the copy of the user already holds the links
+    # of the copied fields (e.g. the digests the admin receives); moving the
+    # links of user_root to user_admin would then violate the unique pair.
+    # Drop the links of user_root that user_admin already has.
+    # (pg_catalog: the same query on information_schema takes minutes)
+    env.cr.execute(
+        """ SELECT cl.relname, a.attname
+            FROM pg_constraint c
+            JOIN pg_class cl ON cl.oid = c.conrelid
+            JOIN pg_attribute a ON a.attrelid = c.conrelid
+                AND a.attnum = c.conkey[1]
+            WHERE c.contype = 'f'
+                AND c.confrelid = 'res_users'::regclass
+                AND array_length(c.conkey, 1) = 1
+                AND (SELECT count(*) FROM pg_attribute a2
+                     WHERE a2.attrelid = c.conrelid AND a2.attnum > 0
+                        AND NOT a2.attisdropped) = 2
+        """)
+    for table, column in env.cr.fetchall():
+        if (table, column) in exclude_columns:
+            continue
+        env.cr.execute(
+            """ SELECT attname FROM pg_attribute
+            WHERE attrelid = %s::regclass AND attnum > 0
+                AND NOT attisdropped AND attname != %s """,
+            ('"%s"' % table, column))
+        other = env.cr.fetchone()[0]
+        openupgrade.logged_query(
+            env.cr,
+            """ DELETE FROM "%(table)s" t
+            WHERE t."%(column)s" = %%(root)s AND EXISTS (
+                SELECT 1 FROM "%(table)s" t2
+                WHERE t2."%(column)s" = %%(admin)s
+                    AND t2."%(other)s" = t."%(other)s") """ % {
+                'table': table, 'column': column, 'other': other},
+            {'root': user_root.id, 'admin': user_admin.id})
     openupgrade_merge_records.merge_records(
         env, 'res.users', [user_root.id], user_admin.id,
         method='sql', delete=False, exclude_columns=exclude_columns)
+    # create_uid stays on the system user, except where it is the author the
+    # website shows: the forum posts and answers the admin wrote up to 11.0
+    # would appear written by "System"
+    if openupgrade.table_exists(env.cr, 'forum_post'):
+        openupgrade.logged_query(
+            env.cr,
+            "UPDATE forum_post SET create_uid = %s WHERE create_uid = %s",
+            (user_admin.id, user_root.id))
     # Circumvent ORM when setting root user inactive, because
     # "You cannot deactivate the user you're currently logged in as."
     set_query = "SET active = FALSE, password = NULL"

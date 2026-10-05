@@ -4,6 +4,15 @@
 from openupgradelib import openupgrade
 
 
+def delete_module_install_template(env):
+    """Mail template of 10.0/11.0 sent when the module is installed; 12.0
+    removes it (noupdate, so it stays) and its body calls web.planner, which
+    12.0 removes too: the template cannot be rendered any more. crm and
+    website_mail delete their own."""
+    openupgrade.delete_records_safely_by_xml_id(
+        env, ['project.mail_template_data_module_install_project'])
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.load_data(
@@ -28,3 +37,4 @@ def migrate(env, version):
             OR name = 'rating_project_request_email_template')
         """
     )
+    delete_module_install_template(env)

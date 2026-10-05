@@ -51,8 +51,20 @@ def fill_project_project_inherits_values(env):
     )
 
 
+def delete_obsolete_rating_project_views(env):
+    """rating_project is merged into project in 12.0. Its search view of the
+    tasks (filter "Rated tasks", without the name 12.0 requires) is not
+    shipped by 12.0 and is only deleted at the end of the update: until then
+    it is validated with the search view of project and logs RELAX NG errors.
+    Delete it before the views of project are loaded.
+    """
+    openupgrade.delete_records_safely_by_xml_id(
+        env, ['project.project_task_view_search'])
+
+
 @openupgrade.migrate()
 def migrate(env, version):
+    delete_obsolete_rating_project_views(env)
     fill_project_project_inherits_values(env)
     openupgrade.copy_columns(env.cr, column_copies)
     compute_project_task_rating_last_value(env)

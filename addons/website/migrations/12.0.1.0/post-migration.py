@@ -174,10 +174,29 @@ def update_google_maps_api_key(env):
         website_ids = env['website'].search([('google_maps_api_key', '=', False)]).write({'google_maps_api_key': google_maps_api_key})
 
 
+def fill_website_auth_signup_uninvited(cr):
+    """Keep the free sign up of the database on its websites.
+
+    Up to 11.0 the database-wide parameter auth_signup.allow_uninvited lets
+    visitors sign up. From 12.0 each website has its own setting, which the
+    website reads before the parameter, and it defaults to 'On invitation':
+    /web/signup answered 404 and the login page lost its sign up link.
+    """
+    cr.execute(
+        """SELECT value FROM ir_config_parameter
+        WHERE key = 'auth_signup.allow_uninvited'"""
+    )
+    row = cr.fetchone()
+    if row and (row[0] or '').strip().lower() == 'true':
+        openupgrade.logged_query(
+            cr, "UPDATE website SET auth_signup_uninvited = 'b2c'")
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     cr = env.cr
     assign_theme(env)
+    fill_website_auth_signup_uninvited(cr)
     fill_website_socials(cr)
     env['website.menu']._parent_store_compute()
     openupgrade.load_data(

@@ -79,11 +79,17 @@ def fill_sale_order_line_sections(cr):
         INSERT INTO sale_order_line (order_id, layout_category_id,
             sequence, name,
             price_unit, product_uom_qty, customer_lead,
-            display_type, create_uid, create_date, write_uid, write_date)
+            display_type, create_uid, create_date, write_uid, write_date,
+            company_id, order_partner_id, salesman_id, currency_id, state)
         SELECT sol.order_id, sol.layout_category_id,
             min(sol.sequence) -1 as sequence, max(COALESCE(slc.name, ' ')),
             0, 0, 0, 'line_section', min(sol.create_uid), min(sol.create_date),
-            min(sol.write_uid), min(sol.write_date)
+            min(sol.write_uid), min(sol.write_date),
+            -- the stored related fields of the order the lines share: the
+            -- record rules read company_id (without it the sections were
+            -- hidden, also from the order they head)
+            min(sol.company_id), min(sol.order_partner_id),
+            min(sol.salesman_id), min(sol.currency_id), min(sol.state)
         FROM sale_order_line sol
         LEFT JOIN sale_layout_category slc ON slc.id = sol.layout_category_id
         WHERE sol.order_id IN (
@@ -120,8 +126,11 @@ def migrate(env, version):
     if openupgrade.column_exists(env.cr, 'sale_order', 'requested_date'):
         # from sale_order_dates module
         openupgrade.rename_fields(env, _field_renames_order_dates)
-    if openupgrade.table_exists(env.cr, 'sale_quote_line'):
-        # from website_quote module
+    if (openupgrade.table_exists(env.cr, 'sale_quote_line')
+            and openupgrade.column_exists(
+                env.cr, 'sale_order', 'require_payment')):
+        # from website_quote module (its tables stay when it is uninstalled,
+        # the column of sale.order goes)
         openupgrade.rename_columns(env.cr, _column_renames2)
     fill_sale_order_line_sections(env.cr)
     openupgrade.logged_query(

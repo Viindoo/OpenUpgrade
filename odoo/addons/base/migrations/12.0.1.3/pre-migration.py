@@ -243,6 +243,51 @@ def fix_double_membership(cr):
         )
 
 
+_TECHNICAL_MODELS = (
+    'ir.actions.act_url', 'ir.actions.act_window', 'ir.actions.client',
+    'ir.actions.report', 'ir.actions.report.xml', 'ir.actions.server',
+    'ir.actions.todo', 'ir.cron', 'ir.filters', 'ir.model.access',
+    'ir.property', 'ir.rule', 'ir.ui.menu', 'ir.ui.view', 'ir.values',
+    'mail.template', 'web.tip', 'website.menu',
+)
+
+
+def release_records_of_lost_modules(cr):
+    """A module that is removed without a successor is merged into the module
+    it extended (apriori.lost_modules), and the update of that module deletes
+    the records it no longer finds in the data files, except the noupdate
+    ones. Of a module that is gone, a noupdate scheduled action calls a model
+    that does not exist, a record rule or a mail template reads fields that
+    do not exist: release the technical records, so that they are deleted
+    too. Business records (stages, campaigns, products...) stay.
+    """
+    lost_modules = getattr(apriori, 'lost_modules', [])
+    if not lost_modules:
+        return
+    openupgrade.logged_query(
+        cr,
+        """
+        UPDATE ir_model_data SET noupdate = FALSE
+        WHERE noupdate AND module IN %s AND model IN %s
+        """, (tuple(lost_modules), _TECHNICAL_MODELS))
+    # records of the models that go with the modules: the rows stay in their
+    # tables, which no model reads any more; their xml ids would dangle
+    openupgrade.logged_query(
+        cr,
+        """
+        DELETE FROM ir_model_data d
+        WHERE d.module IN %s AND d.model IN (
+            SELECT m.model
+            FROM ir_model m
+            JOIN ir_model_data md ON md.model = 'ir.model'
+                AND md.res_id = m.id AND md.module IN %s
+            WHERE NOT EXISTS (
+                SELECT 1 FROM ir_model_data o
+                WHERE o.model = 'ir.model' AND o.res_id = m.id
+                    AND o.module NOT IN %s))
+        """, (tuple(lost_modules), ) * 3)
+
+
 @openupgrade.migrate(use_env=True)
 def migrate(env, version):
     openupgrade.remove_tables_fks(env.cr, _obsolete_tables)
@@ -253,17 +298,28 @@ def migrate(env, version):
         UPDATE ir_model_data SET noupdate=False
         WHERE  module='base' AND name='group_user'""",
     )
+    release_records_of_lost_modules(env.cr)
     openupgrade.update_module_names(
-        env.cr, apriori.renamed_modules.items())
+        env.cr, apriori.renamed_modules.items(), environment_namespec=True
+    )
     openupgrade.update_module_names(
-        env.cr, apriori.merged_modules.items(), merge_modules=True)
+        env.cr,
+        apriori.merged_modules.items(),
+        merge_modules=True,
+        environment_namespec=True,
+    )
+    openupgrade.clean_transient_models(env.cr)
     if openupgrade.table_exists(env.cr, 'product_uom'):
         openupgrade.rename_models(env.cr, model_renames_product)
         openupgrade.rename_tables(env.cr, table_renames_product)
+        for _old, model in model_renames_product:
+            openupgrade.update_module_moved_models(env.cr, model, 'product', 'uom')
     fix_multiple_reference_uoms(env)
     if openupgrade.table_exists(env.cr, 'stock_incoterms'):
         openupgrade.rename_models(env.cr, model_renames_stock)
         openupgrade.rename_tables(env.cr, table_renames_stock)
+        for _old, model in model_renames_stock:
+            openupgrade.update_module_moved_models(env.cr, model, 'stock', 'account')
     openupgrade.rename_xmlids(env.cr, xmlid_renames)
     switch_noupdate_flag(env)
     eliminate_duplicate_translations(env.cr)
