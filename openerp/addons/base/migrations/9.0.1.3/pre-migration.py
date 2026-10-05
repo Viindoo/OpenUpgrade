@@ -151,7 +151,13 @@ def release_records_of_lost_modules(cr):
             (table, ))
         kind = cr.fetchone()
         if kind and kind[0] == 'r':
-            openupgrade.rename_tables(cr, [(table, None)])
+            legacy = openupgrade.get_legacy_name(table)
+            if len(legacy) + len('_id_seq') > 63:
+                # PostgreSQL cuts identifiers at 63 characters: the legacy
+                # name of the table and the one of its sequence would be
+                # the same name
+                legacy = 'ou_legacy_9_0_' + table
+            openupgrade.rename_tables(cr, [(table, legacy)])
         elif kind and kind[0] == 'v':
             # the SQL view of a report model holds no data, and a view left
             # behind blocks later changes of the columns it reads
