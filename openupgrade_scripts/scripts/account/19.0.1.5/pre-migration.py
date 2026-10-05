@@ -148,6 +148,68 @@ def account_reconcile_model_archive(env):
     )
 
 
+def res_company_category_default_accounts(env):
+    """
+    Since 19.0 the company holds the default income and expense accounts of the
+    product categories (income_account_id, expense_account_id) and writes them
+    as the defaults of the categories (ir.default) on every write of a company
+    (_set_category_defaults). The new columns take the defaults the categories
+    have, the one of the company first, else the global one when the account is
+    one of the company: left empty, the first write on a company replaces the
+    defaults of the categories with nothing (the end-migration only fills the
+    columns from a chart template, a company without one keeps them empty).
+    """
+    openupgrade.add_fields(
+        env,
+        [
+            (
+                "income_account_id",
+                "res.company",
+                "res_company",
+                "many2one",
+                None,
+                "account",
+            ),
+            (
+                "expense_account_id",
+                "res.company",
+                "res_company",
+                "many2one",
+                None,
+                "account",
+            ),
+        ],
+    )
+    for column, field_name in (
+        ("income_account_id", "property_account_income_categ_id"),
+        ("expense_account_id", "property_account_expense_categ_id"),
+    ):
+        openupgrade.logged_query(
+            env.cr,
+            f"""
+            UPDATE res_company c
+            SET {column} = a.id
+            FROM (
+                SELECT DISTINCT ON (rc.id) rc.id AS company_id, d.json_value
+                FROM res_company rc
+                JOIN ir_default d
+                    ON d.company_id = rc.id OR d.company_id IS NULL
+                JOIN ir_model_fields f ON f.id = d.field_id
+                WHERE f.model = 'product.category' AND f.name = %s
+                    AND d.user_id IS NULL AND d.condition IS NULL
+                ORDER BY rc.id, d.company_id NULLS LAST, d.id
+            ) dv
+            JOIN account_account a ON a.id = CASE
+                WHEN dv.json_value ~ '^[0-9]+$' THEN dv.json_value::int END
+            JOIN account_account_res_company_rel r
+                ON r.account_account_id = a.id
+            WHERE c.id = dv.company_id AND r.res_company_id = c.id
+                AND c.{column} IS NULL
+            """,
+            (field_name,),
+        )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.add_fields(env, _added_fields)
@@ -157,3 +219,4 @@ def migrate(env, version):
     account_report(env)
     account_report_expression(env)
     account_reconcile_model_archive(env)
+    res_company_category_default_accounts(env)
