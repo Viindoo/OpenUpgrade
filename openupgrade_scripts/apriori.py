@@ -25,6 +25,11 @@ renamed_modules = {
 # Merged modules contain a mapping from old module names to other,
 # preexisting module names
 merged_modules = {
+    # makmur: Viindoo module that is dormant in 19.0 (installable False until the
+    # Viindoo cluster moves to 19.0). Odoo installed it on the way (auto_install
+    # completed by account_payment at 16.0); the customer never used it: retired
+    # (lost_modules).
+    "to_payment_transaction_protection": "account_payment",
     # odoo
     "account_edi_ubl_cii_tax_extension": "account_edi_ubl_cii",
     "account_peppol_selfbilling": "account_peppol",
@@ -107,3 +112,14 @@ merged_models = {
     "hr.candidate": "hr.applicant",
     # OCA/...
 }
+
+# Modules of merged_modules that are not merged into anything: they are
+# removed without a successor on our addons paths. The technical records they
+# own (record rules, scheduled and server actions, views, menus, mail
+# templates...) are deleted by the update even when they are noupdate, and the
+# xml ids of records of models that go with them are detached: see
+# release_records_of_lost_modules in the pre-migration of base (same rule as
+# in the 10.0-18.0 branches).
+lost_modules = [
+    "to_payment_transaction_protection",
+]
