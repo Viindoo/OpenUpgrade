@@ -125,7 +125,14 @@ merged_modules = {
     "viin_account_auto_transfer_patch_1": "viin_account_auto_transfer",
     "viin_account_qr_code_emv": "account_qr_code_emv",
     "viin_affiliate_website_patch": "viin_affiliate_website",
-    "viin_analytic_tag": "viin_account",
+    # makmur: the customer never had viin_account. Merged into it, the module
+    # made viin_account "to upgrade" from the version of viin_analytic_tag, and the
+    # migration scripts of viin_account ran on a database that never had its
+    # fields (16.0.0.1.1: account.move.line.transfer_line_id). The two analytic
+    # tags of the customer were made by the 9.0 migration from the state and the
+    # type of the analytic accounts, no journal item uses them: retired
+    # (lost_modules); viin_account comes with 19.0 as on a new database.
+    "viin_analytic_tag": "analytic",
     "viin_event_barcodes": "event",
     "viin_event_checkin": "event",
     "viin_event_checkin_crm": "event_crm",
@@ -225,5 +232,6 @@ merged_models = {
 # xml ids of records of models that go with them are detached: see
 # release_records_of_lost_modules in the pre-migration of base.
 lost_modules = [
+    "viin_analytic_tag",
     "to_uom_subscription",
 ]
