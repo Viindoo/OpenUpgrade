@@ -163,7 +163,6 @@ def drop_report_views(cr):
             openupgrade.logged_query(cr, f'DROP VIEW IF EXISTS "{view}" CASCADE')
 
 
-@openupgrade.migrate(use_env=False)
 def _move_stale_partner_barcode_column(cr):
     """res.partner.barcode is company dependent since 14.0 and has no column up
     to 17.0; 18.0 gives it a jsonb column and converts an existing column of
@@ -184,6 +183,7 @@ def _move_stale_partner_barcode_column(cr):
         openupgrade.rename_columns(cr, {"res_partner": [("barcode", None)]})
 
 
+@openupgrade.migrate(use_env=False)
 def migrate(cr, version):
     openupgrade.logged_query(
         cr,
