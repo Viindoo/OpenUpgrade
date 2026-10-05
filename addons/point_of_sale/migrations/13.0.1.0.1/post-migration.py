@@ -73,12 +73,12 @@ def fill_pos_config_barcode_nomenclature_id(env):
 
 
 def fill_pos_config_module_pos_hr(env):
-    """The flag goes with the module pos_hr. Upstream switches it on as soon
-    as hr is installed, because its loader installs every auto_install module
-    in the same run. This branch does not install modules during a migration:
-    without the module, the flag made the first write on a point of sale (the
-    noupdate data of pos_sale in 15.0) start the installation of pos_hr in the
-    middle of the migration, which lost the savepoint of the running script.
+    """The flag goes with the module pos_hr, which the loader installs in the
+    same run as soon as hr is installed (auto_install module of Odoo). The
+    module is checked all the same: with the flag and without the module, the
+    first write on a point of sale (the noupdate data of pos_sale in 15.0)
+    starts the installation of pos_hr in the middle of the migration, which
+    loses the savepoint of the running script.
     """
     env.cr.execute("""
         SELECT 1 FROM ir_module_module
