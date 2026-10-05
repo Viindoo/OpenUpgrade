@@ -115,6 +115,47 @@ def release_records_of_lost_modules(cr):
                 WHERE o.model = 'ir.model' AND o.res_id = m.id
                     AND o.module NOT IN %s))
         """, (lost_modules, ) * 3)
+    # The tables of the models that go with the modules, and the tables of
+    # the many2many relations only they declare, are moved aside under their
+    # legacy name (rows, indexes, constraints and sequence included; the SQL
+    # views of their report models are dropped): a model of a later series
+    # that uses the same table name starts from a table of its own.
+    # account.analytic.plan of 16.0 otherwise collides with the table of the
+    # 8.0 module account_analytic_plans ("relation account_analytic_plan
+    # already exists" when account_analytic_group is renamed), and a payroll
+    # module installed later would adopt the 8.0 tables of hr_payroll.
+    cr.execute(
+        """
+        SELECT replace(m.model, '.', '_')
+        FROM ir_model m
+        JOIN ir_model_data md ON md.model = 'ir.model'
+            AND md.res_id = m.id AND md.module IN %s
+        WHERE NOT EXISTS (
+            SELECT 1 FROM ir_model_data o
+            WHERE o.model = 'ir.model' AND o.res_id = m.id
+                AND o.module NOT IN %s)
+        UNION
+        SELECT r.name
+        FROM ir_model_relation r
+        JOIN ir_module_module mm ON mm.id = r.module
+        WHERE mm.name IN %s
+            AND NOT EXISTS (
+                SELECT 1 FROM ir_model_relation o
+                JOIN ir_module_module om ON om.id = o.module
+                WHERE o.name = r.name AND om.name NOT IN %s)
+        """, (lost_modules, ) * 4)
+    for table, in cr.fetchall():
+        cr.execute(
+            "SELECT c.relkind FROM pg_class c JOIN pg_namespace n ON n.oid = "
+            "c.relnamespace WHERE n.nspname = 'public' AND c.relname = %s",
+            (table, ))
+        kind = cr.fetchone()
+        if kind and kind[0] == 'r':
+            openupgrade.rename_tables(cr, [(table, None)])
+        elif kind and kind[0] == 'v':
+            # the SQL view of a report model holds no data, and a view left
+            # behind blocks later changes of the columns it reads
+            openupgrade.logged_query(cr, 'DROP VIEW "%s"' % table)
 
 
 def cleanup_modules(cr):
