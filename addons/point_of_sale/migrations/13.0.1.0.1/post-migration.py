@@ -73,7 +73,18 @@ def fill_pos_config_barcode_nomenclature_id(env):
 
 
 def fill_pos_config_module_pos_hr(env):
-    if openupgrade.table_exists(env.cr, 'hr_employee'):
+    """The flag goes with the module pos_hr. Upstream switches it on as soon
+    as hr is installed, because its loader installs every auto_install module
+    in the same run. This branch does not install modules during a migration:
+    without the module, the flag made the first write on a point of sale (the
+    noupdate data of pos_sale in 15.0) start the installation of pos_hr in the
+    middle of the migration, which lost the savepoint of the running script.
+    """
+    env.cr.execute("""
+        SELECT 1 FROM ir_module_module
+        WHERE name = 'pos_hr'
+            AND state IN ('installed', 'to install', 'to upgrade')""")
+    if env.cr.fetchone():
         openupgrade.logged_query(
             env.cr, """
             UPDATE pos_config SET module_pos_hr = TRUE""",
