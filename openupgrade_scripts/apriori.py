@@ -30,6 +30,10 @@ merged_modules = {
     # completed by account_payment at 16.0); the customer never used it: retired
     # (lost_modules).
     "to_payment_transaction_protection": "account_payment",
+    # makmur: Viindoo module that takes the fuel logs, services and costs out of
+    # fleet since 14.0 (installed by the fleet migration of 14.0), dormant in
+    # 19.0. The customer has no vehicle: retired (lost_modules); its tables stay.
+    "viin_fleet": "fleet",
     # odoo
     "account_edi_ubl_cii_tax_extension": "account_edi_ubl_cii",
     "account_peppol_selfbilling": "account_peppol",
@@ -122,4 +126,5 @@ merged_models = {
 # in the 10.0-18.0 branches).
 lost_modules = [
     "to_payment_transaction_protection",
+    "viin_fleet",
 ]
