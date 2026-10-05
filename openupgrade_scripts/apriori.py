@@ -88,7 +88,6 @@ renamed_modules = {
     "to_partner_share_holder": "viin_partner_shareholder",
     "to_hr_resoucre_calendar_rate": "viin_resource_calendar_rate",
     "to_account_bank_statement_import_rje": "viin_account_bank_statement_import_rje",
-    "account_bank_statement_import": "viin_account_bank_statement_import",
     "to_foreign_trade": "viin_foreign_trade",
     "to_l10n_vn_employee_advance": "viin_l10n_vn_hr_account",
     "to_einvoice_common": "l10n_vn_edi",
@@ -107,6 +106,11 @@ renamed_modules = {
 # Merged modules contain a mapping from old module names to other,
 # preexisting module names
 merged_modules = {
+    # makmur: installed by the auto-install of 9.0, never used by the customer
+    # (no bank statement import). Its Viindoo successor
+    # viin_account_bank_statement_import needs viin_account_reconciliation and
+    # is not available from 17.0 on: retired here (lost_modules).
+    "account_bank_statement_import": "account",
     # Viindoo/tvtmaaddons: removed in 14.0 without a successor (public holidays
     # per year are part of resource.calendar.leaves)
     "to_holidays_in_years": "resource",
@@ -251,6 +255,7 @@ merged_models = {
 # xml ids of records of models that go with them are detached: see
 # release_records_of_lost_modules in the pre-migration of base.
 lost_modules = [
+    "account_bank_statement_import",
     "to_holidays_in_years",
     "to_hr_work_day_type",
     "to_website_search_suggestion",
