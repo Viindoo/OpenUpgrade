@@ -473,12 +473,61 @@ def compute_balance_for_draft_invoice_lines(env):
                 )
 
 
+# The payment vouchers of 8.0 (types receipt and payment) were turned into
+# account.payment records by the 9.0 migration (same id), and their rows stayed
+# in account_voucher, a model that only knows sale and purchase receipts from
+# 9.0 on. They are payments, not receipts: see migrate_payment_voucher_moves.
+_PAYMENT_VOUCHER = """(
+    av.voucher_type IN ('receipt', 'payment')
+    AND EXISTS (SELECT 1 FROM account_payment ap WHERE ap.id = av.id))"""
+
+
+def migrate_payment_voucher_moves(env):
+    """The journal entry of a validated payment voucher of 8.0 stays a plain
+    entry (type 'entry') of its payment, and it is posted, as the payment is:
+    8.0 left the entries of the journals without "skip draft state" unposted
+    although they counted in the balance of the partners; from 13.0 on only
+    posted entries count, and an unposted entry cannot be reconciled.
+    Without this step the vouchers were handled as sale receipts: 'out_receipt'
+    documents (customer receipts and supplier payments alike) that every
+    invoice report counts as sales, plus one draft receipt for each draft
+    payment, which already has its draft account.payment.
+    The messages, followers and attachments of the payment vouchers without
+    entry (draft ones) go to their payment; those of the others go to the
+    entry with the other vouchers (merge_models).
+    """
+    openupgrade.logged_query(
+        env.cr, """
+        UPDATE account_move am
+        SET name = COALESCE(av.number, am.name), state = 'posted'
+        FROM account_voucher av
+        WHERE am.old_voucher_id = av.id
+            AND av.state NOT IN ('draft', 'cancel', 'proforma')
+            AND """ + _PAYMENT_VOUCHER,
+    )
+    for table, model_column in (
+            ('mail_message', 'model'), ('mail_followers', 'res_model'),
+            ('ir_attachment', 'res_model')):
+        openupgrade.logged_query(
+            env.cr, """
+            UPDATE {table} t
+            SET {column} = 'account.payment'
+            FROM account_voucher av
+            WHERE t.{column} = 'account.voucher' AND t.res_id = av.id
+                AND NOT EXISTS (SELECT 1 FROM account_move am
+                                WHERE am.old_voucher_id = av.id)
+                AND """.format(table=table, column=model_column)
+            + _PAYMENT_VOUCHER,
+        )
+
+
 def migration_voucher_moves(env):
     openupgrade.logged_query(
         env.cr,
         "ALTER TABLE account_voucher ADD COLUMN "
         "IF NOT EXISTS message_main_attachment_id int4"
     )
+    migrate_payment_voucher_moves(env)
     openupgrade.logged_query(
         env.cr, """
         UPDATE account_move am
@@ -497,7 +546,7 @@ def migration_voucher_moves(env):
         FROM account_voucher av
         WHERE am.old_voucher_id = av.id AND av.state not in (
             'draft', 'cancel', 'proforma')
-        """,
+            AND NOT """ + _PAYMENT_VOUCHER,
     )
     openupgrade.logged_query(
         env.cr, """
@@ -515,7 +564,7 @@ def migration_voucher_moves(env):
         write_date
         FROM account_voucher av
         WHERE av.state in ('draft', 'cancel', 'proforma')
-        """,
+            AND NOT """ + _PAYMENT_VOUCHER,
     )
     openupgrade.merge_models(env.cr, 'account.voucher', 'account.move', 'old_voucher_id')
     # Not draft, cancel, proforma voucher lines
@@ -528,6 +577,7 @@ def migration_voucher_moves(env):
         create_uid = avl.create_uid, create_date = avl.create_date
         FROM account_voucher_line avl
             JOIN account_voucher av ON avl.voucher_id = av.id AND av.state NOT IN ('draft', 'cancel', 'proforma')
+                AND NOT """ + _PAYMENT_VOUCHER + """
             JOIN account_move am ON av.id = am.old_voucher_id
         WHERE am.id = aml.move_id AND avl.company_id = aml.company_id AND avl.account_id = aml.account_id
             AND avl.name = aml.name
@@ -563,6 +613,7 @@ def migration_voucher_moves(env):
         0.0, 0.0, 0.0
         FROM account_voucher_line avl
         JOIN account_voucher av ON avl.voucher_id = av.id AND av.state in ('draft', 'cancel', 'proforma')
+            AND NOT """ + _PAYMENT_VOUCHER + """
         LEFT JOIN account_move am ON am.old_voucher_id = av.id
         WHERE COALESCE(av.move_id, am.id) IS NOT NULL""",
     )
@@ -586,6 +637,18 @@ def migration_voucher_moves(env):
         JOIN account_move_line aml
         ON aml.old_voucher_line_id = atavlr.account_voucher_line_id
         ON CONFLICT DO NOTHING""",
+    )
+    # the entries of the vouchers were posted and renamed above by SQL: their
+    # journal items follow (stored related fields), or they keep the state
+    # 'draft' and no balance, residual amount or report counts them
+    openupgrade.logged_query(
+        env.cr, """
+        UPDATE account_move_line aml
+        SET parent_state = am.state, move_name = am.name
+        FROM account_move am
+        WHERE am.id = aml.move_id AND am.old_voucher_id IS NOT NULL
+            AND (aml.parent_state IS DISTINCT FROM am.state
+                 OR aml.move_name IS DISTINCT FROM am.name)""",
     )
 
 
