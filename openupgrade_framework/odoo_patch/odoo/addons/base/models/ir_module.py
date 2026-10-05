@@ -2,6 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 from odoo import api
+from odoo.modules.module import Manifest
 
 from odoo.addons.base.models.ir_module import IrModuleModule
 
@@ -14,6 +15,21 @@ def update_list(self):
     Ignore localization modules that are set to auto_install
     """
     result = IrModuleModule.update_list._original_method(self)
+    # A module that cannot be installed in this series (no source on the addons
+    # path, or installable False) keeps the state 'uninstalled' it got in an
+    # earlier series: update_list only switches the other way. Left so, the
+    # selection below and the auto_install cascade of button_install mark it
+    # 'to install', the loader skips it and the update ends with "Some modules
+    # have inconsistent states". It gets the state a new database gives it.
+    not_installable = self.env["ir.module.module"].search(
+        [("state", "=", "uninstalled")]
+    ).filtered(
+        lambda module: not (
+            Manifest.for_addon(module.name, display_warning=False) or {}
+        ).get("installable")
+    )
+    if not_installable:
+        not_installable.state = "uninstallable"
     new_auto_install_modules = self.browse([])
     for module in self.env["ir.module.module"].search(
         [
