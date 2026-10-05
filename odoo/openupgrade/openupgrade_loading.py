@@ -4,15 +4,29 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 import logging
+import os
 from odoo import release
 from openupgradelib.openupgrade_tools import table_exists
 from odoo.tools import config, safe_eval
+from odoo.modules.module import get_module_path
 
 
 # A collection of functions used in
 # odoo/modules/loading.py
 
 logger = logging.getLogger('OpenUpgrade')
+
+# Root of this source tree: the modules found below it are those of Odoo itself
+ODOO_ROOT = os.path.dirname(os.path.dirname(os.path.realpath(release.__file__)))
+
+
+def is_odoo_module(name):
+    """ True for a module of this source tree (addons, odoo/addons), False
+    for a module of another directory of the addons path or without source.
+    """
+    path = get_module_path(name, display_warning=False)
+    return bool(path) and \
+        os.path.realpath(path).startswith(ODOO_ROOT + os.sep)
 
 
 def add_module_dependencies(cr, module_list):
@@ -63,6 +77,35 @@ def add_module_dependencies(cr, module_list):
 
         dependencies = [x[0] for x in cr.fetchall()]
         module_list += dependencies
+
+    # Select auto_install modules of which all dependencies
+    # are fulfilled based on the modules we know are to be
+    # installed. Only the modules of Odoo itself: the migration scripts count
+    # on it for the modules split from an installed one (12.0: purchase_stock
+    # takes the stock side of purchase), whereas the auto_install modules of
+    # the other addons paths bring migration scripts of their own, written
+    # for databases that already had the module.
+    cr.execute("""
+        SELECT name from ir_module_module WHERE state IN %s
+        """, (('installed', 'to install', 'to upgrade'),))
+    modules = list(set(module_list + [row[0] for row in cr.fetchall()]))
+    cr.execute("""
+        SELECT name from ir_module_module m
+        WHERE auto_install IS TRUE
+            AND state = 'uninstalled'
+            AND NOT EXISTS(
+                SELECT id FROM ir_module_module_dependency d
+                WHERE d.module_id = m.id
+                AND name NOT IN %s)
+         """, (tuple(modules),))
+    auto_modules = [
+        row[0] for row in cr.fetchall()
+        if is_odoo_module(row[0])
+    ]
+    if auto_modules:
+        logger.info(
+            "Selecting autoinstallable modules %s", ','.join(auto_modules))
+        module_list += auto_modules
 
     # Set proper state for new dependencies so that any init scripts are run
     cr.execute("""
