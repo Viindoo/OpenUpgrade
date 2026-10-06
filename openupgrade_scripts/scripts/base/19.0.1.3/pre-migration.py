@@ -178,7 +178,29 @@ _TECHNICAL_MODELS = (
 )
 
 
-def release_records_of_lost_modules(cr):
+def _lost_modules():
+    """The modules of apriori.lost_modules that have no installable source on
+    the addons path of this run. A module listed there because it had none
+    when the list was written, and installable since (viin_fleet, ported to
+    19.0 on 30/09), is upgraded as any other module instead of being retired.
+    """
+    from odoo.modules.module import Manifest
+
+    from odoo.addons.openupgrade_scripts import apriori as _apriori
+
+    lost = []
+    for name in getattr(_apriori, "lost_modules", []):
+        manifest = Manifest.for_addon(name, display_warning=False)
+        if manifest and manifest.get("installable"):
+            openupgrade.logger.info(
+                "%s has an installable source: upgraded, not retired", name
+            )
+            continue
+        lost.append(name)
+    return tuple(lost)
+
+
+def release_records_of_lost_modules(cr, lost_modules):
     """A module that is removed without a successor is merged into the module
     it extended (apriori.lost_modules), and the update of that module deletes
     the records it no longer finds in the data files, except the noupdate
@@ -186,9 +208,6 @@ def release_records_of_lost_modules(cr):
     detach the xml ids of the records of models that go with the module (the
     rows stay). Business records stay.
     """
-    from odoo.addons.openupgrade_scripts import apriori as _apriori
-
-    lost_modules = tuple(getattr(_apriori, "lost_modules", []))
     if not lost_modules:
         return
     openupgrade.logged_query(
@@ -227,12 +246,20 @@ def migrate(env, version):
         } AS (SELECT name, state FROM ir_module_module);
         """,
     )
-    release_records_of_lost_modules(env.cr)
+    from odoo.addons.openupgrade_scripts import apriori as _apriori
+
+    lost_modules = _lost_modules()
+    release_records_of_lost_modules(env.cr, lost_modules)
     openupgrade.update_module_names(
         env.cr, renamed_modules.items(), environment_namespec=True
     )
+    # a module of lost_modules that has an installable source is not merged
+    kept = set(getattr(_apriori, "lost_modules", [])) - set(lost_modules)
     openupgrade.update_module_names(
-        env.cr, merged_modules.items(), merge_modules=True, environment_namespec=True
+        env.cr,
+        [(old, new) for old, new in merged_modules.items() if old not in kept],
+        merge_modules=True,
+        environment_namespec=True,
     )
     openupgrade.clean_transient_models(env.cr)
     openupgrade.rename_xmlids(env.cr, _renamed_xmlids)
