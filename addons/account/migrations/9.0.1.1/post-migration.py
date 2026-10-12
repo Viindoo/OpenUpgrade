@@ -1146,6 +1146,22 @@ def fast_compute_cash_basis(env):
     )
 
 
+def cash_basis_left_to_full_reconcile(cr):
+    """account_full_reconcile, migrated after this module, turns the
+    reconciliations of 8.0 into partial reconciliations, then computes again
+    matched_percentage of every journal entry and the cash basis amounts of
+    every journal item: what fast_compute_cash_basis would write here is
+    overwritten (makmur: 3 updates of 2,073,862 journal items, 16 minutes).
+    """
+    if not openupgrade.table_exists(cr, 'account_move_reconcile'):
+        return False
+    cr.execute(
+        """SELECT 1 FROM ir_module_module
+        WHERE name = 'account_full_reconcile'
+            AND state IN ('to install', 'to upgrade')""")
+    return bool(cr.fetchone())
+
+
 def merge_invoice_journals(env, refund_journal_ids=None, journal_mapping=None):
     """Move invoices and entries from refund journals to normal ones.
 
@@ -1410,7 +1426,9 @@ def migrate(env, version):
     fill_move_taxes(env)
     fill_account_invoice_tax_taxes(env)
     fill_blacklisted_fields(cr)
-    fast_compute_cash_basis(env)
+    cash_basis_later = cash_basis_left_to_full_reconcile(cr)
+    if not cash_basis_later:
+        fast_compute_cash_basis(env)
     fill_move_line_invoice(cr)
     merge_invoice_journals(env)
     update_account_invoice_date(cr)
@@ -1429,7 +1447,7 @@ def migrate(env, version):
     )
     env['account.move'].recompute()
     cr.execute("SELECT id, type FROM account_account_type")
-    if dict(cr.fetchall()) != types_before:
+    if dict(cr.fetchall()) != types_before and not cash_basis_later:
         # the data changed a type: the values computed above are outdated
         fast_compute_cash_basis(env)
     reset_blacklist_field_recomputation()

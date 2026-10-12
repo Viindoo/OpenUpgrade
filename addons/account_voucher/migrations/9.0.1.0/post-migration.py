@@ -116,16 +116,29 @@ def set_voucher_line_amount(env):
     """We replicate here the code of the compute function and set the value
     finally via SQL for avoiding the trigger of the rest of the computed
     fields that depends on this field.
+
+    Without taxes the amount is the quantity times the unit price, set by one
+    query (makmur: 1,714,123 lines without taxes, 10 minutes line by line);
+    the lines with taxes go through the computation of the taxes.
     """
-    lines = env['account.voucher.line'].search([])
+    openupgrade.logged_query(
+        env.cr, """
+        UPDATE account_voucher_line l
+        SET price_subtotal = l.quantity * l.price_unit
+        WHERE NOT EXISTS (
+            SELECT 1 FROM account_tax_account_voucher_line_rel rel
+            WHERE rel.account_voucher_line_id = l.id)""",
+    )
+    env.cr.execute(
+        """SELECT DISTINCT account_voucher_line_id
+        FROM account_tax_account_voucher_line_rel""")
+    lines = env['account.voucher.line'].browse(
+        [row[0] for row in env.cr.fetchall()])
     for line in openupgrade.chunked(lines):
-        if line.tax_ids:
-            taxes = line.tax_ids.compute_all(
-                line.price_unit, line.voucher_id.currency_id, line.quantity,
-                product=line.product_id, partner=line.voucher_id.partner_id)
-            price_subtotal = taxes['total_excluded']
-        else:
-            price_subtotal = line.quantity * line.price_unit
+        taxes = line.tax_ids.compute_all(
+            line.price_unit, line.voucher_id.currency_id, line.quantity,
+            product=line.product_id, partner=line.voucher_id.partner_id)
+        price_subtotal = taxes['total_excluded']
         env.cr.execute(
             """UPDATE account_voucher_line
             SET price_subtotal = %s

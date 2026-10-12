@@ -61,8 +61,51 @@ def set_so_line_amounts(env):
     """We replicate here the code of the compute function and set the values
     finally via SQL for avoiding the trigger of the rest of the computed
     fields that depends on these fields.
+
+    The lines without taxes are read and written by batches, their amounts
+    computed by the same function (makmur: 520,379 lines of 8.0, none with
+    taxes, 7 minutes line by line); the others line by line.
     """
-    lines = env['sale.order.line'].search([])
+    cr = env.cr
+    no_taxes = env['account.tax']
+    currencies = {None: env['res.currency']}
+    cr.execute("""
+        SELECT sol.id, sol.price_unit, sol.discount, sol.product_uom_qty,
+            pl.currency_id
+        FROM sale_order_line sol
+        LEFT JOIN sale_order so ON so.id = sol.order_id
+        LEFT JOIN product_pricelist pl ON pl.id = so.pricelist_id
+        WHERE NOT EXISTS (
+            SELECT 1 FROM account_tax_sale_order_line_rel rel
+            WHERE rel.sale_order_line_id = sol.id)""")
+    rows = cr.fetchall()
+    for start in range(0, len(rows), 10000):
+        values = []
+        for line_id, price_unit, discount, qty, currency_id in \
+                rows[start:start + 10000]:
+            if currency_id not in currencies:
+                currencies[currency_id] = env['res.currency'].browse(
+                    currency_id)
+            price = (price_unit or 0.0) * (1 - (discount or 0.0) / 100.0)
+            taxes = no_taxes.compute_all(
+                price, currencies[currency_id], qty or 0.0)
+            values.append(cr.mogrify("(%s, %s, %s, %s)", (
+                line_id,
+                taxes['total_included'] - taxes['total_excluded'],
+                taxes['total_included'],
+                taxes['total_excluded'],
+            )))
+        cr.execute("""
+            UPDATE sale_order_line sol
+            SET price_tax = v.price_tax,
+                price_total = v.price_total,
+                price_subtotal = v.price_subtotal
+            FROM (VALUES %s) AS v(id, price_tax, price_total, price_subtotal)
+            WHERE sol.id = v.id""" % ",".join(values))
+    cr.execute(
+        """SELECT DISTINCT sale_order_line_id
+        FROM account_tax_sale_order_line_rel""")
+    lines = env['sale.order.line'].browse([row[0] for row in cr.fetchall()])
     for line in lines:
         price = line.price_unit * (1 - (line.discount or 0.0) / 100.0)
         taxes = line.tax_id.compute_all(

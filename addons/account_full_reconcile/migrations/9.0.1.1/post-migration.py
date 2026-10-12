@@ -460,6 +460,11 @@ def migrate_reconcile(cr):
         """
     )
     _logger.info("Updated account_move.matched_percentage.")
+    # The migration of account set the cash basis amounts of every item to
+    # its debit and credit, which they stay for most items (journals other
+    # than sale and purchase, entries fully matched): only the others are
+    # written, every row written costs a new version of it in the table and
+    # in each of its indexes (makmur: 2,073,862 items, 7 minutes).
     cr.execute(
         """\
         WITH subquery AS (
@@ -487,9 +492,17 @@ def migrate_reconcile(cr):
                 sq.debit_cash_basis - sq.credit_cash_basis, 2)
         FROM subquery sq
         WHERE account_move_line.id = sq.id
+            AND (account_move_line.debit_cash_basis,
+                 account_move_line.credit_cash_basis,
+                 account_move_line.balance_cash_basis)
+            IS DISTINCT FROM (
+                ROUND(sq.debit_cash_basis, 2),
+                ROUND(sq.credit_cash_basis, 2),
+                ROUND(sq.debit_cash_basis - sq.credit_cash_basis, 2))
         """
     )
-    _logger.info("Updated account_move_line *_cash_basis.")
+    _logger.info("Updated account_move_line *_cash_basis (%d items).",
+                 cr.rowcount)
 
 
 def invoice_recompute(env):
