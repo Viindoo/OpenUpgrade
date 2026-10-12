@@ -164,6 +164,37 @@ def migrate_account_invoice_shipping_address(env):
     ])
 
 
+def precompute_sale_line_price_reduce(cr):
+    """sale 10.0 stores sale.order.line.price_reduce_taxinc and
+    price_reduce_taxexcl (total and subtotal per unit, in the currency of the
+    order rounded to it). Created by the ORM, the new columns are computed
+    line by line (makmur: 520,379 lines twice, 5 minutes); the same values
+    are set here in one statement.
+    """
+    if openupgrade.column_exists(cr, 'sale_order_line', 'price_reduce_taxinc'):
+        return
+    openupgrade.logged_query(
+        cr, """ALTER TABLE sale_order_line
+        ADD COLUMN price_reduce_taxinc NUMERIC,
+        ADD COLUMN price_reduce_taxexcl NUMERIC""")
+    openupgrade.logged_query(
+        cr, """
+        UPDATE sale_order_line sol
+        SET price_reduce_taxinc = CASE WHEN sol.product_uom_qty != 0 THEN
+                ROUND((COALESCE(sol.price_total, 0) / sol.product_uom_qty)::numeric,
+                      COALESCE(cur.decimal_places, 2)) ELSE 0 END,
+            price_reduce_taxexcl = CASE WHEN sol.product_uom_qty != 0 THEN
+                ROUND((COALESCE(sol.price_subtotal, 0) / sol.product_uom_qty)::numeric,
+                      COALESCE(cur.decimal_places, 2)) ELSE 0 END
+        FROM sale_order so
+        JOIN product_pricelist pl ON pl.id = so.pricelist_id
+        LEFT JOIN (SELECT id, CASE WHEN rounding > 0 AND rounding < 1
+                                   THEN ceil(-log(rounding))::int ELSE 0 END
+                              AS decimal_places
+                   FROM res_currency) cur ON cur.id = pl.currency_id
+        WHERE so.id = sol.order_id""")
+
+
 @openupgrade.migrate(use_env=True)
 def migrate(env, version):
     migrate_sale_layout(env)
@@ -172,3 +203,4 @@ def migrate(env, version):
     warning_update_module_names_partial(env.cr)
     sale_expense_update_module_names_partial(env.cr)
     migrate_account_invoice_shipping_address(env)
+    precompute_sale_line_price_reduce(env.cr)

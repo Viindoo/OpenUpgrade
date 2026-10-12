@@ -158,6 +158,19 @@ def prepopulate_fields(cr):
     )
 
 
+def precompute_stock_move_is_done(cr):
+    """mrp 10.0 stores stock.move.is_done (state done or cancel). Created by
+    the ORM, the new column is computed move by move (makmur: 1,676,359
+    moves, 8 minutes); the same value is set here in one statement.
+    """
+    if openupgrade.column_exists(cr, 'stock_move', 'is_done'):
+        return
+    openupgrade.logged_query(
+        cr, "ALTER TABLE stock_move ADD COLUMN is_done BOOLEAN")
+    openupgrade.logged_query(
+        cr, "UPDATE stock_move SET is_done = state IN ('done', 'cancel')")
+
+
 @openupgrade.migrate(use_env=True)
 def migrate(env, version):
     cr = env.cr
@@ -172,4 +185,5 @@ def migrate(env, version):
     openupgrade.rename_columns(cr, _column_renames)
     openupgrade.rename_fields(env, _field_renames)
     prepopulate_fields(cr)
+    precompute_stock_move_is_done(cr)
     openupgrade.rename_xmlids(cr, _xmlid_renames)
