@@ -27,7 +27,27 @@ def precompute_stock_move_line_done_move(cr):
         FROM stock_move sm WHERE sm.id = sml.move_id""")
 
 
+def precreate_column(cr, table, column, sql_type, default):
+    """Create a new column of a big table with the default value the ORM
+    would fill in: the ORM adds the column then writes every existing row
+    with one UPDATE, while PostgreSQL (11 and later) keeps the default of
+    ADD COLUMN for the existing rows without writing them. default is the
+    SQL literal of the value the ORM writes."""
+    if not openupgrade.table_exists(cr, table) or \
+            openupgrade.column_exists(cr, table, column):
+        return False
+    openupgrade.logged_query(
+        cr, 'ALTER TABLE "%s" ADD COLUMN "%s" %s DEFAULT %s'
+        % (table, column, sql_type, default))
+    openupgrade.logged_query(
+        cr, 'ALTER TABLE "%s" ALTER COLUMN "%s" DROP DEFAULT' % (table, column))
+    return True
+
+
 @openupgrade.migrate(use_env=False)
 def migrate(cr, version):
     openupgrade.rename_columns(cr, _column_renames)
     precompute_stock_move_line_done_move(cr)
+    # done_wo: the ORM writes its default on every move line (makmur: 811,165
+    # lines, 1 minute)
+    precreate_column(cr, 'stock_move_line', 'done_wo', 'boolean', 'true')

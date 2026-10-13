@@ -26,6 +26,23 @@ _portal_sale_xmlid_renames = [
 ]
 
 
+def precreate_column(cr, table, column, sql_type, default):
+    """Create a new column of a big table with the default value the ORM
+    would fill in: the ORM adds the column then writes every existing row
+    with one UPDATE, while PostgreSQL (11 and later) keeps the default of
+    ADD COLUMN for the existing rows without writing them. default is the
+    SQL literal of the value the ORM writes."""
+    if not openupgrade.table_exists(cr, table) or \
+            openupgrade.column_exists(cr, table, column):
+        return False
+    openupgrade.logged_query(
+        cr, 'ALTER TABLE "%s" ADD COLUMN "%s" %s DEFAULT %s'
+        % (table, column, sql_type, default))
+    openupgrade.logged_query(
+        cr, 'ALTER TABLE "%s" ALTER COLUMN "%s" DROP DEFAULT' % (table, column))
+    return True
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.copy_columns(env.cr, column_copies)
@@ -41,6 +58,16 @@ def migrate(env, version):
     ])
     openupgrade.rename_xmlids(env.cr, _portal_xmlid_renames)
     openupgrade.rename_xmlids(env.cr, _portal_sale_xmlid_renames)
+    # tax_base_amount: 0 on every journal item that is not a tax line, set by
+    # the post-migration with an update of every item (makmur: 2 million
+    # items, 3.5 minutes); given here as default to all of them, the tax lines
+    # (none or a few) back to empty for the post-migration to compute them
+    if precreate_column(
+            env.cr, 'account_move_line', 'tax_base_amount', 'numeric', '0'):
+        openupgrade.logged_query(
+            env.cr, """
+            UPDATE account_move_line SET tax_base_amount = NULL
+            WHERE tax_line_id IS NOT NULL""")
     openupgrade.add_fields(
         env, [
             ('price_total', 'account.invoice.line', 'account_invoice_line',

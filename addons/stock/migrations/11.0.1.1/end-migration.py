@@ -81,6 +81,43 @@ def _check_recurrence_once_per_model(foreign_keys):
     return check_recurrence
 
 
+def _memoize_field_searches(env):
+    """Make ir.model.fields remember its searches while quants are merged.
+
+    For every group of quants merge_records looks up the fields that point to
+    stock.quant (many2one, many2many, reference: _change_*_refs_orm) and the
+    unlink of the merged quants does it again (ir.default.discard_records,
+    field_id.ttype / field_id.relation): the same searches of
+    ir_model_fields, a quarter of the time of the merge (makmur: 15,167
+    merges). No field is created or deleted while quants are merged: the
+    results do not change. Returns the function to restore.
+    """
+    cls = type(env['ir.model.fields'])
+    had_own = '_search' in cls.__dict__
+    original = cls._search
+    memo = {}
+
+    def _search(self, args, offset=0, limit=None, order=None, count=False,
+                access_rights_uid=None):
+        key = (repr(args), offset, limit, order, count, access_rights_uid,
+               self.env.uid, repr(sorted(self.env.context.items())))
+        if key not in memo:
+            memo[key] = original(
+                self, args, offset=offset, limit=limit, order=order,
+                count=count, access_rights_uid=access_rights_uid)
+        result = memo[key]
+        return list(result) if isinstance(result, list) else result
+
+    cls._search = _search
+
+    def restore():
+        if had_own:
+            cls._search = original
+        else:
+            del cls._search
+    return restore
+
+
 def merge_quants(env):
     logger = logging.getLogger('openupgrade.stock.end_migration')
     group_list = [
@@ -91,6 +128,7 @@ def merge_quants(env):
     check_recurrence = openupgrade_merge_records._check_recurrence
     openupgrade_merge_records._check_recurrence = \
         _check_recurrence_once_per_model({})
+    restore_field_search = _memoize_field_searches(env)
     try:
         for group in groups:
             quants = StockQuant.search(group['__domain'])
@@ -116,6 +154,7 @@ def merge_quants(env):
                 )
     finally:
         openupgrade_merge_records._check_recurrence = check_recurrence
+        restore_field_search()
 
 
 def noupdate_obsolete_model_records(cr):

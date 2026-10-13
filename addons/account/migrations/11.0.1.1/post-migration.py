@@ -3,6 +3,7 @@
 # Copyright 2018-2019 Tecnativa - Pedro M. Baeza
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 from psycopg2.extensions import AsIs
+from psycopg2.extras import execute_values
 from openupgradelib import openupgrade
 
 import logging
@@ -112,21 +113,47 @@ def fill_account_invoice_line_total(env):
     rest_lines = line_obj.search([]) - empty_lines - simple_lines
     openupgrade.logger.debug("Compute the rest of the account.invoice.line"
                              "totals: %s" % len(rest_lines))
-    for line in rest_lines:
-        # avoid error on taxes with other type of computation ('code' for
-        # example, provided by module `account_tax_python`). We will need to
-        # add the computation on the corresponding module post-migration.
-        types = ['percent', 'fixed', 'group', 'division']
-        if any(x.amount_type not in types for x in line.invoice_line_tax_ids):
+    # The values are written by batches instead of one write per line: the
+    # domain of empty_lines (the string 'False') selects no line, so every line
+    # without tax comes here (makmur: 584,278 lines, 7 minutes, mostly the
+    # writes). Same values, converted as the ORM writes them (monetary: rounded
+    # to the currency, as text), same write_uid and write_date, and what
+    # depends on price_total is recomputed as after a write.
+    field = line_obj._fields['price_total']
+    for lines in openupgrade.chunked(rest_lines, single=False):
+        rows = []
+        for line in lines:
+            # avoid error on taxes with other type of computation ('code' for
+            # example, provided by module `account_tax_python`). We will need
+            # to add the computation on the corresponding module
+            # post-migration.
+            types = ['percent', 'fixed', 'group', 'division']
+            if any(x.amount_type not in types
+                   for x in line.invoice_line_tax_ids):
+                continue
+            # This has been extracted from `_compute_price` method
+            currency = line.invoice_id and line.invoice_id.currency_id or None
+            price = line.price_unit * (1 - (line.discount or 0.0) / 100.0)
+            taxes = line.invoice_line_tax_ids.compute_all(
+                price, currency, line.quantity, product=line.product_id,
+                partner=line.invoice_id.partner_id,
+            )
+            value = field.convert_to_column(taxes['total_included'], line)
+            if not isinstance(value, str):
+                value = repr(float(value))
+            rows.append((line.id, value))
+        if not rows:
             continue
-        # This has been extracted from `_compute_price` method
-        currency = line.invoice_id and line.invoice_id.currency_id or None
-        price = line.price_unit * (1 - (line.discount or 0.0) / 100.0)
-        taxes = line.invoice_line_tax_ids.compute_all(
-            price, currency, line.quantity, product=line.product_id,
-            partner=line.invoice_id.partner_id,
-        )
-        line.price_total = taxes['total_included']
+        execute_values(env.cr._obj, """
+            UPDATE account_invoice_line l
+            SET price_total = v.price_total::numeric, write_uid = %d,
+                write_date = (now() at time zone 'UTC')
+            FROM (VALUES %%s) AS v (id, price_total)
+            WHERE l.id = v.id""" % env.uid, rows, page_size=len(rows))
+        done = line_obj.browse([row[0] for row in rows])
+        done.invalidate_cache(['price_total'], done.ids)
+        done.modified(['price_total'])
+        done.recompute()
     openupgrade.logger.debug("Compute finished")
 
 
@@ -135,12 +162,14 @@ def fill_account_move_line_tax_base_amount(env):
     """Compute the field `tax_base_amount` in a more optimized way for speeding
     up the migration.
     """
-    # First, put 0 on all of them without originator tax
+    # First, put 0 on all of them without originator tax (given by the
+    # pre-migration: only a line that differs is written)
     openupgrade.logged_query(
         env.cr, """
         UPDATE account_move_line
         SET tax_base_amount = 0
-        WHERE tax_line_id IS NULL""",
+        WHERE tax_line_id IS NULL
+            AND tax_base_amount IS DISTINCT FROM 0""",
     )
     # Then, get from SQL the sum of bases for the rest
     openupgrade.logged_query(
@@ -160,8 +189,16 @@ def fill_account_move_line_tax_base_amount(env):
     )
 
 def cancel_no_entry_posted_payments(env):
-    payments = env['account.payment'].search([('state', 'in', ['posted', 'reconciled']),
-                                              ('move_line_ids', '=', False)])
+    # In SQL: the ORM turns ('move_line_ids', '=', False) into id NOT IN (the
+    # list of every payment with journal items), compared item by item with
+    # each payment (makmur: 351,505 payments, 2 minutes)
+    env.cr.execute("""
+        SELECT ap.id FROM account_payment ap
+        WHERE ap.state IN ('posted', 'reconciled')
+            AND NOT EXISTS (SELECT 1 FROM account_move_line aml
+                            WHERE aml.payment_id = ap.id)
+        ORDER BY ap.payment_date DESC, ap.name DESC""")
+    payments = env['account.payment'].browse([r[0] for r in env.cr.fetchall()])
     _logger.info("Cancelling all no-entry-posted-payments with ids: %s" % payments.ids)
     payments.cancel()
 
