@@ -30,7 +30,8 @@ _new_columns = [
     ("account.bank.statement.line", "journal_id", "many2one"),
     ("account.journal", "autocheck_on_post", "boolean", True),
     ("account.move", "amount_untaxed_in_currency_signed", "float"),
-    ("account.move", "checked", "boolean"),
+    # True on every existing entry but those to check (update_account_move_checked)
+    ("account.move", "checked", "boolean", True),
     ("account.move", "preferred_payment_method_line_id", "many2one"),
     ("account.reconcile.model", "counterpart_type", "selection", "general"),
     ("account.tax", "price_include_override", "selection", "tax_excluded"),
@@ -103,12 +104,15 @@ def update_account_move_amount_untaxed_in_currency_signed(env):
 
 
 def update_account_move_checked(env):
+    # checked is added with TRUE for every existing entry (_new_columns: given by
+    # PostgreSQL without writing the rows, an update of every entry otherwise,
+    # makmur: 431,947 entries, 1 minute): the entries to check are left empty
     openupgrade.logged_query(
         env.cr,
         """
         UPDATE account_move
-        SET checked = TRUE
-        WHERE to_check IS DISTINCT FROM TRUE""",
+        SET checked = NULL
+        WHERE to_check IS TRUE""",
     )
 
 

@@ -2,10 +2,6 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 from openupgradelib import openupgrade
 
-_columns_copy = {
-    "stock_move": [("location_dest_id", None, None)],
-}
-
 _field_renames = [
     ("stock.move", "stock_move", "location_dest_id", "location_final_id"),
     (
@@ -40,17 +36,22 @@ def fill_product_template_is_storable(env):
 
 
 def fill_stock_move_location_dest_id(env):
+    # the legacy copy of location_dest_id (copy_columns) is filled in the same pass:
+    # the former value is location_final_id until the updates below (one update
+    # of every move instead of two, makmur: 1.7 million moves, 3 minutes)
     openupgrade.logged_query(
         env.cr,
         """
         UPDATE stock_move sm2
         SET location_dest_id = COALESCE(sp.location_dest_id,
-            spt.default_location_dest_id, sm.location_final_id)
+            spt.default_location_dest_id, sm.location_final_id),
+            %s = sm2.location_final_id
         FROM stock_move sm
         LEFT JOIN stock_picking sp ON sm.picking_id = sp.id
         LEFT JOIN stock_picking_type spt ON sm.picking_type_id = spt.id
         WHERE sm2.id = sm.id
-        """,
+        """
+        % openupgrade.get_legacy_name("location_dest_id"),
     )
     openupgrade.logged_query(
         env.cr,
@@ -134,7 +135,13 @@ def migrate(env, version=None):
             env.cr,
             {"product_template": [("responsible_id", None)]},
         )
-    openupgrade.copy_columns(env.cr, _columns_copy)
+    # copy_columns of stock_move.location_dest_id, filled by
+    # fill_stock_move_location_dest_id
+    openupgrade.logged_query(
+        env.cr,
+        "ALTER TABLE stock_move ADD COLUMN %s integer"
+        % openupgrade.get_legacy_name("location_dest_id"),
+    )
     openupgrade.rename_fields(env, _field_renames)
     openupgrade.rename_xmlids(env.cr, _xmlid_renames)
     openupgrade.add_columns(env, _new_columns)
