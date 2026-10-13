@@ -59,6 +59,45 @@ def _compute_remaining_account_payment_amount_company_currency_signed(env):
     payments._compute_amount_company_currency_signed()
 
 
+def _number_duplicate_move_names(env):
+    """account_sequence (installed below) renames the posted entries sharing a
+    name in a journal to name (1), name (2)... before it creates the unique
+    index on (name, journal_id), the entries of a name ordered by date only:
+    between entries of the same date the order is the one in which the rows
+    happen to be read, and the entry that keeps the plain name changes from
+    one run to another (makmur: entries of statement lines named twice in
+    8.0). Same renaming here, ties broken by id (the oldest entry keeps the
+    name); account_sequence then finds no duplicate.
+    """
+    openupgrade.logged_query(
+        env.cr,
+        """
+        WITH duplicated_sequence AS (
+            SELECT name, journal_id, state
+              FROM account_move
+             WHERE state = 'posted'
+               AND name != '/'
+          GROUP BY journal_id, name, state
+            HAVING COUNT(*) > 1
+        ),
+        to_update AS (
+            SELECT move.id,
+                   move.name,
+                   row_number() OVER(PARTITION BY move.name, move.journal_id
+                                     ORDER BY move.name, move.journal_id, move.date, move.id) AS row_seq
+              FROM duplicated_sequence
+              JOIN account_move move ON move.name = duplicated_sequence.name
+                                    AND move.journal_id = duplicated_sequence.journal_id
+                                    AND move.state = duplicated_sequence.state
+        )
+        UPDATE account_move
+           SET name = to_update.name || ' (' || (to_update.row_seq - 1)::text || ')'
+          FROM to_update
+         WHERE account_move.id = to_update.id AND to_update.row_seq > 1
+        """,
+    )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.load_data(env.cr, "account", "16.0.1.2/noupdate_changes.xml")
@@ -76,6 +115,7 @@ def migrate(env, version):
         """,
         (tuple(_modules_to_install),),
     )
+    _number_duplicate_move_names(env)
     _fill_account_bank_statement_attachment_ids(env)
     _compute_remaining_account_payment_amount_company_currency_signed(env)
     # credit_limit converted to company dependent
