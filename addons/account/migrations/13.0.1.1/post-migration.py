@@ -1091,11 +1091,14 @@ def _recompute_move_entries_totals(env):
 
 
 def fill_account_move_line_missing_fields(env):
+    # filled by the pre-migration (fill_account_move_line): only a line that
+    # differs from the root computed by the ORM is written
     openupgrade.logged_query(env.cr, """
         UPDATE account_move_line aml
         SET account_root_id = aa.root_id
         FROM account_account aa
         WHERE aa.id = aml.account_id
+            AND aml.account_root_id IS DISTINCT FROM aa.root_id
     """)
     openupgrade.logged_query(env.cr, """
         UPDATE account_move_line aml

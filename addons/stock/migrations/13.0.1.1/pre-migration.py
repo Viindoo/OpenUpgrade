@@ -85,6 +85,45 @@ def prefill_stock_picking_type_sequence_code(env):
     )
 
 
+def prefill_stock_move_propagate_date(env):
+    """propagate_date and propagate_date_minimum_delta are new on stock.move;
+    the post-migration (fill_propagate_date_minimum_delta) sets them on every
+    move, from the setting of 12.0 and the delta of the company of the move:
+    two updates of every move (makmur: 1.7 million moves, 5 minutes). When
+    the setting is on and all the companies have the same delta, every move
+    gets the same values: the columns are added with them as default, which
+    PostgreSQL gives to the existing rows without writing them, and the
+    default is dropped at once (the ORM declares none in the database). The
+    updates of the post-migration then find nothing to change.
+    """
+    cr = env.cr
+    if (openupgrade.column_exists(cr, "stock_move", "propagate_date")
+            or openupgrade.column_exists(
+                cr, "stock_move", "propagate_date_minimum_delta")
+            or not openupgrade.column_exists(
+                cr, "res_company", "propagation_minimum_delta")):
+        return
+    defaults = []
+    cr.execute("""
+        SELECT value::boolean FROM ir_config_parameter
+        WHERE key = 'stock.use_propagation_minimum_delta'""")
+    row = cr.fetchone()
+    if row and row[0]:
+        defaults.append(("propagate_date", "boolean", "TRUE"))
+    cr.execute("SELECT DISTINCT propagation_minimum_delta FROM res_company")
+    deltas = [r[0] for r in cr.fetchall()]
+    cr.execute("SELECT 1 FROM stock_move WHERE company_id IS NULL LIMIT 1")
+    if len(deltas) == 1 and deltas[0] is not None and not cr.fetchone():
+        defaults.append(
+            ("propagate_date_minimum_delta", "integer", "%d" % deltas[0]))
+    for column, sql_type, value in defaults:
+        openupgrade.logged_query(
+            cr, "ALTER TABLE stock_move ADD COLUMN %s %s DEFAULT %s"
+            % (column, sql_type, value))
+        openupgrade.logged_query(
+            cr, "ALTER TABLE stock_move ALTER COLUMN %s DROP DEFAULT" % column)
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.copy_columns(env.cr, _column_copies)
@@ -107,3 +146,4 @@ def migrate(env, version):
     assure_stock_rule_company_is_correct(env)
     fill_inventory_line_categ(env)
     prefill_stock_picking_type_sequence_code(env)
+    prefill_stock_move_propagate_date(env)

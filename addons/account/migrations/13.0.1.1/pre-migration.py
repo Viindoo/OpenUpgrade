@@ -155,26 +155,76 @@ def create_account_move_new_columns(env):
             )
 
 
+# account.account.root_id of 13.0 (_compute_account_root), from the code of
+# the account aa
+_ACCOUNT_ROOT = """CASE WHEN COALESCE(aa.code, '') = '' THEN NULL
+    ELSE ascii(aa.code) * 1000 + ascii(substr(aa.code, 2, 1)) END"""
+
+
 def fill_account_move_line(env):
-    """Faster way"""
+    """Faster way: the new columns of the journal items are written in one
+    pass, each update of every line costing minutes on a big database
+    (makmur: 2 million lines, 4 to 6 minutes each):
+    - parent_state, account_internal_type, move_name (stored related fields,
+      move_name was filled by the ORM in SQL) and account_root_id (filled by
+      the post-migration from account.account.root_id, computed by the ORM
+      later in this module: same formula here, the post-migration only fixes
+      a line that would differ);
+    - sequence and discount, which the ORM filled with their default on every
+      line: the columns get it as default when they are added, PostgreSQL
+      gives it to the existing rows without writing them, and it is dropped
+      at once (the ORM declares none in the database).
+    """
     openupgrade.logged_query(
         env.cr, """
         ALTER TABLE account_move_line
         ADD COLUMN parent_state varchar,
-        ADD COLUMN account_internal_type varchar""",
+        ADD COLUMN account_internal_type varchar,
+        ADD COLUMN move_name varchar,
+        ADD COLUMN sequence integer DEFAULT 10,
+        ADD COLUMN discount numeric DEFAULT '0.00'""",
+    )
+    openupgrade.logged_query(
+        env.cr, """
+        ALTER TABLE account_move_line
+        ALTER COLUMN sequence DROP DEFAULT,
+        ALTER COLUMN discount DROP DEFAULT""",
     )
     openupgrade.logged_query(
         env.cr, """
         UPDATE account_move_line aml
         SET parent_state = am.state,
-            account_internal_type = aat.type
+            account_internal_type = aat.type,
+            move_name = am.name,
+            account_root_id = {root}
         FROM account_move am,
             account_account aa,
             account_account_type aat
         WHERE am.id = aml.move_id
             AND aa.user_type_id = aat.id
-            AND aml.account_id = aa.id""",
+            AND aml.account_id = aa.id""".format(root=_ACCOUNT_ROOT),
     )
+    # the lines the join above leaves out (account without type) get the
+    # values the ORM and the post-migration give them
+    env.cr.execute("""
+        SELECT aa.id FROM account_account aa
+        LEFT JOIN account_account_type aat ON aat.id = aa.user_type_id
+        WHERE aat.id IS NULL""")
+    untyped = tuple(r[0] for r in env.cr.fetchall())
+    env.cr.execute(
+        "SELECT 1 FROM account_move_line WHERE account_id IS NULL LIMIT 1")
+    if untyped or env.cr.fetchone():
+        openupgrade.logged_query(
+            env.cr, """
+            UPDATE account_move_line aml
+            SET move_name = am.name,
+                account_root_id = (SELECT {root} FROM account_account aa
+                                   WHERE aa.id = aml.account_id)
+            FROM account_move am
+            WHERE am.id = aml.move_id
+                AND (aml.account_id IS NULL OR aml.account_id IN %s)
+            """.format(root=_ACCOUNT_ROOT), (untyped or (0,),),
+        )
 
 
 def create_res_partner_ranks(env):

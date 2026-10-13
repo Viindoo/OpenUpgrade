@@ -922,6 +922,23 @@ def drop_unused_default_overtime_rules(cr):
                     AND module = 'viin_hr_overtime_payroll')""")
 
 
+def index_invoice_of_pos_orders(cr):
+    """The post-migration of account recomputes the lines of every draft and
+    cancelled invoice (compute_balance_for_draft_invoice_lines), and a write
+    on an invoice makes the ORM look for its orders of the point of sale
+    (WHERE account_move IN ...). pos_order.account_move has no index before
+    14.0: each lookup read the whole table (makmur: 208,572 orders, 50 ms per
+    lookup, one invoice in three). The index is created here, committed before
+    account is migrated (an index created in the transaction of a module can
+    stay unusable until that transaction ends: pg_index.indcheckxmin), with
+    the name 14.0 gives it, so that 14.0 does not create a second one.
+    """
+    if openupgrade.column_exists(cr, 'pos_order', 'account_move'):
+        openupgrade.logged_query(
+            cr, "CREATE INDEX IF NOT EXISTS pos_order_account_move_index "
+                "ON pos_order (account_move)")
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.remove_tables_fks(env.cr, _obsolete_tables)
@@ -946,6 +963,7 @@ def migrate(env, version):
     move_xmlids_between_modules(env.cr)
     drop_unused_default_overtime_rules(env.cr)
     move_legacy_company_font(env.cr)
+    index_invoice_of_pos_orders(env.cr)
     openupgrade.clean_transient_models(env.cr)
     openupgrade.copy_columns(env.cr, column_copies)
     openupgrade.rename_columns(env.cr, column_renames)

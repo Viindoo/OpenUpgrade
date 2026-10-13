@@ -187,14 +187,17 @@ def fill_stock_putaway_rule_location_in_id(env):
 
 
 def fill_propagate_date_minimum_delta(env):
-    # stock move
+    # stock move (the pre-migration gives the moves the delta of their company
+    # when it is the same for all: only the others are written)
     openupgrade.logged_query(
         env.cr, """
         UPDATE stock_move sm
         SET propagate_date_minimum_delta = rc.propagation_minimum_delta
         FROM res_company rc
         WHERE sm.company_id = rc.id
-            AND rc.propagation_minimum_delta IS NOT NULL"""
+            AND rc.propagation_minimum_delta IS NOT NULL
+            AND sm.propagate_date_minimum_delta IS DISTINCT FROM
+                rc.propagation_minimum_delta"""
     )
     openupgrade.logged_query(
         env.cr, """
