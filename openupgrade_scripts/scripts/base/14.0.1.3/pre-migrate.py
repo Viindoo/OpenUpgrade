@@ -182,7 +182,10 @@ def index_move_of_payments_and_statement_lines(cr):
     do not index move_id (16.0 does, index=True), so each lookup reads the
     whole table: on makmur (351,505 payments, 362,039 statement lines) the
     statement lines without entry (fill_statement_lines_with_no_move, 17,194
-    lines) took 9 hours.
+    lines) took 9 hours. The same goes for the entries and journal items of a
+    payment (WHERE payment_id IN ..., account.move.payment_id is new and both
+    are indexed by 14.0): 20 minutes of the payments and statement lines
+    without entry went to reading account_move and account_move_line whole.
 
     The columns and their indexes are created here, in the transaction of
     base, committed before account is migrated. An index created in the
@@ -190,20 +193,26 @@ def index_move_of_payments_and_statement_lines(cr):
     unusable until the transaction ends (pg_index.indcheckxmin, set when the
     build meets HOT chains of the transaction): the planner kept reading the
     whole table of the payments (170 ms per lookup, still 4.7 hours). The
-    indexes get the names 16.0 gives them (table_column_index), so that 16.0
-    takes them for its own and does not create a second one.
+    indexes get the names the ORM gives them (table_column_index; 16.0 for
+    move_id), so that it takes them for its own and does not create a second
+    one.
     """
-    for table in ("account_payment", "account_bank_statement_line"):
+    for table, column in (
+        ("account_payment", "move_id"),
+        ("account_bank_statement_line", "move_id"),
+        ("account_move", "payment_id"),
+        ("account_move_line", "payment_id"),
+    ):
         if not openupgrade.table_exists(cr, table):
             continue
-        if not openupgrade.column_exists(cr, table, "move_id"):
+        if not openupgrade.column_exists(cr, table, column):
             openupgrade.logged_query(
-                cr, "ALTER TABLE %s ADD COLUMN move_id integer" % table
+                cr, "ALTER TABLE %s ADD COLUMN %s integer" % (table, column)
             )
         openupgrade.logged_query(
             cr,
-            "CREATE INDEX IF NOT EXISTS %s_move_id_index ON %s (move_id)"
-            % (table, table),
+            "CREATE INDEX IF NOT EXISTS %s_%s_index ON %s (%s)"
+            % (table, column, table, column),
         )
 
 
