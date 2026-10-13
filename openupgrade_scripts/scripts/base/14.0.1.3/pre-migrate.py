@@ -174,6 +174,39 @@ def release_records_of_lost_modules(cr):
     )
 
 
+def index_move_of_payments_and_statement_lines(cr):
+    """From 14.0 account.payment and account.bank.statement.line delegate to
+    their journal entry (_inherits on move_id, filled by the pre-migration of
+    account), and every write on an entry makes the ORM look for the payment
+    and the statement line of that entry (WHERE move_id IN ...). 14.0 and 15.0
+    do not index move_id (16.0 does, index=True), so each lookup reads the
+    whole table: on makmur (351,505 payments, 362,039 statement lines) the
+    statement lines without entry (fill_statement_lines_with_no_move, 17,194
+    lines) took 9 hours.
+
+    The columns and their indexes are created here, in the transaction of
+    base, committed before account is migrated. An index created in the
+    transaction of account, after that transaction updated the rows, can stay
+    unusable until the transaction ends (pg_index.indcheckxmin, set when the
+    build meets HOT chains of the transaction): the planner kept reading the
+    whole table of the payments (170 ms per lookup, still 4.7 hours). The
+    indexes get the names 16.0 gives them (table_column_index), so that 16.0
+    takes them for its own and does not create a second one.
+    """
+    for table in ("account_payment", "account_bank_statement_line"):
+        if not openupgrade.table_exists(cr, table):
+            continue
+        if not openupgrade.column_exists(cr, table, "move_id"):
+            openupgrade.logged_query(
+                cr, "ALTER TABLE %s ADD COLUMN move_id integer" % table
+            )
+        openupgrade.logged_query(
+            cr,
+            "CREATE INDEX IF NOT EXISTS %s_move_id_index ON %s (move_id)"
+            % (table, table),
+        )
+
+
 @openupgrade.migrate(use_env=False)
 def migrate(cr, version):
     """
@@ -228,6 +261,7 @@ def migrate(cr, version):
     openupgrade.clean_transient_models(cr)
     uninstall_conflicting_it_edi(cr)
     merge_web_diagram_if_unused(cr)
+    index_move_of_payments_and_statement_lines(cr)
     # Migrate partners from Fil to Tagalog
     # See https://github.com/odoo/odoo/commit/194ed76c5cc9
     openupgrade.logged_query(
