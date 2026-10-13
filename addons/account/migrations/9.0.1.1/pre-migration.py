@@ -492,4 +492,13 @@ def migrate(env, version):
              'monetary', False, 'account'),
         ]
     )
+    # Created by the ORM, these columns are first filled with 0.0 (makmur: 3
+    # updates of 2,073,862 journal items, 10 minutes), then the post-migration
+    # sets them for every item (fill_blacklisted_fields). The fields exist
+    # since 8.0 (not stored): only the columns are missing.
+    for column in ('amount_residual', 'amount_residual_currency', 'balance'):
+        if not openupgrade.column_exists(cr, 'account_move_line', column):
+            openupgrade.logged_query(
+                cr, 'ALTER TABLE account_move_line ADD COLUMN "%s" numeric'
+                % column)
     fix_configurable_chart_template(env)

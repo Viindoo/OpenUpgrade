@@ -48,6 +48,22 @@ def fix_act_window(env):
     )
 
 
+def precreate_column(cr, table, column, sql_type, default):
+    """Create a new column of a big table with the default value the ORM
+    would fill in: the ORM adds the column then writes every existing row
+    with one UPDATE, while PostgreSQL (11 and later) keeps the default of
+    ADD COLUMN for the existing rows without writing them. default is the
+    SQL literal of the value the ORM writes (a float field with digits is
+    written as text with its decimals: '1.00')."""
+    if openupgrade.column_exists(cr, table, column):
+        return
+    openupgrade.logged_query(
+        cr, 'ALTER TABLE "%s" ADD COLUMN "%s" %s DEFAULT %s'
+        % (table, column, sql_type, default))
+    openupgrade.logged_query(
+        cr, 'ALTER TABLE "%s" ALTER COLUMN "%s" DROP DEFAULT' % (table, column))
+
+
 @openupgrade.migrate(use_env=True)
 def migrate(env, version):
     cr = env.cr
@@ -55,3 +71,5 @@ def migrate(env, version):
     openupgrade.rename_columns(cr, column_renames)
     openupgrade.rename_fields(env, field_renames)
     fix_act_window(env)
+    # makmur: 1,676,359 moves, 2 minutes
+    precreate_column(cr, 'stock_move', 'sequence', 'int4', 10)
