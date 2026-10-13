@@ -225,6 +225,35 @@ def fill_account_move_commercial_partner_id(env):
     )
 
 
+def fill_account_move_invoice_partner_bank_id(env):
+    """Avoid the ORM computation of this new stored field for every journal
+    entry (makmur: 400,091 entries, 11 minutes): when the module is loaded,
+    every entry is of type 'entry' (the invoices become entries of their type
+    in the post-migration, which also sets the bank account of the invoices),
+    so the computed value is the first bank account (sequence, id) of the
+    partner of the company of the entry that belongs to that company.
+    """
+    if openupgrade.column_exists(
+            env.cr, "account_move", "invoice_partner_bank_id"):
+        return
+    openupgrade.logged_query(
+        env.cr,
+        "ALTER TABLE account_move ADD invoice_partner_bank_id int4")
+    openupgrade.logged_query(
+        env.cr,
+        """UPDATE account_move am
+        SET invoice_partner_bank_id = bank.id
+        FROM (
+            SELECT DISTINCT ON (rc.id) rc.id AS company_id, rpb.id
+            FROM res_company rc
+            JOIN res_partner_bank rpb ON rpb.partner_id = rc.partner_id
+                AND rpb.company_id = rc.id
+            ORDER BY rc.id, rpb.sequence, rpb.id
+        ) bank
+        WHERE am.company_id = bank.company_id"""
+    )
+
+
 def set_account_move_currency_id_required(env):
     # with this, we avoid calling _get_default_currency during the load
     openupgrade.logged_query(
@@ -352,6 +381,7 @@ def migrate(env, version):
     delete_fk_constraints(env)
     openupgrade.lift_constraints(env.cr, "account_move", "reverse_entry_id")
     fill_account_move_commercial_partner_id(env)
+    fill_account_move_invoice_partner_bank_id(env)
     set_account_move_currency_id_required(env)
     add_helper_invoice_move_rel(env)
     clear_unwanted_currency_id_account_move_line(env)

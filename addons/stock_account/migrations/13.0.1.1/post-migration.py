@@ -298,8 +298,11 @@ def generate_stock_valuation_layer(env):
         # records inserts at once. So we should do the inserts in batches with that size
         # [1] https://github.com/postgres/postgres/blob/master/src/include/utils/memutils.h#L40
         # [2] A gentle calculation
+        # makmur: 1,523,793 records in one statement of about 500 MB, the
+        # backend of PostgreSQL ran out of memory on a loaded machine ("server
+        # closed the connection unexpectedly"); batches of 50,000 records
         svl_length = len(all_svl_list)
-        batch_size = 5_000_000
+        batch_size = 50_000
         _logger.info(f"To create {svl_length} svl records")
         for offset in range(0, svl_length, batch_size):
             query_insert(
