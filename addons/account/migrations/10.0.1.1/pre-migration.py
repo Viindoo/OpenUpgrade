@@ -23,6 +23,21 @@ def update_invoice_state(cr):
         WHERE state = 'open' AND reconciled""")
 
 
+def precreate_column(cr, table, column, sql_type, default):
+    """Create a new column of a big table with the default value the ORM
+    would fill in: the ORM adds the column then writes every existing row
+    with one UPDATE, while PostgreSQL (11 and later) keeps the default of
+    ADD COLUMN for the existing rows without writing them. default is the
+    SQL literal of the value the ORM writes."""
+    if openupgrade.column_exists(cr, table, column):
+        return
+    openupgrade.logged_query(
+        cr, 'ALTER TABLE "%s" ADD COLUMN "%s" %s DEFAULT %s'
+        % (table, column, sql_type, default))
+    openupgrade.logged_query(
+        cr, 'ALTER TABLE "%s" ALTER COLUMN "%s" DROP DEFAULT' % (table, column))
+
+
 @openupgrade.migrate(use_env=True)
 def migrate(env, version):
     cr = env.cr
@@ -37,3 +52,6 @@ def migrate(env, version):
         ]
     )
     update_invoice_state(cr)
+    # makmur: about 2.1 million journal items, 4 minutes
+    precreate_column(
+        cr, 'account_move_line', 'tax_exigible', 'boolean', 'true')

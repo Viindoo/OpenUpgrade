@@ -105,6 +105,9 @@ def create_statement_lines_payments(cr):
                  'reconciled', st_line_id
             FROM openupgrade_tmp_account_payment
             WHERE payment_method_id IS NOT NULL
+            -- the ids follow the statement lines, not the order in which the
+            -- rows happen to be read
+            ORDER BY st_line_id
             RETURNING id AS payment_id, openupgrade_tmp_st_line_id)
 
         -- Link the payment to the statement line's move lines
