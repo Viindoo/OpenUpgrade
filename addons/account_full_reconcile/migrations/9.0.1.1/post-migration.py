@@ -339,7 +339,7 @@ def migrate_reconcile(cr):
         WHERE aml.reconcile_id IS NOT NULL
            OR aml.reconcile_partial_id IS NOT NULL
         ORDER BY
-            aml.reconcile_id, aml.reconcile_partial_id, aml.date
+            aml.reconcile_id, aml.reconcile_partial_id, aml.date, aml.id
         """
     )
     _logger.info("SQL selection for migration of reconciliations complete.")
