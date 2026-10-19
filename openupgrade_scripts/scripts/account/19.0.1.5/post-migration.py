@@ -108,7 +108,13 @@ def account_reconcile_model_partner_mapping(env):
 def account_account_active(env):
     """
     Set active flag from deprecated
+
+    A database that comes from 8.0 or before still has the column active of then (account.account lost the field
+    in 9.0): the ORM of 19.0 finds the column and does not fill it, so the accounts made since (outstanding receipts
+    and payments of the journals, bank suspense...) have it empty, read as archived ("The account Outstanding
+    Receipts is archived" when a session of the point of sale with a bank payment is closed).
     """
+    env.cr.execute("UPDATE account_account SET active = TRUE WHERE active IS NULL")
     env.cr.execute("UPDATE account_account SET active = FALSE where deprecated")
 
 
