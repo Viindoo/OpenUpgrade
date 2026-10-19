@@ -247,14 +247,28 @@ def _to_mail_notif_and_email_create_mail_notification_index(env):
 
 
 def _update_mail_channel_name(env):
+    # The name is not translated any more: keep it in the language of the users (the one most active internal users
+    # have; for en_US the column already holds it), not any of the translations of the channel (one per language,
+    # PostgreSQL took any of them: "umum" or "chung chung" from one run to the other on a database in en_US)
     openupgrade.logged_query(
         env.cr,
         """
-        WITH sub AS(
-            SELECT res_id, value FROM ir_translation
-            WHERE name = 'mail.channel,name'
-            AND value IS NOT NULL AND value != ''
-            AND src != value
+        WITH lang AS (
+            SELECT p.lang
+            FROM res_users u
+            JOIN res_partner p ON p.id = u.partner_id
+            WHERE u.active AND NOT u.share AND p.lang IS NOT NULL
+            GROUP BY p.lang
+            ORDER BY count(*) DESC, p.lang
+            LIMIT 1
+        ), sub AS(
+            SELECT DISTINCT ON (t.res_id) t.res_id, t.value
+            FROM ir_translation t
+            JOIN lang ON lang.lang = t.lang
+            WHERE t.name = 'mail.channel,name'
+            AND t.value IS NOT NULL AND t.value != ''
+            AND t.src != t.value
+            ORDER BY t.res_id, t.id DESC
         )
         UPDATE mail_channel mc
         SET name = sub.value
