@@ -495,7 +495,8 @@ def fill_statement_lines_with_no_move(env):
         """
         SELECT id, %s, company_id
         FROM account_bank_statement_line
-        WHERE move_id IS NULL"""
+        WHERE move_id IS NULL
+        ORDER BY id"""
         % (openupgrade.get_legacy_name("date"),)
     )
     for stl_id, stl_date, stl_company in env.cr.fetchall():
@@ -733,6 +734,7 @@ def fill_account_payment_with_no_move(env):
         FROM account_payment ap
         JOIN account_journal aj ON ap.%s = aj.id
         WHERE ap.move_id IS NULL
+        ORDER BY ap.id
         """
         % (
             openupgrade.get_legacy_name("journal_id"),
