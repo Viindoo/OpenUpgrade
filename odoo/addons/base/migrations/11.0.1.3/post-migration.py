@@ -42,7 +42,8 @@ def merge_default_ir_values(cr):
     cr.execute("""
         SELECT id, create_date, write_date, create_uid, write_uid, user_id,
             company_id, name, model, value, key2
-        FROM ir_values WHERE key = 'default' AND value IS NOT NULL;""")
+        FROM ir_values WHERE key = 'default' AND value IS NOT NULL
+        ORDER BY id;""")
     query = """
         INSERT INTO ir_default (
             create_date, write_date, create_uid, write_uid, user_id,
@@ -86,6 +87,7 @@ def fill_cron_action_server_post(env):
             ir_model AS im
         WHERE
             im.model = ic.model
+        ORDER BY ic.id
      """)
     for act in env.cr.dictfetchall():
         vals = default_vals.copy()
