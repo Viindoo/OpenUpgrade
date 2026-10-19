@@ -14,7 +14,9 @@ def import_data_from_im_chat_module(env):
     old_id = openupgrade.get_legacy_name('old_id')
     alias = openupgrade.get_legacy_name('alias_id')
 
-    # Map data from im_chat_session to mail_channel
+    # Map data from im_chat_session to mail_channel (channels, members and
+    # messages are created in the order of their source: the order of the
+    # messages of a channel follows their ids)
     cr.execute("""SELECT count(id) FROM im_chat_session""")
     count_sessions = cr.fetchone()
     count_sessions = count_sessions and count_sessions[0] or 0
@@ -48,6 +50,7 @@ def import_data_from_im_chat_module(env):
                 create_uid, create_date, write_uid, write_date, id,
                 '_dummy_name' as name
             FROM im_chat_session
+            ORDER BY id
             RETURNING id
         )
         INSERT INTO mail_followers (channel_id, res_model, res_id)
@@ -55,13 +58,15 @@ def import_data_from_im_chat_module(env):
         FROM create_channel
         """ % (old_id, alias)
     )
+    # the alias of each chat channel points to its channel; without the join
+    # on the alias (the alias updated was not the one joined), every alias of
+    # the database got the first chat channel as thread
     cr.execute(
         """
-        UPDATE mail_alias
+        UPDATE mail_alias ma
         SET alias_force_thread_id = mc.id, alias_parent_thread_id = mc.id
         FROM mail_channel mc
-        LEFT JOIN mail_alias ma ON ma.id = mc.alias_id
-        WHERE mc.channel_type = 'chat'
+        WHERE ma.id = mc.alias_id AND mc.channel_type = 'chat'
         """
     )
 
@@ -77,6 +82,7 @@ def import_data_from_im_chat_module(env):
         FROM im_chat_session_res_users_rel iur
         LEFT JOIN res_users ru ON ru.id = iur.user_id
         LEFT JOIN mail_channel mc ON mc.%s = iur.session_id
+        ORDER BY iur.session_id, iur.user_id
         """ % old_id
     )
     cr.execute(
@@ -138,6 +144,7 @@ def import_data_from_im_chat_module(env):
         FROM im_chat_message icm
         LEFT JOIN res_users ru ON ru.id = icm.from_id
         LEFT JOIN mail_channel mc ON mc.%s = icm.to_id
+        ORDER BY icm.id
         """ % (subtype_id, old_id)
     )
 
