@@ -163,7 +163,9 @@ def migration_invoice_moves(env):
         WHERE am.id = ai.move_id AND ai.state not in ('draft', 'cancel')
         """,
     )
-    # Insert moves for draft or canceled invoices
+    # Insert moves for draft or canceled invoices (here and below, the records
+    # are created in the order of the rows they come from: without ORDER BY,
+    # their ids follow the physical order, another one from run to run)
     openupgrade.logged_query(
         env.cr, """
         INSERT INTO account_move (message_main_attachment_id, access_token,
@@ -201,7 +203,8 @@ def migration_invoice_moves(env):
         vendor_display_name, cash_rounding_id, id, create_uid, create_date,
         write_uid, write_date
         FROM account_invoice ai
-        WHERE ai.state in ('draft', 'cancel')""",
+        WHERE ai.state in ('draft', 'cancel')
+        ORDER BY ai.id""",
     )
     openupgrade.merge_models(env.cr, 'account.invoice', 'account.move', 'old_invoice_id')
     # Not Draft or Cancel Invoice Lines
@@ -332,7 +335,8 @@ def migration_invoice_moves(env):
             JOIN account_invoice ai ON ail.invoice_id = ai.id
             JOIN account_move am ON am.old_invoice_id = ai.id
             LEFT JOIN res_company rc ON ail.company_id = rc.id
-        WHERE ail.aml_matched IS DISTINCT FROM TRUE AND ai.state NOT IN ('draft', 'cancel')""",
+        WHERE ail.aml_matched IS DISTINCT FROM TRUE AND ai.state NOT IN ('draft', 'cancel')
+        ORDER BY ail.id""",
     )
     # Draft or Cancel Invoice Lines
     openupgrade.logged_query(
@@ -356,7 +360,8 @@ def migration_invoice_moves(env):
             LEFT JOIN res_company rc ON ail.company_id = rc.id
         JOIN account_move am ON am.old_invoice_id = ai.id
         JOIN account_account aa ON ai.account_id = aa.id
-        WHERE aa.internal_type in ('receivable', 'payable')""",
+        WHERE aa.internal_type in ('receivable', 'payable')
+        ORDER BY ail.id""",
     )
     openupgrade.merge_models(env.cr, 'account.invoice.line', 'account.move.line', 'old_invoice_line_id')
     # Not Draft or Cancel Invoice Taxes
@@ -390,7 +395,8 @@ def migration_invoice_moves(env):
         FROM account_invoice_tax ait
         JOIN account_invoice ai ON ait.invoice_id = ai.id AND ai.state IN ('draft', 'cancel')
         LEFT JOIN account_move am ON am.old_invoice_id = ai.id
-        WHERE COALESCE(ai.move_id, am.id) IS NOT NULL""",
+        WHERE COALESCE(ai.move_id, am.id) IS NOT NULL
+        ORDER BY ait.id""",
     )
     openupgrade.merge_models(env.cr, 'account.invoice.tax', 'account.move.line', 'old_invoice_tax_id')
     openupgrade.logged_query(
@@ -564,7 +570,8 @@ def migration_voucher_moves(env):
         write_date
         FROM account_voucher av
         WHERE av.state in ('draft', 'cancel', 'proforma')
-            AND NOT """ + _PAYMENT_VOUCHER,
+            AND NOT """ + _PAYMENT_VOUCHER + """
+        ORDER BY av.id""",
     )
     openupgrade.merge_models(env.cr, 'account.voucher', 'account.move', 'old_voucher_id')
     # Not draft, cancel, proforma voucher lines
@@ -615,7 +622,8 @@ def migration_voucher_moves(env):
         JOIN account_voucher av ON avl.voucher_id = av.id AND av.state in ('draft', 'cancel', 'proforma')
             AND NOT """ + _PAYMENT_VOUCHER + """
         LEFT JOIN account_move am ON am.old_voucher_id = av.id
-        WHERE COALESCE(av.move_id, am.id) IS NOT NULL""",
+        WHERE COALESCE(av.move_id, am.id) IS NOT NULL
+        ORDER BY avl.id""",
     )
     openupgrade.merge_models(env.cr, 'account.voucher.line', 'account.move.line', 'old_voucher_line_id')
     openupgrade.logged_query(
@@ -814,7 +822,8 @@ def create_account_tax_repartition_lines(env):
             SELECT NULL, company_id, 100, id, NULL, 'base', 1,
                 create_uid, create_date, write_uid, write_date
             FROM account_tax
-            WHERE id IN %s""", (tuple(tax_ids), ),
+            WHERE id IN %s
+            ORDER BY id""", (tuple(tax_ids), ),
         )
         openupgrade.logged_query(
             env.cr, """
@@ -827,7 +836,8 @@ def create_account_tax_repartition_lines(env):
                 company_id, 100, id, NULL, 'tax', 1,
                 create_uid, create_date, write_uid, write_date
             FROM account_tax
-            WHERE id IN %s""", (tuple(tax_ids), ),
+            WHERE id IN %s
+            ORDER BY id""", (tuple(tax_ids), ),
         )
         openupgrade.logged_query(
             env.cr, """
@@ -838,7 +848,8 @@ def create_account_tax_repartition_lines(env):
             SELECT NULL, company_id, 100, NULL, id, 'base', 1,
                 create_uid, create_date, write_uid, write_date
             FROM account_tax
-            WHERE id IN %s""", (tuple(tax_ids), ),
+            WHERE id IN %s
+            ORDER BY id""", (tuple(tax_ids), ),
         )
         openupgrade.logged_query(
             env.cr, """
@@ -851,7 +862,8 @@ def create_account_tax_repartition_lines(env):
                 company_id, 100, NULL, id, 'tax', 1,
                 create_uid, create_date, write_uid, write_date
             FROM account_tax
-            WHERE id IN %s""", (tuple(tax_ids), ),
+            WHERE id IN %s
+            ORDER BY id""", (tuple(tax_ids), ),
         )
     openupgrade.logged_query(
         env.cr, """
@@ -882,7 +894,8 @@ def create_account_tax_repartition_lines(env):
             SELECT NULL, 100, id, NULL, 'base',
                 create_uid, create_date, write_uid, write_date
             FROM account_tax_template
-            WHERE id IN %s""", (tuple(tax_ids), ),
+            WHERE id IN %s
+            ORDER BY id""", (tuple(tax_ids), ),
         )
         openupgrade.logged_query(
             env.cr, """
@@ -895,7 +908,8 @@ def create_account_tax_repartition_lines(env):
                 100, id, NULL, 'tax',
                 create_uid, create_date, write_uid, write_date
             FROM account_tax_template
-            WHERE id IN %s""", (tuple(tax_ids), ),
+            WHERE id IN %s
+            ORDER BY id""", (tuple(tax_ids), ),
         )
         openupgrade.logged_query(
             env.cr, """
@@ -906,7 +920,8 @@ def create_account_tax_repartition_lines(env):
             SELECT NULL, 100, NULL, id, 'base',
                 create_uid, create_date, write_uid, write_date
             FROM account_tax_template
-            WHERE id IN %s""", (tuple(tax_ids), ),
+            WHERE id IN %s
+            ORDER BY id""", (tuple(tax_ids), ),
         )
         openupgrade.logged_query(
             env.cr, """
@@ -919,7 +934,8 @@ def create_account_tax_repartition_lines(env):
                 100, NULL, id, 'tax',
                 create_uid, create_date, write_uid, write_date
             FROM account_tax_template
-            WHERE id IN %s""", (tuple(tax_ids), ),
+            WHERE id IN %s
+            ORDER BY id""", (tuple(tax_ids), ),
         )
     openupgrade.logged_query(
         env.cr, """
