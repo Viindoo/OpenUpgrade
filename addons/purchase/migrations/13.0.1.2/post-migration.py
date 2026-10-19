@@ -15,14 +15,29 @@ def move_fields_from_invoice_to_moves(env):
 
 
 def change_type_purchase_order_date_approve(env):
+    # An order can have several messages of the subtype (approved again, state tracked again later): a plain
+    # UPDATE ... FROM takes any of them, not the same from one run to the other, sometimes of another day than the
+    # date of the former version. Take the last message of the day of that date (the date was today in the time zone
+    # of the user who approved, the author of the message), else the last message.
     query = """
         UPDATE purchase_order po
         SET date_approve = mm.date
-        FROM mail_message mm
-        WHERE mm.subtype_id = %s
-            AND mm.model = 'purchase.order'
-            AND mm.res_id = po.id
-            AND date_approve IS NULL"""
+        FROM (
+            SELECT DISTINCT ON (mm.res_id) mm.res_id, mm.date
+            FROM mail_message mm
+            JOIN purchase_order p ON p.id = mm.res_id
+            LEFT JOIN res_partner rp ON rp.id = mm.author_id
+            LEFT JOIN pg_timezone_names tz ON tz.name = rp.tz
+            WHERE mm.subtype_id = %s
+                AND mm.model = 'purchase.order'
+            ORDER BY mm.res_id,
+                ((mm.date AT TIME ZONE 'UTC' AT TIME ZONE COALESCE(tz.name, 'UTC'))::date
+                 IS NOT DISTINCT FROM p.{legacy}) DESC,
+                mm.date DESC, mm.id DESC
+        ) mm
+        WHERE mm.res_id = po.id
+            AND po.date_approve IS NULL""".format(
+        legacy=openupgrade.get_legacy_name("date_approve"))
     openupgrade.logged_query(env.cr, query, (env.ref('purchase.mt_rfq_approved').id,))
     openupgrade.logged_query(env.cr, query, (env.ref('purchase.mt_rfq_confirmed').id,))
 
