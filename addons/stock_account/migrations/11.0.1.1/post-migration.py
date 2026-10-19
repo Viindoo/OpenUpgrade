@@ -87,6 +87,9 @@ def update_stock_move_value_fifo(env):
     perpetual/automated inventory valuation and to not lose the possibility
     to switch to it after migration in envs with manual valuation.
     """
+    # The sums are made in numeric: quantity and cost are double precision,
+    # and a sum of doubles depends on the order of the rows (another value in
+    # the last digits from one run to the other).
     # Valuate incoming moves:
     # q1: Update remaining value and remaining qty based on quants that
     # still exist in internal locations.
@@ -108,8 +111,8 @@ def update_stock_move_value_fifo(env):
         LEFT JOIN (
             SELECT
                 sqsm.move_id as move_id,
-                sum(sq.quantity * sq.cost) as remaining_value,
-                sum(sq.quantity) as remaining_qty
+                sum((sq.quantity * sq.cost)::numeric) as remaining_value,
+                sum(sq.quantity::numeric) as remaining_qty
             FROM stock_quant_move_rel sqsm
             INNER JOIN stock_quant sq
             ON sqsm.quant_id = sq.id
@@ -122,7 +125,7 @@ def update_stock_move_value_fifo(env):
         LEFT JOIN (
             SELECT
                 sqsm.move_id as move_id,
-                sum(sq.quantity * sq.cost) as value
+                sum((sq.quantity * sq.cost)::numeric) as value
             FROM stock_quant_move_rel sqsm
             INNER JOIN stock_quant sq
             ON sqsm.quant_id = sq.id
@@ -152,7 +155,7 @@ def update_stock_move_value_fifo(env):
         LEFT JOIN (
             SELECT
                 sqsm.move_id as move_id,
-                sum(sq.quantity * sq.cost) as value
+                sum((sq.quantity * sq.cost)::numeric) as value
             FROM stock_quant_move_rel sqsm
             INNER JOIN stock_quant sq
             ON sqsm.quant_id = sq.id
