@@ -285,6 +285,7 @@ def _create_account_payment_method_line(env):
             apm.create_uid, apm.write_uid, apm.create_date, apm.write_date
         FROM account_payment_method apm, account_journal aj
         WHERE apm.code = 'manual' AND aj.type IN ('bank', 'cash')
+        ORDER BY aj.id, apm.id
         """,
     )
 
@@ -319,6 +320,8 @@ def _fill_account_tax_country_id(env):
 
 
 def _fill_res_company_account_journal_payment_accounts(env):
+    # the accounts of the first journal in the order of the journals: without ORDER BY,
+    # PostgreSQL returns any of them and the default of the company changes from run to run
     # account_journal_payment_credit_account_id
     openupgrade.logged_query(
         env.cr,
@@ -336,6 +339,7 @@ def _fill_res_company_account_journal_payment_accounts(env):
             FROM account_journal aj
             WHERE aj.company_id = c.id AND aj.type IN ('bank', 'cash')
                 AND aj.payment_credit_account_id IS NOT NULL
+            ORDER BY aj.sequence, aj.type, aj.code, aj.id
             LIMIT 1)""",
     )
     # account_journal_payment_debit_account_id
@@ -355,6 +359,7 @@ def _fill_res_company_account_journal_payment_accounts(env):
             FROM account_journal aj
             WHERE aj.company_id = c.id AND aj.type IN ('bank', 'cash')
                 AND aj.payment_debit_account_id IS NOT NULL
+            ORDER BY aj.sequence, aj.type, aj.code, aj.id
             LIMIT 1)""",
     )
 
