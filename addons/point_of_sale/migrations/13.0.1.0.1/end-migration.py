@@ -5,7 +5,11 @@ from openupgradelib import openupgrade
 
 
 def create_pos_payment_methods(env):
-    """We will create a Payment method for each journal used on configurations"""
+    """We will create a Payment method for each journal used on configurations
+
+    In the order of the journals: the order of the methods on the point of sale follows their ids
+    (17.0 sets their sequence from the id), without ORDER BY it changed from run to run.
+    """
     if not openupgrade.column_exists(
             env.cr, "pos_payment_method", "old_journal_id"):
         openupgrade.logged_query(
@@ -48,6 +52,7 @@ def create_pos_payment_methods(env):
                     FROM account_journal aj
                     INNER JOIN res_company rc ON rc.id = aj.company_id
                     WHERE aj.id in %s
+                    ORDER BY aj.id
                 """, (tuple(journal_ids),))
         # We will add all options in order to ensure no failures
         openupgrade.logged_query(
@@ -73,6 +78,7 @@ def create_pos_payments(env):
         LEFT JOIN account_journal aj ON abs.journal_id = aj.id
         JOIN pos_payment_method ppm ON ppm.old_journal_id = aj.id
         WHERE absl.pos_statement_id IS NOT NULL
+        ORDER BY absl.id
     """)
     st_lines = env.cr.fetchall()
     if st_lines:

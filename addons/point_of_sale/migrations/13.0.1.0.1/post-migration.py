@@ -107,6 +107,7 @@ def create_pos_picking_types(env):
         JOIN stock_picking_type spt ON pc.picking_type_id = spt.id
         WHERE stock_location_id != spt.default_location_src_id
         OR spt.default_location_src_id IS NULL
+        ORDER BY pc.id
         """
     )
     # Unzip and zip again so we browse all the configs at once
